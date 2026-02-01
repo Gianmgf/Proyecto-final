@@ -11,17 +11,18 @@
 	
 	\section{Geometría y coordenadas biestáticas}
 	
-	Consideremos la geometría de un radar pasivo en coordenadas cartesianas. Un blanco se encuentra en la posición \((x(t), y(t), z(t))\); el transmisor está ubicado en \((x_{t}, y_{t}, z_{t})\) y el receptor en \((x_{r}, y_{r}, z_{r})\). Esto no permite definir los siguientes rangos: el rango transmisor-objetivo ($R_1$), el receptor-objetivo ($R_2$) y el rango transmisor-receptor ($R_b$).
+	Consideremos la geometría de un radar pasivo en coordenadas cartesianas. Un blanco se encuentra en la posición \(\overline{p_t} = (x(t), y(t), z(t))\); el transmisor está ubicado en \(\overline{p_{tx}} =(x_{t}, y_{t}, z_{t})\) y el receptor en \(\overline{p_{rx}} =(x_{r}, y_{r}, z_{r})\). Esto no permite definir los siguientes rangos: el rango transmisor-objetivo ($R_1$), el receptor-objetivo ($R_2$) y el rango transmisor-receptor ($R_b$).
+	
 	\begin{equation}
-		R_1(t) = \sqrt{(x(t) - x_t)^2 + (y(t) - y_t)^2  +(z(t) - z_t)^2}
+		R_1(t) = || \overline{p_{t}} - \overline{p_{tx}} ||
 	\end{equation}
 	
 	\begin{equation}
-	R_2(t) = \sqrt{(x(t) - x_r)^2 + (y(t) - y_r)^2  +(z(t) - z_r)^2}
+		R_2(t) = || \overline{p_{t}} - \overline{p_{rx}} ||
 	\end{equation}
 	
 	\begin{equation}
-	R_b = \sqrt{(x_t - x_b)^2 + (y_t - y_b)^2  +(z_t - z_b)^2}
+		R_b = || \overline{p_{tx}} - \overline{p_{rx}} ||
 	\end{equation}
 	
 	En donde el ángulo entre los segmentos transmisor–objetivo y receptor–objetivo, denotado por \(\beta\), se conoce como ángulo biestático.
@@ -32,7 +33,7 @@
 	El rango biestático se calcula a partir de la diferencia entre el camino directo, $R_b$, y el indirecto, $R_1(t) + R_2(t)$. Esto puede hacerse a partir del retardo \(\tau\) medido entre las señales de eco y de referencia, y la velocidad de la luz \(c\).
 	
 	\begin{equation}
-		R(t) = R_1(t) - R_2(t) - R_b = c \cdot \tau
+		R(t) = R_1(t) + R_2(t) - R_b = c \cdot \tau
 		\label{eq:rango_biestatico}
 	\end{equation}
 	
@@ -57,7 +58,15 @@
 		\label{eq:vel_biestatica}
 	\end{equation}
 	
+	Otra forma de expresar la velocidad biestática es a partir de la velocidad cartesiana del blanco. En este enfoque, la velocidad biestática se obtiene sumando las proyecciones del vector de velocidad $\mathbf{v}_c$ sobre los vectores unitarios de la línea de vista (LOS, \textit{Line of Sight}) entre el objetivo y el transmisor (Tx) y entre el objetivo y el receptor (Rx), tal como se muestra en la Ec.~\ref{eq:vel_biestatica_proy}.
 	
+	\begin{equation}
+		\label{eq:vel_biestatica_proy}
+		v_b = \langle \mathbf{v}_c , \mathbf{u}_{tx} \rangle + \langle \mathbf{v}_c , \mathbf{u}_{rx} \rangle
+	\end{equation}
+	
+	En la práctica, esta expresión no puede emplearse directamente, ya que requiere conocimiento previo de la velocidad y la posición del objetivo. No obstante, resulta útil para la generación de escenarios de simulación, en los cuales todos los parámetros del sistema y del blanco son conocidos y pueden controlarse.
+
 		
 		
 	\section{Ecuación Radar}

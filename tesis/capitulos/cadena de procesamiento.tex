@@ -59,6 +59,11 @@
 		En donde $<\bullet \hspace{3pt}; \bullet>$ representa el producto interno característico de $\mathbb{R}^N$ y $|| \bullet ||^2$ es la norma inducida por el producto interno.
 	\section{Función de ambigüedad cruzada}
 
+
+	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ec. \ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.   
+	
+	Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
+	
 	\begin{equation}
 		\label{eq:caf}
 		\psi(R,V) =
@@ -80,17 +85,82 @@
 	
 		\subsection{Algoritmo Batch}
 		
+		Este algoritmo se centra en la aproximación de que en un segmento P, el desplazamiento doppler es despreciable. Con esta aproximación puede crearse una matriz análoga a la matriz de un radar pulsado 
+		en donde existe la dimensión de tiempo rápido y lento. Sin embargo, en un sistema continuo estas no representan exactamente los mismo siendo el tiempo lento los diferentes tramos de segmentes y el rápido 
+		los retardos de la señal. 
+		Luego, ya para obtener el mapa rango-doppler, se toma la FFT de las filas de la matriz y llegando así a la Ec. [X]. La demostración de la aproximacion puede verse en el anexo [X].
 		
-		\figura{.5}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el metodo Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
+		\figura{.5}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
 	\section{Detección de objetivos}
-		\subsection{Ca - CFAR}
-		Tradicionalmente, en los radares activos monostáticos, la detección se realizaba empleando una señal unidimensional, conocida como perfil de alcance. Este perfil se obtiene registrando la señal de eco tras la transmisión de un único pulso y aplicando posteriormente una compresión en rango mediante filtrado adaptado. Las muestras resultantes corresponden al tiempo rápido, el cual puede escalarse directamente con la distancia al radar.
 		
-		La Figura 6.3 presenta el diagrama en bloques de un sistema CFAR unidimensional. En cada iteración del algoritmo, el objetivo es determinar el umbral de detección asociado a la celda bajo prueba (Cell Under Test, CUT) a partir de las celdas de referencia o entrenamiento. Para ello, se considera un total de N$_w$ celdas de referencia a cada lado de la CUT. Esta, a su vez, se encuentra rodeada por N$_{g}$ celdas de guarda en cada extremo, las cuales no intervienen en la estimación del nivel de ruido. El uso de estas celdas de guarda se justifica porque el eco del blanco puede extenderse a lo largo de varias celdas de resolución —por efectos de la ventana de señal o del sobremuestreo—, lo que podría sesgar la estimación si no se evita su influencia directa. Por lo tanto, el número de celdas de guarda debe seleccionarse considerando el ancho esperado del eco recibido.
+	
 		
-		La estimación del nivel de ruido a partir de las celdas de referencia puede realizarse de diversas maneras. Una de las más simples —y aún hoy entre las más empleadas— es el método Cell Averaging CFAR (CA-CFAR). En este enfoque, la estimación del nivel de ruido se obtiene calculando el valor medio de las muestras pertenecientes a ambas ventanas de referencia.
-		
-		\begin{equation}
-			\hat{\sigma} = \dfrac{1}{2 \cdot N_w} \left(\hspace{5pt} \sum_{i = n - N_w - N_g}^{n - N_g - 1} x(i) \hspace{5pt} + \hspace{5pt} \sum_{i = n+N_g+1 }^{n + N_w + N_g}  x(i) \hspace{5pt}\right)
-		\end{equation}
-			
+	
+	La detección de objetivos se basa en la comparación entre la potencia de la señal recibida y un umbral de decisión. En entornos reales, el nivel de ruido y \textit{clutter} puede variar significativamente en el tiempo y el espacio, lo que hace que el uso de un umbral fijo resulte ineficiente. En este contexto, los algoritmos CFAR (\textit{Constant False Alarm Rate}) permiten ajustar dinámicamente el umbral de detección a partir de una estimación local del nivel de ruido, garantizando una probabilidad de falsa alarma aproximadamente constante.
+	
+	El principio fundamental del CFAR consiste en estimar la potencia promedio del entorno circundante a la muestra bajo análisis y establecer un umbral proporcional a dicha estimación. De este modo, el detector se adapta automáticamente a variaciones en las condiciones del ruido, evitando degradaciones significativas en su desempeño.
+	
+	En un esquema CFAR típico, la señal procesada (por ejemplo, la salida de una Transformada Rápida de Fourier) se analiza mediante una ventana móvil compuesta por tres tipos de celdas:
+	
+	\begin{itemize}
+		\item \textbf{Celda bajo prueba (CUT, \textit{Cell Under Test})}: muestra en la cual se evalúa la posible presencia de un blanco.
+		\item \textbf{Celdas de guarda}: muestras adyacentes a la CUT que se excluyen del proceso de estimación del ruido, con el fin de evitar la contaminación de dicha estimación por la energía del blanco.
+		\item \textbf{Celdas de referencia}: conjunto de muestras utilizadas para estimar el nivel local de ruido o \textit{clutter}.
+	\end{itemize}
+	
+	A partir de las celdas de referencia se obtiene una estimación del nivel de ruido, la cual se multiplica por un factor de escala dependiente de la probabilidad de falsa alarma deseada. Este producto define el umbral de detección. Si la potencia medida en la CUT supera dicho umbral, el sistema declara la detección de un blanco.
+	
+	\figura{.8}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{Adaptado de \cite{richards2014radar}}{\label{fig:cfar}}
+	
+	\subsection{Algoritmo CA-CFAR (\textit{Cell Averaging CFAR})}
+	
+	El algoritmo CA-CFAR (\textit{Cell Averaging CFAR}) es una de las variantes más simples y ampliamente utilizadas dentro de la familia CFAR. En este enfoque, la estimación del nivel de ruido se obtiene calculando el promedio aritmético de la potencia medida en las celdas de referencia ubicadas a ambos lados de la CUT.
+	
+	Sea $x(i)$ la potencia de la señal en la celda $i$, $N_g$ el número de celdas de guarda y $N_w$ el número de celdas de referencia por cada lado. La estimación del nivel de ruido $\hat{\sigma}$ se calcula como:
+	
+	\begin{equation}
+		\hat{\sigma} = \dfrac{1}{2N_w}
+		\left(
+		\sum_{i = n - N_w - N_g}^{n - N_g - 1} x(i)
+		+
+		\sum_{i = n + N_g + 1}^{n + N_w + N_g} x(i)
+		\right)
+	\end{equation}
+	
+	El umbral de detección $T$ se obtiene multiplicando esta estimación por un factor de escala $\alpha$:
+	
+	\begin{equation}
+		T = \alpha \cdot \hat{\sigma}
+	\end{equation}
+	
+	El factor de escala $\alpha$ depende del número total de celdas de referencia $N = 2N_w$ y de la probabilidad de falsa alarma deseada $P_{fa}$. Bajo la hipótesis de ruido con distribución exponencial, $\alpha$ puede expresarse analíticamente como:
+	
+	\begin{equation}
+		\alpha = N \left( P_{fa}^{-1/N} - 1 \right)
+	\end{equation}
+	
+	Esta expresión asegura que, en ausencia de blancos, la probabilidad de que la potencia de la CUT supere el umbral de detección sea igual a $P_{fa}$.
+	
+	El algoritmo CA-CFAR presenta un desempeño adecuado en entornos homogéneos, donde las estadísticas del ruido son similares en todas las celdas de referencia. No obstante, su rendimiento se degrada en escenarios no homogéneos, como aquellos con múltiples blancos cercanos o interferencias localizadas, ya que la estimación promedio del ruido puede verse sesgada. Estas limitaciones han motivado el desarrollo de variantes más robustas, tales como GO-CFAR, SO-CFAR y OS-CFAR.
+	
+	\subsection{Relación entre detección, SNR y probabilidad de falsa alarma}
+	
+	El desempeño de un detector CFAR se caracteriza principalmente mediante dos métricas: la probabilidad de detección $P_d$ y la probabilidad de falsa alarma $P_{fa}$. Ambas se encuentran estrechamente relacionadas con la relación señal a ruido (SNR, \textit{Signal-to-Noise Ratio}).
+	
+	La probabilidad de falsa alarma $P_{fa}$ se define como la probabilidad de declarar la presencia de un blanco cuando en realidad solo está presente el ruido. En los algoritmos CFAR, $P_{fa}$ es un parámetro de diseño fijado a priori y determina directamente el valor del umbral de detección. Un valor reducido de $P_{fa}$ disminuye la cantidad de detecciones espurias, pero incrementa el umbral, dificultando la detección de señales de baja potencia.
+	
+	Por su parte, la probabilidad de detección $P_d$ representa la probabilidad de detectar correctamente un blanco cuando este efectivamente está presente. Esta probabilidad depende de diversos factores, entre los que se destacan:
+	
+	\begin{itemize}
+		\item La relación señal a ruido de la señal bajo prueba.
+		\item El valor de $P_{fa}$ seleccionado.
+		\item El número de celdas de referencia empleadas en la estimación del ruido.
+		\item El modelo estadístico asumido para el ruido y el blanco.
+	\end{itemize}
+	
+	A medida que la SNR aumenta, la distribución de la potencia de la señal en la CUT se separa progresivamente de la distribución del ruido, incrementando la probabilidad de que dicha potencia supere el umbral de detección. En consecuencia, la probabilidad de detección $P_d$ crece con la SNR. Para una SNR fija, una disminución de $P_{fa}$ implica un aumento del umbral, lo que conlleva una reducción de $P_d$.
+	
+	Este comportamiento refleja el compromiso inherente entre sensibilidad y confiabilidad del detector. Desde un punto de vista estadístico, la relación entre $P_d$, $P_{fa}$ y la SNR suele analizarse mediante curvas ROC (\textit{Receiver Operating Characteristic}), las cuales representan la probabilidad de detección en función de la probabilidad de falsa alarma para distintos valores de SNR. Estas curvas constituyen una herramienta fundamental para comparar el desempeño de distintos algoritmos CFAR y evaluar su comportamiento bajo diversas condiciones de operación.
+	
+	En síntesis, los algoritmos CFAR, y en particular el CA-CFAR, permiten el diseño de detectores adaptativos capaces de mantener constante la tasa de falsas alarmas frente a variaciones del nivel de ruido. No obstante, la probabilidad de detección permanece limitada por la SNR disponible, lo que impone un límite fundamental al desempeño de cualquier sistema de detección.
+	

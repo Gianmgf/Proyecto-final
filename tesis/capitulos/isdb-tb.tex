@@ -1,4 +1,4 @@
-\chapter{Transmisión de Señal de TV Digital Terrestre ISDB-T}
+\chapter{Transmisión de  ISDB-Tb}
 
 
 En Argentina, la transmisión de TDT está regulada por el ENACOM a través de la resolucion 7/13. Esta establece el esquema ISDB-Tb definido por la norma ABNT NBR 15601. Además, en el Anexo 1 se establece las especificaciones técnicas, tales como el tratamiento de datos, la modulación y la transmisión. En este documento también se definen los modos de recepción, especificándose la recepción total o parcial, denominada 1-seg. Asimismo, la normativa describe cómo se divide el espectro de un canal de 8 MHz en 13 segmentos, siendo el segmento central el destinado a la recepción parcial. Además, en la Figura X se presenta la cadena completa de procesamiento.
@@ -13,13 +13,20 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	
 	\figura{.7}{./isdb/cod_bloques.png}{Codificación de canal.}{ Fuente: \cite{isdbt}}{\label{fig:bloques_isdb}}
 	
+	En este trabajo se usara la recepción parcial con la capa jerárquica A por lo que no se trataran los bloques de procesamiento de división y combinación de nivel jerárquico. Dado esto la cadena de procesamiento queda
 	
+	
+	[FIGURA CADENA 1-seg]
 	
 	\section{Dispersión de energía}
 	Luego del tratamiento de los *transport streams*, el primer bloque es el dispersor de energía. Para ello se utiliza una secuencia pseudoaleatoria que modula los bits. Esto se hace a partir de un shift register retroalimentado, el cual genera la secuencia, y una compuerta XOR que invierta los datos en función de la secuencia. La configuración inicial del generador esta dada por la semilla [] y el polinomio [], como se muestra en la Figura X. 
 	
 	\section{Código RS}
-	Una vez dispersada la energía, se aplica el primer nivel de codificación. Se utiliza un código RS ( ) con capacidad para detectar y corregir hasta **x** errores. Para esto se utiliza el polinomio generador []. 
+	Primer código corrector de errores. Para esto se utiliza el código cíclico RS de la familia de códigos BCH que es capaz de corregir hasta X bits con 2X bits de paridad. Para este código se utiliza el polinomio primitivo [X] como polinomio generador. Los códigos RS son del tipo bloque lineal por lo que se toman bloques de X bits y se les agregan sus respectivos bits de paridad, que al usas la forma sistemática quedan los datos de salida con el formato 
+	\begin{equation}
+		[b_n m_n]
+	\end{equation}, en donde $b_n$ son los bits de paridad y $m_n$ son los bits de mensaje.
+	
 	\section{Entrelazador de byte}
 	
 	Posteriormente, los datos se entrelazan a nivel de byte mediante un interleaver convolucional, consistente en una cascada de shift registers con distintos niveles de profundidad, tal como se muestra en la Figura X, de manera que las distintas ramas sufran distintos retardos y así generar el entrelazaminento.
@@ -36,7 +43,13 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	\figura{.7}{./isdb/conv_code.png}{Diagrama en bloques del código convolucional.}{ Fuente: \cite{isdbt}.}{\label{fig:conv_code}}
 	
 	\section{Entrelazador de bit}
-	Análogamente al entrelazador de bytes, se utiliza un interleaver convolucional en donde el tamaño del registro es un bit y la cantidad de ramas y retardos, dados por la profundidad de los registros, depende del modo y modulación de operación.
+	Análogamente al entrelazador de bytes, se utiliza un interleaver convolucional en donde el tamaño del registro es un bit y la cantidad de ramas y retardos, dados por la profundidad de los registros, depende de la modulación de operación. 
+	
+	\figura{.7}{./isdb/bit_intrl_4.png}{Entralazador de bit QPSK.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_4}}
+	
+	\figura{.7}{./isdb/bit_intrl_16.png}{Entralazador de bit 16 QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_16}}
+	
+	\figura{.7}{./isdb/bit_intrl_64.png}{Entralazador de bit 64QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_64}}
 	
 	
 	\section{Mapeo de símbolos QAM}
@@ -68,12 +81,91 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	\end{align}
 	
 	\section{Entrelazador de tiempo y frecuencia}
+	\subsection{Entrelazador tiempo}
+	
+	La Figura~\ref{fig:intercalador_tiempo} presenta el circuito del \textit{intercalador de tiempo}, el cual está compuesto por $n_c$ buffers FIFO de longitudes variables y por conmutadores sincronizados tanto en la entrada como en la salida. Este esquema permite realizar el entrelazado temporal de la señal mediante el almacenamiento y la lectura controlada de los datos en cada buffer.
+	
+	La longitud $L_i$ del $i$-ésimo buffer está dada por la siguiente expresión:
+	
+	\begin{equation}
+		L_i = I \cdot m_i, \quad 0 \leq i \leq n_c - 1
+	\end{equation}
+	
+	donde
+	
+	\begin{equation}
+		m_i = i \cdot 5 \bmod 96, \quad 0 \leq i \leq n_c - 1
+	\end{equation}
+	
+	La constante $I$ es un parámetro de transmisión configurable, que puede asumir uno de los cuatro valores indicados en la Tabla~\ref{tab:parametro_I} para un modo de transmisión determinado. El valor $\max(L_i)$ consignado en dicha tabla corresponde a la longitud del buffer de mayor tamaño para cada valor de $I$.
+	
 	\section{Estructura de frame OFDM}
+	Una vez obtenidos los datos finales, es necesario estructurarlos dentro de un frame OFDM. Para esto se crean data frames que dependiendo del modo tendrán una longitud de 96, 192 y 384 portadoras. Estos data frame se agruparan en un arreglo bidimensional; como lo muestra la Figura \ref{fig:frame} en donde las filas representan el dominio del tiempo y las columnas el dominio de la frecuencia.
+	
+	
 	\figura{.7}{./isdb/frame.png}{Estructura de datos en el frame OFDM.}{ Fuente: \cite{isdbt}.}{\label{fig:frame}}
-	\subsubsection{Pilotos y PRBS}
-	\figura{.7}{./isdb/pilotos.png}{Distribucion de portadoras pilotos.}{ Fuente: \cite{isdbt}.}{\label{fig:pilotos}}
+	donde $a_{i,j,k}$ representa el késimo segmento del símbolo de la portadora, siendo $"$i$"$ la dirección de la portadora en el segmento OFDM y $"$j$"$ la dirección del símbolo en el segmento OFDM. 
+	
+	
+	\subsection{Secuencia pseudoaleatoria}
+	
+	Dentro del frame OFDM, además de las portadoras de datos, se incluyen otros tipos de portadoras auxiliares. En particular, algunas de ellas utilizan una secuencia pseudoaleatoria para la definición de sus símbolos.
+	
+	La secuencia pseudoaleatoria, denotada como $w$, se genera mediante un registro de desplazamiento con realimentación lineal (LFSR), definido por el polinomio generador
+	
+	\begin{equation}
+		g(x) = 1 + x^{9} + x^{11}.
+	\end{equation}
+	
+	Para el segmento central del frame, la secuencia se inicializa utilizando la seed indicada en la Tabla []. En la Figura~\ref{fig:prbs} se muestra el esquema del lfsr para la generación de dicha secuencia.
+	
 	
 	\figura{.7}{./isdb/prbs.png}{Generador de secuencia binaria pseudo aleatoria .}{ Fuente: \cite{isdbt}.}{\label{fig:prbs}}
+	
+	
+	\subsection{Señales SP (scattered pilots)}
+	
+	Las portadoras SP se encuentran distribuidas de forma dispersa dentro del frame, presentando periodicidad tanto dentro de un mismo símbolo OFDM como entre símbolos OFDM consecutivos, de acuerdo con el patrón 
+	
+	 \begin{equation}
+	 		\left\{ i = I_{min} + 3 \cdot (j mod 4) + 12 p \hspace{5pt}|\hspace{5pt} p \in \mathbb{N},\hspace{5pt} i \in [I_{min}; I_{max}] \right\}
+	 \end{equation}
+	 
+	 Quedando estas periodicas cada 12 portadoras dentro del simbolo y cada 4 portadoras entre simbolos. Estas portadoras se utilizan para la estimación de la respuesta en frecuencia del canal $H(t,f)$ en un determinado instante de tiempo, lo que permite compensar los efectos introducidos por el canal sobre la señal transmitida.
+	
+	Las portadoras SP se modulan mediante BPSK. No obstante, el valor transmitido en cada una de ellas no corresponde a un dato de información, sino al valor de una secuencia pseudoaleatoria asociada a la frecuencia específica de la portadora.
+	
+	Una vez obtenida la secuencia $w$, en las portadoras indicadas en la Tabla~[X] se asignan los símbolos
+	
+	{\Huge[Completar tablar portadoras SP]}
+	
+	\begin{equation}
+		a_{i,j,k} = \frac{4}{3} - \frac{8}{3} w_i,
+	\end{equation}
+	
+	donde $i$ representa el índice de la portadora. De esta forma, los valores binarios $w_i \in \{0,1\}$ se mapean en los niveles $\left\{ \frac{4}{3}, -\frac{4}{3} \right\}$, respectivamente.
+	
+	\figura{.7}{./isdb/pilotos.png}{Distribucion de portadoras pilotos.}{ Fuente: \cite{isdbt}.}{\label{fig:pilotos}}
+	
+	\subsection{Señales AC (auxiliary channel)}
+	Las portadoras AC se utilizan para la transmisión de información auxiliar y de control necesaria para la programación del sistema. Esta información se modula mediante DBPSK a lo largo de 203 de los 204 símbolos que componen el superframe OFDM.
+	
+	{\Huge[Completar tablar portadoras AC]}
+	
+	
+	En el primer símbolo del superframe, las portadoras indicadas en la Tabla~[X] se modulan utilizando BPSK, de la misma forma que las portadoras SP. A partir del segundo símbolo, se consideran los 203 bits correspondientes a la información AC y se aplica un esquema de codificación diferencial entre símbolos consecutivos.
+	
+	La operación diferencial se define como
+	
+	\begin{equation}
+		a_{i,j,k} = a_{i-1,j,k} \oplus b_i
+	\end{equation}
+	
+	De este modo, las portadoras AC del símbolo actual se invierten o se mantienen iguales respecto al símbolo anterior para representar un valor lógico 1 o 0, respectivamente.
+	
+	
+	\subsection{Señal TMCC}
+	{\Huge[Completar tablar portadoras TMCC]}
 	\section{Frecuencia de muestreo y frecuencias centrales}
 	
 \chapter{Recepcion}
