@@ -19,14 +19,36 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	[FIGURA CADENA 1-seg]
 	
 	\section{Dispersión de energía}
-	Luego del tratamiento de los *transport streams*, el primer bloque es el dispersor de energía. Para ello se utiliza una secuencia pseudoaleatoria que modula los bits. Esto se hace a partir de un shift register retroalimentado, el cual genera la secuencia, y una compuerta XOR que invierta los datos en función de la secuencia. La configuración inicial del generador esta dada por la semilla [] y el polinomio [], como se muestra en la Figura X. 
 	
-	\section{Código RS}
-	Primer código corrector de errores. Para esto se utiliza el código cíclico RS de la familia de códigos BCH que es capaz de corregir hasta X bits con 2X bits de paridad. Para este código se utiliza el polinomio primitivo [X] como polinomio generador. Los códigos RS son del tipo bloque lineal por lo que se toman bloques de X bits y se les agregan sus respectivos bits de paridad, que al usas la forma sistemática quedan los datos de salida con el formato 
+	Luego del procesamiento inicial de los \textit{transport streams}, los datos ingresan al
+	bloque de dispersión de energía. Esta etapa tiene como finalidad evitar la presencia de
+	patrones repetitivos prolongados en la secuencia binaria, los cuales podrían concentrar
+	energía en determinadas componentes espectrales.
+	
+	La dispersión se realiza combinando los bits de entrada con una secuencia binaria
+	pseudoaleatoria generada mediante un registro de desplazamiento con realimentación
+	lineal. En el estándar ISDB-T, dicha secuencia se obtiene a partir de un generador LFSR
+	definido por el polinomio
+	
 	\begin{equation}
-		[b_n m_n]
-	\end{equation}, en donde $b_n$ son los bits de paridad y $m_n$ son los bits de mensaje.
+		G(x) = x^{15} + x^{14} + 1 ,
+	\end{equation}
 	
+	el cual, junto con una condición inicial preestablecida, produce una secuencia periódica
+	que se aplica bit a bit mediante una operación XOR.
+	
+	
+	\section{Código Reed-Solomon}
+	
+	Una vez aplicada la dispersión de energía, se incorpora un primer mecanismo de protección
+	frente a errores mediante un código Reed-Solomon. En ISDB-T se emplea un código
+	RS(204,188), que agrega 16 bytes de redundancia a cada bloque de 188 bytes de
+	información.
+	
+	Este esquema permite corregir hasta ocho bytes erróneos por bloque, resultando
+	especialmente efectivo frente a errores en ráfaga, habituales en canales afectados por
+	interferencias impulsivas o desvanecimientos selectivos.
+
 	\section{Entrelazador de byte}
 	
 	Posteriormente, los datos se entrelazan a nivel de byte mediante un interleaver convolucional, consistente en una cascada de shift registers con distintos niveles de profundidad, tal como se muestra en la Figura X, de manera que las distintas ramas sufran distintos retardos y así generar el entrelazaminento.
@@ -35,9 +57,20 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	\figura{.7}{./isdb/intrlv_conv.png}{Entrelazador de bytes.}{ Fuente: \cite{isdbt}.}{\label{fig:intrlv_conv}}
 	
 	
-	\section{Código Convolucional}
+	\section{Código convolucional}
 	
-	A continuación, comienza el segundo nivel de codificación. En esta etapa se emplea un código convolucional puntuado, cuyos polinomios característicos son [ ] y [ ] para las señales X e Y. Dependiendo del patrón de puntuado, la combinación correspondiente de estas señales se utilizará como salida. En la Tabla X se detallan las combinaciones asociadas a cada patrón.
+	El segundo nivel de codificación se basa en un código convolucional con tasa base $1/2$,
+	definido por los polinomios generadores
+	
+	\begin{equation}
+		G_1 = 111_2, \qquad G_2 = 101_2 .
+	\end{equation}
+	
+	A partir de este codificador se obtienen distintas tasas efectivas mediante el uso de
+	patrones de puntuado. La elección del patrón depende del compromiso deseado entre
+	robustez frente a errores y eficiencia espectral, y varía según el modo de transmisión
+	configurado.
+	
 	
 	
 	\figura{.7}{./isdb/conv_code.png}{Diagrama en bloques del código convolucional.}{ Fuente: \cite{isdbt}.}{\label{fig:conv_code}}
@@ -80,10 +113,21 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 		\mathbb{\textbf{I}}\lbrace a_k \rbrace &= 7 -14  b_1 - 6  b_3 - 2  b_5 + 12  b_1  b_3 + 4  b_1  b_5 + 4  b_3  b_5 - 2  b_1  b_3  b_5
 	\end{align}
 	
-	\section{Entrelazador de tiempo y frecuencia}
+	\subsection{Entrelazador de tiempo y frecuencia}
+	
+	Además del entrelazado a nivel de bit y de byte, el sistema incorpora un entrelazado
+	adicional en los dominios temporal y frecuencial. Este mecanismo redistribuye los
+	símbolos modulados tanto entre distintos símbolos OFDM como entre diferentes
+	subportadoras.
+	
+	El entrelazado temporal contribuye a reducir el impacto de interferencias transitorias,
+	mientras que el entrelazado en frecuencia mitiga los efectos de desvanecimientos
+	selectivos del canal. La configuración específica de estos entrelazadores depende del modo
+	de operación y de los parámetros de transmisión seleccionados.
+	
 	\subsection{Entrelazador tiempo}
 	
-	La Figura~\ref{fig:intercalador_tiempo} presenta el circuito del \textit{intercalador de tiempo}, el cual está compuesto por $n_c$ buffers FIFO de longitudes variables y por conmutadores sincronizados tanto en la entrada como en la salida. Este esquema permite realizar el entrelazado temporal de la señal mediante el almacenamiento y la lectura controlada de los datos en cada buffer.
+	La Figura~\ref{fig:intercalador_tiempo} presenta el circuito del \textit{entrelzador de tiempo}, el cual está compuesto por $n_c$ buffers FIFO de longitudes variables y por conmutadores sincronizados tanto en la entrada como en la salida. Este esquema permite realizar el entrelazado temporal de la señal mediante el almacenamiento y la lectura controlada de los datos en cada buffer.
 	
 	La longitud $L_i$ del $i$-ésimo buffer está dada por la siguiente expresión:
 	
@@ -94,10 +138,30 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	donde
 	
 	\begin{equation}
-		m_i = i \cdot 5 \bmod 96, \quad 0 \leq i \leq n_c - 1
-	\end{equation}
+		m_i = i \cdot 5 \mod 96, \quad 0 \leq i \leq n_c - 1
+	\end{equation}	
+	y siendo $n_c$ igual a 96, 192 y 384 en los modos 1, 2 3, respectivamente. La constante $I$ es un parámetro de transmisión configurable, que puede asumir uno de los cuatro valores indicados en la Tabla~\ref{tab:parametro_I} para un modo de transmisión determinado. 
 	
-	La constante $I$ es un parámetro de transmisión configurable, que puede asumir uno de los cuatro valores indicados en la Tabla~\ref{tab:parametro_I} para un modo de transmisión determinado. El valor $\max(L_i)$ consignado en dicha tabla corresponde a la longitud del buffer de mayor tamaño para cada valor de $I$.
+	
+	\figura{.7}{./isdb/time_intrl.png}{Entrelazador de tiempo}{ Fuente: \cite{isdbt}.}{\label{fig:intercalador_tiempo}}
+	
+	\begin{table}[h]
+		\centering
+		
+		\label{tab:parametro_I}
+		
+		\renewcommand{\arraystretch}{1.2} % aumenta el espaciado vertical
+		\begin{tabular}{|c c|}
+			\hline
+			\textbf{Modo} & \textbf{Valores de $I$} \\
+			\hline\hline
+			Modo 1 & 0, 4, 8, 16 \\
+			Modo 2 & 0, 2, 4, 8 \\
+			Modo 3 & 0, 1, 2, 3 \\
+			\hline
+		\end{tabular}
+		\caption{Valores posibles del parámetro $I$ según el modo de transmisión. Adaptado de \cite{isdbt}.}
+	\end{table}
 	
 	\section{Estructura de frame OFDM}
 	Una vez obtenidos los datos finales, es necesario estructurarlos dentro de un frame OFDM. Para esto se crean data frames que dependiendo del modo tendrán una longitud de 96, 192 y 384 portadoras. Estos data frame se agruparan en un arreglo bidimensional; como lo muestra la Figura \ref{fig:frame} en donde las filas representan el dominio del tiempo y las columnas el dominio de la frecuencia.
