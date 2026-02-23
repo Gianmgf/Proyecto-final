@@ -232,17 +232,161 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 	{\Huge[Completar tablar portadoras TMCC]}
 	\section{Frecuencia de muestreo y frecuencias centrales}
 	
-\chapter{Recepcion}
-Para la recepcion de una señal ISDBT se implean los siguientes bloques de procesamiento
+% -------------------------------------------------------------------------
+% Capítulo 4 — Recepción ISDB-Tb (cadena teórica)
+% Basado en la cadena de transmisión del Capítulo 3 del documento provisto.
+% :contentReference[oaicite:0]{index=0}
+% -------------------------------------------------------------------------
 
-En primer lugar es necesario identificar los simbolos OFDM, esto se hace a traves del prefijo ciclico agergado en la etapa de tranmision. Este al ser una fraccion de la parte final del mensaje puede identificarse
-usando una correlacion. Al tomar X cantidad de muestras podemos obtener el incio del simbolo como el pico maximo de la correlacion sumado a la duracion del CP. 
+\chapter{Recepción}
+\label{ch:recepcion_isdbt}
 
-Una vez identificado el simbolo, el siguiente paso es corregir el error de fase presente en la señal. Esto puede hacerse tambien a partir del CP
-viendo la diferencia de fase entre este (en el incio del mensaje) y su parte correspondiente en el payload (en el final del mensaje). 
-Sin embargo, esta correccion no es suficiente por si misma. Para terminar de centrar el espectro y ubicar la posicion de las 
-distintas portadoresa se utilizan las portadoras piloto. Al ser estas una secuencia conocida y en posiciones predeterminadas,
-pueden ser usadas con una correlacion para encontrar la poscicion de las portadoras usando
-[eq]
-en donde el pico maximo indicara que la secuencia conocida se alineo con su contraparte dentro de los datos del simbolo OFDM. 
-Ya con esto pueden extraerse los datos de control y de transmision y proceder con la demodulacion de manera acorde.
+En este capítulo se describe la cadena de recepción de una señal ISDB-Tb,
+tomando como referencia la estructura de transmisión presentada en el Capítulo~3
+y describiendo las etapas necesarias para recuperar los datos y parámetros de transmisión.
+La recepción se presenta como una secuencia de bloques funcionales, desde la señal
+compleja en banda base hasta la reconstrucción del \textit{Transport Stream} (TS).
+
+\section{Diagrama general de la cadena de recepción}
+\label{sec:rx_diagrama_general}
+
+A nivel de alto nivel, la cadena de recepción puede resumirse como:
+
+\begin{center}
+	\begin{minipage}{0.95\textwidth}
+		\begin{verbatim}
+			IQ (banda base)
+			-> Sincronización temporal (detección de símbolo) y corrección de CFO
+			-> Remoción de prefijo cíclico + FFT (demodulación OFDM)
+			-> Sincronización fina / alineamiento de portadoras con pilotos (SP)
+			-> Estimación de canal y ecualización
+			-> Extracción y decodificación de TMCC/AC (parámetros de transmisión)
+			-> Demapeo QAM (LLR/bits)
+			-> De-entrelazado (tiempo/frecuencia, bit, byte)
+			-> Depuncturing + Decodificación Viterbi (código convolucional)
+			-> Decodificación Reed-Solomon
+			-> Des-dispersión de energía (descrambling)
+			-> TS recuperado
+		\end{verbatim}
+	\end{minipage}
+\end{center}
+
+\section{Etapas de sincronización y demodulación OFDM}
+\label{sec:rx_ofdm_sync}
+
+\subsection{Adquisición y conversión a banda base}
+La señal recibida se considera como una secuencia compleja IQ muestreada a la frecuencia
+correspondiente al canal/segmento de interés. En el caso de recepción parcial (1-seg),
+la señal se limita al segmento central y se procesa en banda base compleja.
+
+\subsection{Sincronización temporal: detección del inicio de símbolo}
+La primera etapa crítica es la identificación del comienzo de los símbolos OFDM.
+Aprovechando el prefijo cíclico (CP), se puede obtener una métrica de correlación entre
+el CP y la porción correspondiente del final del símbolo. El máximo de esta métrica
+permite estimar el instante de inicio del símbolo, y por ende segmentar la señal en
+bloques símbolo a símbolo.
+
+\subsection{Corrección de error de frecuencia (CFO) y fase}
+La diferencia de fase entre el CP y su réplica en el final del símbolo permite estimar
+un corrimiento de frecuencia (CFO) y/o una rotación de fase. Con esa estimación se aplica
+una corrección compleja de la forma $x[n]\exp(-j2\pi \widehat{\Delta f} n / f_s)$
+para centrar el espectro antes de la FFT.
+
+\subsection{Remoción de CP y FFT}
+Una vez detectado el símbolo y compensado el CFO (al menos en forma gruesa),
+se elimina el prefijo cíclico y se calcula la FFT para obtener las subportadoras en el
+dominio de la frecuencia. Esto produce, por símbolo, el vector de portadoras que contiene:
+portadoras de datos, pilotos dispersos (SP) y portadoras de señalización (AC/TMCC).
+
+\section{Pilotos, estimación de canal y ecualización}
+\label{sec:rx_channel_est}
+
+\subsection{Alineamiento fino con pilotos dispersos (SP)}
+Las portadoras SP ocupan posiciones predeterminadas y transmiten una secuencia conocida.
+Dicha propiedad permite realizar sincronización fina (por ejemplo, corrección de
+desplazamientos residuales y verificación de alineamiento de índices de portadora)
+mediante correlación o búsqueda de la mejor coincidencia entre el patrón esperado y el
+observado.
+
+\subsection{Estimación de canal}
+Con los símbolos pilotos (SP) se estima la respuesta compleja del canal
+$H[k]$ (por símbolo OFDM y por portadora). Luego se interpola la estimación
+en frecuencia y/o tiempo para obtener una estimación del canal en las portadoras de datos.
+
+\subsection{Ecualización}
+Con $\widehat{H}[k]$, se ecualiza cada portadora de datos:
+\[
+\widehat{X}[k] = \frac{Y[k]}{\widehat{H}[k]},
+\]
+donde $Y[k]$ es la portadora recibida y $\widehat{X}[k]$ la portadora ecualizada
+lista para demapeo.
+
+\section{Extracción de información de control: TMCC y AC}
+\label{sec:rx_tmcc_ac}
+
+Además de los datos, el receptor debe recuperar los parámetros de transmisión
+(modulación, tasas de codificación, entrelazados, etc.). Para ello:
+\begin{itemize}
+	\item Se extraen las portadoras correspondientes a AC y TMCC, ubicadas en índices
+	definidos por la norma.
+	\item Se demodulan según su esquema (típicamente DBPSK para señalización),
+	y se decodifica la información de configuración.
+\end{itemize}
+A partir de la decodificación de TMCC/AC, el receptor conoce (o verifica) la configuración
+necesaria para los bloques posteriores: tipo de constelación, tasa del código convolucional
+(patrón de puntuado), y parámetros de entrelazado temporal.
+
+\section{Demapeo y cadena de decodificación de canal (inversa a transmisión)}
+\label{sec:rx_fec_chain}
+
+A continuación se describen los bloques que invierten conceptualmente la codificación
+realizada en transmisión.
+
+\subsection{Demapeo de símbolos QAM}
+Las portadoras ecualizadas se demapean a bits (o métricas tipo LLR) de acuerdo con la
+constelación configurada (QPSK/16QAM/64QAM). Esta etapa produce una secuencia binaria
+que alimenta la decodificación FEC.
+
+\subsection{De-entrelazado en tiempo/frecuencia}
+Dado que en transmisión se aplica un entrelazado adicional en los dominios temporal y
+frecuencial, el receptor aplica el proceso inverso para reordenar los símbolos hacia su
+posición original, reduciendo así el efecto de errores en ráfaga y desvanecimientos selectivos.
+
+\subsection{De-entrelazado de bit}
+Se aplica el de-entrelazado a nivel de bit (inverso del entrelazador convolucional de bit)
+según la modulación empleada. El objetivo es restaurar el orden original de los bits antes
+del FEC interno.
+
+\subsection{Depuncturing y decodificación convolucional (Viterbi)}
+En transmisión, el código convolucional base se combina con un patrón de puntuado para
+obtener distintas tasas efectivas. En recepción:
+\begin{itemize}
+	\item Se aplica \textit{depuncturing} para reconstruir la secuencia equivalente a tasa $1/2$,
+	insertando marcadores de borrado donde corresponda.
+	\item Se ejecuta el decodificador Viterbi para recuperar la secuencia de bits más probable.
+\end{itemize}
+
+\subsection{De-entrelazado de byte}
+Se revierte el entrelazado de bytes aplicado en transmisión, reordenando los bytes para
+que los errores vuelvan a concentrarse y puedan ser corregidos por la etapa RS.
+
+\subsection{Decodificación Reed-Solomon}
+Se aplica el decodificador Reed-Solomon RS(204,188), eliminando los bytes de paridad e
+intentando corregir errores (particularmente en ráfaga) dentro de cada bloque.
+
+\subsection{Des-dispersión de energía (descrambling)}
+Finalmente, se invierte la dispersión de energía mediante la misma secuencia pseudoaleatoria
+(LFSR) utilizada en transmisión, aplicando nuevamente XOR para recuperar la secuencia original.
+
+\section{Salida}
+\label{sec:rx_output}
+
+El resultado del proceso es el \textit{Transport Stream} (TS) recuperado, listo para ser utilizado
+en etapas posteriores del sistema (por ejemplo, reconstrucción de la señal transmitida para
+canal de referencia coherente en radar pasivo, o para demultiplexado y análisis de contenido).
+
+% -------------------------------------------------------------------------
+% Nota práctica de redacción:
+% Si querés mantener simetría con el Capítulo 3, podés usar las mismas
+% subsecciones (3.1..3.7) pero con prefijo "De-" en recepción.
+% -------------------------------------------------------------------------
