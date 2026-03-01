@@ -27,7 +27,7 @@
 		
 		En términos geométricos, el filtro \textit{block lattice} realiza una secuencia de sustracciones ortogonales: en cada etapa, se extrae de $x_e(n)$ la proyección correspondiente a una copia retardada de la referencia. Esto permite remover el \textit{clutter} de forma progresiva y precisa, sin introducir distorsiones ni interferencias cruzadas entre etapas. Esta propiedad lo convierte en una herramienta especialmente adecuada para aplicaciones de radar pasivo, donde el eco contiene múltiples réplicas del pulso directo con distintos retardos y amplitudes.
 		
-		\figura{.5}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
+		\figura{.9}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
 		
 		En donde el algoritmo de procesamiento esta dados las ecuaciones de la Tabla \ref{table:lattice}.
 		
@@ -90,7 +90,7 @@
 		los retardos de la señal. 
 		Luego, ya para obtener el mapa rango-doppler, se toma la FFT de las filas de la matriz y llegando así a la Ec. [X]. La demostración de la aproximacion puede verse en el anexo [X].
 		
-		\figura{.5}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
+		\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
 	\section{Detección de objetivos}
 		
 	
@@ -110,7 +110,7 @@
 	
 	A partir de las celdas de referencia se obtiene una estimación del nivel de ruido, la cual se multiplica por un factor de escala dependiente de la probabilidad de falsa alarma deseada. Este producto define el umbral de detección. Si la potencia medida en la CUT supera dicho umbral, el sistema declara la detección de un blanco.
 	
-	\figura{.8}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{Adaptado de \cite{richards2014radar}}{\label{fig:cfar}}
+	\figura{.9}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{Adaptado de \cite{richards2014radar}}{\label{fig:cfar}}
 	
 	\subsection{Algoritmo CA-CFAR (\textit{Cell Averaging CFAR})}
 	

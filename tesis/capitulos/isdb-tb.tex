@@ -1,155 +1,133 @@
 \chapter{Transmisión de  ISDB-Tb}
 
 
-En Argentina, la transmisión de TDT está regulada por el ENACOM a través de la resolucion 7/13. Esta establece el esquema ISDB-Tb definido por la norma ABNT NBR 15601. Además, en el Anexo 1 se establece las especificaciones técnicas, tales como el tratamiento de datos, la modulación y la transmisión. En este documento también se definen los modos de recepción, especificándose la recepción total o parcial, denominada 1-seg. Asimismo, la normativa describe cómo se divide el espectro de un canal de 8 MHz en 13 segmentos, siendo el segmento central el destinado a la recepción parcial. Además, en la Figura X se presenta la cadena completa de procesamiento.
+	En Argentina, la transmisión de TDT está regulada por el ENACOM a través de la resolución 7/13. Esta establece el esquema ISDB-Tb definido por la norma ABNT NBR 15601. Además, en el Anexo 1 se establece las especificaciones técnicas, tales como el tratamiento de datos, la modulación y la transmisión. En este documento también se definen los modos de recepción, especificándose la recepción total o parcial, denominada 1-seg. Asimismo, la normativa describe cómo se divide el espectro de un canal de 8 MHz en 13 segmentos, siendo el segmento central el destinado a la recepción parcial.
 
 
-	En la Figura \ref{fig:bloques_isdb} puede observarse todos los bloques de procesamiento aplicado en un transmisor de TDT. Este capitulo se encarga de explicar cada uno de ellos en el contexto de transmisión y recepción parcial 1-seg. 
-	
-	\figura{.5}{./isdb/orden_canales.png}{Orden de los segmentos en el canal de 8 MHz.}{ Fuente: \cite{isdbt}.}{\label{fig:canales_isdb}}
-	
-	\figura{.5}{./isdb/1seg.png}{Recepción total y parcial.}{ Fuente: \cite{isdbt}.}{\label{fig:1seg}}
-	
-	
-	\figura{.7}{./isdb/cod_bloques.png}{Codificación de canal.}{ Fuente: \cite{isdbt}}{\label{fig:bloques_isdb}}
-	
-	En este trabajo se usara la recepción parcial con la capa jerárquica A por lo que no se trataran los bloques de procesamiento de división y combinación de nivel jerárquico. Dado esto la cadena de procesamiento queda
-	
-	
-	[FIGURA CADENA 1-seg]
-	
-	\section{Dispersión de energía}
-	
-	Luego del procesamiento inicial de los \textit{transport streams}, los datos ingresan al
-	bloque de dispersión de energía. Esta etapa tiene como finalidad evitar la presencia de
-	patrones repetitivos prolongados en la secuencia binaria, los cuales podrían concentrar
-	energía en determinadas componentes espectrales.
-	
-	La dispersión se realiza combinando los bits de entrada con una secuencia binaria
-	pseudoaleatoria generada mediante un registro de desplazamiento con realimentación
-	lineal. En el estándar ISDB-T, dicha secuencia se obtiene a partir de un generador LFSR
-	definido por el polinomio
-	
-	\begin{equation}
-		G(x) = x^{15} + x^{14} + 1 ,
-	\end{equation}
-	
-	el cual, junto con una condición inicial preestablecida, produce una secuencia periódica
-	que se aplica bit a bit mediante una operación XOR.
-	
-	
+	La Figura \ref{fig:bloques_isdb} presenta el diagrama de bloques del transmisor de TDT. Este capítulo se encarga de explicar cada uno de ellos en el contexto de transmisión y recepción parcial 1-seg. Dado que en este trabajo se utiliza exclusivamente la capa jerárquica A, no se desarrollarán los bloques asociados a la división y combinación jerárquica.
+
+	\figura{.9}{./isdb/orden_canales.png}{Orden de los segmentos en el canal de 8 MHz.}{ Fuente: \cite{isdbt}.}{\label{fig:canales_isdb}}
+
+	\figura{.9}{./isdb/1seg.png}{Recepción total y parcial.}{ Fuente: \cite{isdbt}.}{\label{fig:1seg}}
+
+
+	\figura{.9}{./isdb/cod_bloques.png}{Codificación de canal.}{ Fuente: \cite{isdbt}}{\label{fig:bloques_isdb}}
+
+
+
+
+
 	\section{Código Reed-Solomon}
-	
-	Una vez aplicada la dispersión de energía, se incorpora un primer mecanismo de protección
-	frente a errores mediante un código Reed-Solomon. En ISDB-T se emplea un código
-	RS(204,188), que agrega 16 bytes de redundancia a cada bloque de 188 bytes de
-	información.
-	
-	Este esquema permite corregir hasta ocho bytes erróneos por bloque, resultando
-	especialmente efectivo frente a errores en ráfaga, habituales en canales afectados por
-	interferencias impulsivas o desvanecimientos selectivos.
+	Inicialmente, se aplicará la codificación externa en la que se emplea un código Reed-Solomon para agregar redundancia a los datos de entrada. En ISDB-T se emplea un código RS(204,188), que agrega 16 bytes de redundancia a cada bloque de 188 bytes de información utilizando los siguientes polinomios.
+	\begin{equation}
+	\text{Polinomio Generador: } g(x) = (x + \lambda^0)(x + \lambda^1)(x + \lambda^2) \cdots (x + \lambda^{15})
+	\end{equation}
+
+	\begin{equation}
+		\text{Polinomio de Galois: }p(x) = x^8 + x^4 + x^3 + x^2 + 1
+	\end{equation}
+	donde $\lambda$ es el primo 2 del campo finito GF($2^8$) definido. Este esquema permite corregir hasta ocho bytes erróneos por bloque.
+
+
+	\section{Dispersión de energía}
+
+	Luego de la codificación inicial de los \textit{transport streams}, los datos ingresan al bloque de dispersión de energía. Esta etapa tiene como finalidad evitar la presencia de patrones repetitivos prolongados en la secuencia binaria, los cuales podrían concentrar energía en determinadas componentes espectrales.
+
+	La dispersión se realiza utilizando una compuerta XOR para combinar los bits de entrada con una PSBR generada mediante un LSFR definido por un estado inicial \textit{100101010000000} y por el polinomio
+
+	\begin{equation}
+		G(x) = x^{15} + x^{14} + 1
+	\end{equation}
 
 	\section{Entrelazador de byte}
-	
-	Posteriormente, los datos se entrelazan a nivel de byte mediante un interleaver convolucional, consistente en una cascada de shift registers con distintos niveles de profundidad, tal como se muestra en la Figura X, de manera que las distintas ramas sufran distintos retardos y así generar el entrelazaminento.
-	
-	
-	\figura{.7}{./isdb/intrlv_conv.png}{Entrelazador de bytes.}{ Fuente: \cite{isdbt}.}{\label{fig:intrlv_conv}}
-	
-	
+	Luego de que los datos sean protegidos por medio de la codificación RS y por la dispersión de energía, se entrelazan a nivel de byte mediante un interleaver convolucional. Este consiste en una cascada de colas FIFO con distintos niveles de profundidad, tal como se muestra en la Figura \ref{fig:intrlv_conv}, de manera que las distintas ramas sufran distintos retardos y así generar el entrelazaminento.
+
+
+	\figura{.9}{./isdb/intrlv_conv.png}{Entrelazador de bytes.}{ Adaptado de \cite{isdbt}.}{\label{fig:intrlv_conv}}
+
+
 	\section{Código convolucional}
-	
-	El segundo nivel de codificación se basa en un código convolucional con tasa base $1/2$,
+
+	El segundo nivel de codificación, o codificación interna, se basa en un código convolucional con tasa base $1/2$,
 	definido por los polinomios generadores
-	
+
 	\begin{equation}
 		G_1 = 111_2, \qquad G_2 = 101_2 .
 	\end{equation}
-	
+
 	A partir de este codificador se obtienen distintas tasas efectivas mediante el uso de
 	patrones de puntuado. La elección del patrón depende del compromiso deseado entre
 	robustez frente a errores y eficiencia espectral, y varía según el modo de transmisión
 	configurado.
-	
-	
-	
-	\figura{.7}{./isdb/conv_code.png}{Diagrama en bloques del código convolucional.}{ Fuente: \cite{isdbt}.}{\label{fig:conv_code}}
-	
+
+
+
+	\figura{.9}{./isdb/conv_code.png}{Diagrama en bloques del código convolucional.}{ Fuente: \cite{isdbt}.}{\label{fig:conv_code}}
+
 	\section{Entrelazador de bit}
-	Análogamente al entrelazador de bytes, se utiliza un interleaver convolucional en donde el tamaño del registro es un bit y la cantidad de ramas y retardos, dados por la profundidad de los registros, depende de la modulación de operación. 
-	
-	\figura{.7}{./isdb/bit_intrl_4.png}{Entralazador de bit QPSK.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_4}}
-	
-	\figura{.7}{./isdb/bit_intrl_16.png}{Entralazador de bit 16 QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_16}}
-	
-	\figura{.7}{./isdb/bit_intrl_64.png}{Entralazador de bit 64QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:bit_intrl_64}}
-	
-	
+	Primeramente, se toma el bit-stream resultante de la codificación convolucional y se lo paraleliza en grupos de $log_2(M)$ bits según la modulación seleccionada siguiendo, siendo M el orden de la constelacion. Luego, se aplica un segundo nivel de entrelazado, esta vez a nivel de bit, utilizando un esquema similar al del entrelazador de bytes pero con registros que almacenan un solo bit. La configuración de las longitudes de los buffers en este caso depende del tipo de modulación seleccionada (QPSK, 16-QAM o 64-QAM) y se muestra en las Figuras \ref{fig:bit_intrl_4}, \ref{fig:bit_intrl_16} y \ref{fig:bit_intrl_64}.
+
+	\figura{.9}{./isdb/bit_intrl_4.png}{Entralazador de bit QPSK.}{ Adaptado de \cite{isdbt}.}{\label{fig:bit_intrl_4}}
+
+	\figura{.9}{./isdb/bit_intrl_16.png}{Entralazador de bit 16 QAM.}{ Adaptado de \cite{isdbt}.}{\label{fig:bit_intrl_16}}
+
+	\figura{.9}{./isdb/bit_intrl_64.png}{Entralazador de bit 64QAM.}{ Adaptado de \cite{isdbt}.}{\label{fig:bit_intrl_64}}
+
+
 	\section{Mapeo de símbolos QAM}
-	
-	Una vez completado el segundo nivel de codificación, se aplica una segunda etapa de entrelazado, esta vez a nivel de bit. De manera análoga a la anterior, se utiliza un *interleaver* convolucional, aunque en este caso cada registro almacena únicamente un bit. Finalmente, los bits se mapean a símbolos de una de las tres modulaciones QAM disponibles: QPSK (grupos de 2 bits), 16-QAM (grupos de 4 bits) y 64-QAM (grupos de 6 bits). En todos los casos, los bits pares e impares representan la parte real e imaginaria, respectivamente, siguiendo el mapeo especificado.
-	
+
+	El mapeo de los bits se realiza asignando los bits pares y los bits impares a las componentes real (I) e imaginaria (Q), respectivamente, siguiendo LMSB para el orden de los bits. A continuación, se detallan las constelaciones y mapeos correspondientes a cada tipo de modulación.
 	\subsubsection{QPSK}
-	\figura{.7}{./isdb/qpsk.png}{Mapeo de bits a símbolos QPSK.}{ Fuente: \cite{isdbt}.}{\label{fig:qpsk}}
+	\figura{.9}{./isdb/qpsk.png}{Mapeo de bits a símbolos QPSK.}{ Adaptado de \cite{isdbt}.}{\label{fig:qpsk}}
 	\begin{equation}
-		a_k = 1 - 2  b_0  +j - 2j  b_1
+		a_k = 1 - 2  b_0  +j (1 - 2 b_1)
 	\end{equation}
-	
-	
+
+
 	\subsubsection{16 QAM}
-	\figura{.7}{./isdb/16qam.png}{Mapeo de bits a símbolos 16 QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:16qam}}
-	
+	\figura{.9}{./isdb/16qam.png}{Mapeo de bits a símbolos 16 QAM.}{ Adaptado de \cite{isdbt}.}{\label{fig:16qam}}
+
 	\begin{align}
-		\mathbb{\textbf{R}}\lbrace a_k \rbrace &= 3 - 6 b_0 - 2  b_2 + 4  b_0  b_2\\
-		\mathbb{\textbf{I}}\lbrace a_k \rbrace &= 3 - 6 b_1 - 2  b_3 + 4  b_1  b_3 
+		\mathbb{R}\{a_k\} &= (1 - 2 b_0)\left[1 + 2(1 - 2 b_2)\right] \\
+		\mathbb{I}\{a_k\} &= (1 - 2 b_1)\left[1 + 2(1 - 2 b_3)\right]
 	\end{align}
-		
-	
-	
-	\subsubsection{32 QAM}
-	\figura{.9}{./isdb/32qam.png}{Mapeo de bits a símbolos 32 QAM.}{ Fuente: \cite{isdbt}.}{\label{fig:32qam}}
+
+
+
+	\subsubsection{64 QAM}
+	\figura{.9}{./isdb/64qam.png}{Mapeo de bits a símbolos 64 QAM.}{ Adaptado de \cite{isdbt}.}{\label{fig:64qam}}
 	\begin{align}
-		\mathbb{\textbf{R}}\lbrace a_k \rbrace &= 7 -14  b_0 - 6  b_2 - 2  b_4 + 12 ¿ b_0  b_2 + 4  b_0  b_4 + 4  b_2  b_4 - 2  b_0  b_2  b_4\\
-		\mathbb{\textbf{I}}\lbrace a_k \rbrace &= 7 -14  b_1 - 6  b_3 - 2  b_5 + 12  b_1  b_3 + 4  b_1  b_5 + 4  b_3  b_5 - 2  b_1  b_3  b_5
+		\mathbb{R}\{a_k\} &= (1 - 2 b_0) \left[ 1 + 2(1 - 2 b_2) + 4(1 - 2 b_4) \right] \\
+		\mathbb{I}\{a_k\} &= (1 - 2 b_1) \left[ 1 + 2(1 - 2 b_3) + 4(1 - 2 b_5) \right]
 	\end{align}
-	
+
 	\subsection{Entrelazador de tiempo y frecuencia}
-	
-	Además del entrelazado a nivel de bit y de byte, el sistema incorpora un entrelazado
-	adicional en los dominios temporal y frecuencial. Este mecanismo redistribuye los
-	símbolos modulados tanto entre distintos símbolos OFDM como entre diferentes
-	subportadoras.
-	
-	El entrelazado temporal contribuye a reducir el impacto de interferencias transitorias,
-	mientras que el entrelazado en frecuencia mitiga los efectos de desvanecimientos
-	selectivos del canal. La configuración específica de estos entrelazadores depende del modo
-	de operación y de los parámetros de transmisión seleccionados.
-	
-	\subsection{Entrelazador tiempo}
-	
-	La Figura~\ref{fig:intercalador_tiempo} presenta el circuito del \textit{entrelzador de tiempo}, el cual está compuesto por $n_c$ buffers FIFO de longitudes variables y por conmutadores sincronizados tanto en la entrada como en la salida. Este esquema permite realizar el entrelazado temporal de la señal mediante el almacenamiento y la lectura controlada de los datos en cada buffer.
-	
+
+	Además del entrelazado a nivel de bit y de byte, el sistema usa dos tipos más de entrelazamiento, de tiempo y frecuencia. Estos bloques distribuyen los símbolos modulados tanto entre distintos símbolos OFDM (tiempo) como entre diferentes subportadoras (frecuencia).
+
+	\subsubsection{Entrelazador de tiempo}
+
+	Nuevamente, el entrelazador de tiempo está compuesto por una cascada de $n_c$ buffers FIFO de longitudes variables. Este esquema permite aplicarle distintos retardos a cada símbolo y así mezclándolos entre distintos símbolos OFDM.
+
 	La longitud $L_i$ del $i$-ésimo buffer está dada por la siguiente expresión:
-	
+
 	\begin{equation}
 		L_i = I \cdot m_i, \quad 0 \leq i \leq n_c - 1
 	\end{equation}
-	
+
 	donde
-	
+
 	\begin{equation}
 		m_i = i \cdot 5 \mod 96, \quad 0 \leq i \leq n_c - 1
-	\end{equation}	
-	y siendo $n_c$ igual a 96, 192 y 384 en los modos 1, 2 3, respectivamente. La constante $I$ es un parámetro de transmisión configurable, que puede asumir uno de los cuatro valores indicados en la Tabla~\ref{tab:parametro_I} para un modo de transmisión determinado. 
-	
-	
-	\figura{.7}{./isdb/time_intrl.png}{Entrelazador de tiempo}{ Fuente: \cite{isdbt}.}{\label{fig:intercalador_tiempo}}
-	
+	\end{equation}
+	y siendo $n_c$ igual a 96, 192 y 384 en los modos 1, 2 3, respectivamente. La constante $I$ es un parámetro de transmisión configurable, que puede asumir uno de los cuatro valores indicados en la Tabla~\ref{tab:parametro_I} para un modo de transmisión determinado. La Figura~\ref{fig:intercalador_tiempo} muestra un diagrama en bloques en donde se puede observar la cascada de buffers y la configuración de sus longitudes.
+
+
+	\figura{.9}{./isdb/time_intrl.png}{Entrelazador de tiempo}{ Fuente: \cite{isdbt}.}{\label{fig:intercalador_tiempo}}
+
 	\begin{table}[h]
 		\centering
-		
-		\label{tab:parametro_I}
-		
+
 		\renewcommand{\arraystretch}{1.2} % aumenta el espaciado vertical
 		\begin{tabular}{|c c|}
 			\hline
@@ -161,77 +139,136 @@ En Argentina, la transmisión de TDT está regulada por el ENACOM a través de l
 			\hline
 		\end{tabular}
 		\caption{Valores posibles del parámetro $I$ según el modo de transmisión. Adaptado de \cite{isdbt}.}
+		\label{tab:parametro_I}
 	\end{table}
-	
+
+	\subsubsection{Entrelazador de frecuencia}
+	El entrelazador de frecuencia se encarga de distribuir los símbolos modulados entre las distintas subportadoras del frame OFDM. Para esto se utilizan dos esquemas, una primera instancia de rotación de portadoras y una segunda instancia de permutación de portadoras.
+
+	Para la rotación de portadoras, dependiendo del modo en que se esté transmitiendo, se rotan las portadoras siguiendo los siguientes patrones
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{|c c|}
+			\hline
+			\textbf{Modo} & \textbf{Rotación de portadoras} \\
+			\hline\hline
+			Modo 1 & $i = (i + k) \mod 96$ \\
+			Modo 2 & $i = (i + k) \mod 192$ \\
+			Modo 3 & $i = (i + k) \mod 384$ \\
+			\hline
+		\end{tabular}
+		\caption{Rotación de portadoras según el modo de transmisión. Adaptado de \cite{isdbt}.}
+		\label{tab:rotacion_portadoras}
+	\end{table}
+
+	donde \textit{i} representa el índice de la portadora y \textit{k} representa la cantidad de segmentos de datos que se hayan transmitido hasta el momento. Luego de la rotación, se aplican las siguientes permutaciones de portadoras dependiendo del modo de transmisión:
+
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{|c c|}
+			\hline
+			Antes & Después \\\hline\hline
+			&\\\hline
+		\end{tabular}
+		\caption{Permutación de portadoras para el Modo 1. Adaptado de \cite{isdbt}.}
+		\label{tab:perm_m1}
+	\end{table}
+
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{|c c|}
+			\hline
+			Antes & Después \\\hline\hline
+			&\\\hline
+
+		\end{tabular}
+		\caption{Permutación de portadoras para el Modo 2. Adaptado de \cite{isdbt}.}
+		\label{tab:perm_m2}
+	\end{table}
+
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{|c c|}
+			\hline
+			Antes & Después \\\hline\hline
+
+			&\\\hline
+		\end{tabular}
+		\caption{Permutación de portadoras para el Modo 3. Adaptado de \cite{isdbt}.}
+		\label{tab:perm_m3}
+	\end{table}
+
+
+
 	\section{Estructura de frame OFDM}
 	Una vez obtenidos los datos finales, es necesario estructurarlos dentro de un frame OFDM. Para esto se crean data frames que dependiendo del modo tendrán una longitud de 96, 192 y 384 portadoras. Estos data frame se agruparan en un arreglo bidimensional; como lo muestra la Figura \ref{fig:frame} en donde las filas representan el dominio del tiempo y las columnas el dominio de la frecuencia.
-	
-	
-	\figura{.7}{./isdb/frame.png}{Estructura de datos en el frame OFDM.}{ Fuente: \cite{isdbt}.}{\label{fig:frame}}
-	donde $a_{i,j,k}$ representa el késimo segmento del símbolo de la portadora, siendo $"$i$"$ la dirección de la portadora en el segmento OFDM y $"$j$"$ la dirección del símbolo en el segmento OFDM. 
-	
-	
+
+
+	\figura{.9}{./isdb/frame.png}{Estructura de datos en el frame OFDM.}{ Fuente: \cite{isdbt}.}{\label{fig:frame}}
+	donde $a_{i,j,k}$ representa el késimo segmento del símbolo de la portadora, siendo $"$i$"$ la dirección de la portadora en el segmento OFDM y $"$j$"$ la dirección del símbolo en el segmento OFDM.
+
+
 	\subsection{Secuencia pseudoaleatoria}
-	
+
 	Dentro del frame OFDM, además de las portadoras de datos, se incluyen otros tipos de portadoras auxiliares. En particular, algunas de ellas utilizan una secuencia pseudoaleatoria para la definición de sus símbolos.
-	
+
 	La secuencia pseudoaleatoria, denotada como $w$, se genera mediante un registro de desplazamiento con realimentación lineal (LFSR), definido por el polinomio generador
-	
+
 	\begin{equation}
 		g(x) = 1 + x^{9} + x^{11}.
 	\end{equation}
-	
+
 	Para el segmento central del frame, la secuencia se inicializa utilizando la seed indicada en la Tabla []. En la Figura~\ref{fig:prbs} se muestra el esquema del lfsr para la generación de dicha secuencia.
-	
-	
-	\figura{.7}{./isdb/prbs.png}{Generador de secuencia binaria pseudo aleatoria .}{ Fuente: \cite{isdbt}.}{\label{fig:prbs}}
-	
-	
+
+
+	\figura{.9}{./isdb/prbs.png}{Generador de secuencia binaria pseudo aleatoria .}{ Fuente: \cite{isdbt}.}{\label{fig:prbs}}
+
+
 	\subsection{Señales SP (scattered pilots)}
-	
-	Las portadoras SP se encuentran distribuidas de forma dispersa dentro del frame, presentando periodicidad tanto dentro de un mismo símbolo OFDM como entre símbolos OFDM consecutivos, de acuerdo con el patrón 
-	
+
+	Las portadoras SP se encuentran distribuidas de forma dispersa dentro del frame, presentando periodicidad tanto dentro de un mismo símbolo OFDM como entre símbolos OFDM consecutivos, de acuerdo con el patrón
+
 	 \begin{equation}
 	 		\left\{ i = I_{min} + 3 \cdot (j mod 4) + 12 p \hspace{5pt}|\hspace{5pt} p \in \mathbb{N},\hspace{5pt} i \in [I_{min}; I_{max}] \right\}
 	 \end{equation}
-	 
+
 	 Quedando estas periodicas cada 12 portadoras dentro del simbolo y cada 4 portadoras entre simbolos. Estas portadoras se utilizan para la estimación de la respuesta en frecuencia del canal $H(t,f)$ en un determinado instante de tiempo, lo que permite compensar los efectos introducidos por el canal sobre la señal transmitida.
-	
+
 	Las portadoras SP se modulan mediante BPSK. No obstante, el valor transmitido en cada una de ellas no corresponde a un dato de información, sino al valor de una secuencia pseudoaleatoria asociada a la frecuencia específica de la portadora.
-	
+
 	Una vez obtenida la secuencia $w$, en las portadoras indicadas en la Tabla~[X] se asignan los símbolos
-	
+
 	{\Huge[Completar tablar portadoras SP]}
-	
+
 	\begin{equation}
 		a_{i,j,k} = \frac{4}{3} - \frac{8}{3} w_i,
 	\end{equation}
-	
+
 	donde $i$ representa el índice de la portadora. De esta forma, los valores binarios $w_i \in \{0,1\}$ se mapean en los niveles $\left\{ \frac{4}{3}, -\frac{4}{3} \right\}$, respectivamente.
-	
-	\figura{.7}{./isdb/pilotos.png}{Distribucion de portadoras pilotos.}{ Fuente: \cite{isdbt}.}{\label{fig:pilotos}}
-	
+
+	\figura{.9}{./isdb/pilotos.png}{Distribucion de portadoras pilotos.}{ Fuente: \cite{isdbt}.}{\label{fig:pilotos}}
+
 	\subsection{Señales AC (auxiliary channel)}
 	Las portadoras AC se utilizan para la transmisión de información auxiliar y de control necesaria para la programación del sistema. Esta información se modula mediante DBPSK a lo largo de 203 de los 204 símbolos que componen el superframe OFDM.
-	
+
 	{\Huge[Completar tablar portadoras AC]}
-	
-	
+
+
 	En el primer símbolo del superframe, las portadoras indicadas en la Tabla~[X] se modulan utilizando BPSK, de la misma forma que las portadoras SP. A partir del segundo símbolo, se consideran los 203 bits correspondientes a la información AC y se aplica un esquema de codificación diferencial entre símbolos consecutivos.
-	
+
 	La operación diferencial se define como
-	
+
 	\begin{equation}
 		a_{i,j,k} = a_{i-1,j,k} \oplus b_i
 	\end{equation}
-	
+
 	De este modo, las portadoras AC del símbolo actual se invierten o se mantienen iguales respecto al símbolo anterior para representar un valor lógico 1 o 0, respectivamente.
-	
-	
+
+
 	\subsection{Señal TMCC}
 	{\Huge[Completar tablar portadoras TMCC]}
 	\section{Frecuencia de muestreo y frecuencias centrales}
-	
+
 % -------------------------------------------------------------------------
 % Capítulo 4 — Recepción ISDB-Tb (cadena teórica)
 % Basado en la cadena de transmisión del Capítulo 3 del documento provisto.
@@ -384,7 +421,7 @@ Finalmente, se invierte la dispersión de energía mediante la misma secuencia p
 El resultado del proceso es el \textit{Transport Stream} (TS) recuperado, listo para ser utilizado
 en etapas posteriores del sistema (por ejemplo, reconstrucción de la señal transmitida para
 canal de referencia coherente en radar pasivo, o para demultiplexado y análisis de contenido).
-
+ss
 % -------------------------------------------------------------------------
 % Nota práctica de redacción:
 % Si querés mantener simetría con el Capítulo 3, podés usar las mismas

@@ -1,47 +1,59 @@
 \documentclass[12pt, letterpaper, oneside]{report}
+
+% --- Encoding / typography ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
 \usepackage{mathptmx} % Times New Roman-like font
-\usepackage{setspace}
-\usepackage[top=1in, bottom=1in, left=1.5in, right=1in]{geometry}
+
+% --- Language ---
 \usepackage[spanish]{babel}
 \usepackage{csquotes}
+
+% --- Page geometry ---
+% headheight evita el warning de fancyhdr
+\usepackage[top=1in, bottom=1in, left=1.5in, right=1in, headheight=16pt]{geometry}
+
+% --- Index ---
 \usepackage{makeidx}
 
+% --- Tables ---
 \usepackage{tabularx}
-\newcolumntype{b}{>{\hsize=1.5\hsize}X}
+\newcolumntype{B}{>{\hsize=1.5\hsize}X}
 \newcolumntype{s}{>{\hsize=.5\hsize}X}
+\usepackage{booktabs}
+\usepackage{float}
 
+% --- Bibliography ---
 \usepackage[backend=biber, style=ieee]{biblatex}
-\addbibresource{Bibliografia.bib} % Your bibliography file
+\addbibresource{Bibliografia.bib}
 
-% Chapter formatting
+% --- Chapter formatting ---
 \usepackage{titlesec}
 \titleformat{\chapter}[display]
-{\normalfont\Large\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\LARGE}
+  {\normalfont\Large\bfseries}
+  {\chaptertitlename\ \thechapter}
+  {20pt}
+  {\LARGE}
 \titlespacing*{\chapter}{0pt}{-30pt}{40pt}
 
-% Table of contents formatting
+% --- TOC formatting ---
 \usepackage[titles]{tocloft}
 \renewcommand{\cftchapfont}{\normalfont\bfseries}
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
 \addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
 
-% Figure and table captions
-\usepackage{float}
+% --- Figures / captions ---
+\usepackage{graphicx}
+\graphicspath{{./figuras/}}
 \usepackage[font=small, labelfont=bf]{caption}
-\usepackage{graphicx} % Include images
-\graphicspath{ {./figuras/} }
 
-\usepackage{booktabs}
-
-% Mathematics packages
+% --- Math ---
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
 
-% Theorems and definitions
+% --- Theorems and definitions ---
 \newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
@@ -50,22 +62,26 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{example}[theorem]{Example}
 
-% Header and footer
+% --- Header and footer (fancyhdr) ---
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\leftmark}
+
+% En report, \leftmark suele ser "Capítulo N. Título". Esto lo deja consistente.
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+
+\fancyhead[L]{\nouppercase{\leftmark}}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
 
-
-% Line spacing
+% --- Line spacing ---
+\usepackage{setspace}
 \onehalfspacing
 
 
 
-\newcommand \imagen[2]{\centerline{\includegraphics[scale=#1]{#2}}}
+\newcommand \imagen[2]{\centerline{\includegraphics[width=#1\textwidth]{#2}}}
 \newcommand \p[1] {\hspace{1pt}\par\vspace{#1 pt}}
 \newcommand \figura[5]{
 	\begin{figure}[H]
@@ -139,7 +155,7 @@
 	\cleardoublepage
 	\chapter*{Acronimos}
 	\addcontentsline{toc}{chapter}{Acronimos}
-		\begin{tabularx}{\textwidth}{sb}
+		\begin{tabularx}{\textwidth}{sB}
 
 			\textbf{CAF}& Función de ambigüedad cruzada, por sus siglas en inglés.\\
 			\textbf{COFDM}& Multiplexación por división de frecuencias ortogonales codificada, por sus siglas en inglés.\\

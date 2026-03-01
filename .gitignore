@@ -15,5 +15,5 @@ prueba.wav
 *.blg
 *.asv
 *.iso
-*.nzpz
+*.npz
 Data/
