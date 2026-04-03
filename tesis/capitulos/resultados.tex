@@ -1,117 +1,171 @@
 \chapter{Simulación y validación de la cadena de procesamiento}
 
-En este capítulo se presentan resultados de simulación obtenidos con la cadena de procesamiento descrita en el capítulo anterior. El objetivo es validar el comportamiento de cada bloque —generación de escenario, filtrado de clutter, cálculo de la función de ambigüedad cruzada y detección CFAR— en un entorno controlado, verificando que los resultados obtenidos coincidan con los valores físicos esperados.
-
-El flujo general de simulación se muestra en la Figura~\ref{fig:flow_pipeline_sim}. En primer lugar se genera un escenario bistático con un transmisor, un receptor, un blanco móvil y múltiples reflectores estacionarios que representan el clutter. A partir de esta geometría se construyen las señales de referencia y vigilancia, las cuales son procesadas por la cadena digital.
+En este capítulo se presentan resultados de simulación obtenidos con la cadena de procesamiento descrita en el capítulo anterior. El objetivo observar los resultados en las distintas etapas de la cadena para confirmar el correcto funcionamiento de los bloques planteados. El flujo general de simulación se muestra en la Figura~\ref{fig:flow_pipeline_sim}.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{pr/flow_pipeline_sim.pdf}
+	\includegraphics[scale = 0.5]{pr/flujo.png}
 	\caption{Diagrama de flujo del proceso de simulación y procesamiento.}
 	\label{fig:flow_pipeline_sim}
 \end{figure}
 
-\section{Escenario de simulación}
 
-El escenario considerado consiste en un sistema de radar pasivo bistático con un transmisor fijo, un receptor fijo y un blanco en movimiento. Además, se incorporan múltiples reflectores estacionarios distribuidos en el entorno para modelar el clutter.
+Para implementar el reconstructor se utilizó como base el software abierto presentado en \cite{uruguay_rx,uruguay_tx}. La implementación receptora permite recuperar de la señal ISDB-Tb recibida tanto el flujo MPEG-2 TS como los parámetros efectivos de transmisión, mientras que la implementación transmisora permite volver a sintetizar una señal coherente con dicha configuración. En consecuencia, el reconstructor adoptado en esta tesis puede entenderse como el encadenamiento de ambas etapas: una recuperación controlada de la información transmitida seguida por una regeneración de la señal de referencia. El software utilizado como base para la implementación del receptor y del transmisor se encuentra disponible de manera abierta en el proyecto \texttt{gr-isdbt} \cite{grisdbt_repo}.
 
-La Figura~\ref{fig:geometry_sim} muestra la geometría del escenario simulado.
+\section{Simulación de señales}
+\label{sec:impl_sim}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.6\textwidth]{sim_data/fig01_geometry.png}
-	\caption{Geometría del escenario de simulación.}
-	\label{fig:geometry_sim}
-\end{figure}
+Inicialmente, se toman todos los parámetros cartesianos (posiciones y velocidad) y la señal de referencia sintética. A partir de este se crean las réplicas de clutter y la señal del blanco y se combinan, junto con la señal de referencia para crear DSI, en la señal de vigilancia $x_s$.
 
-A partir de esta configuración geométrica se generan las señales de referencia y vigilancia. La señal de vigilancia incluye la contribución del eco del blanco, la trayectoria directa del transmisor, múltiples reflexiones estacionarias y ruido aditivo.
+[FIGURA ESCENARIO]
 
-El simulador devuelve, además, los valores de referencia del blanco (``ground truth''), en particular el rango bistático y el corrimiento Doppler esperados. Estos valores se utilizan posteriormente para validar la detección obtenida mediante la CAF y el detector CFAR.
 
-\section{Análisis espectral de las señales}
+Una vez generadas las señales, estas pasan por un canal de ruido blanco gaussiano aditivo en donde se les suman $\sigma_1$ y $\sigma_2$. Para las simulaciones se decidió utilizar ruidos no correlacionados debido a que ambas señales deberían tener su propio front-end RF con su propio ruido térmico.
 
-Antes de aplicar la cadena de procesamiento, resulta útil analizar el contenido espectral de las señales generadas. Para ello se calcula la densidad espectral de potencia (PSD) utilizando el estimador implementado en el método \texttt{plot\_psd} del pipeline.
+\section{Cadena de procesamiento sin reconstructor}
 
-La Figura~\ref{fig:psd_input} muestra la PSD de las señales de entrada al sistema, es decir, el canal de referencia y el canal de vigilancia.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig02_psd_input.png}
-	\caption{PSD de las señales de entrada al pipeline.}
-	\label{fig:psd_input}
-\end{figure}
 
-Puede observarse que ambas señales comparten el mismo ancho de banda, ya que la señal de vigilancia contiene copias retardadas y escaladas de la señal de referencia. Sin embargo, el canal de vigilancia presenta mayor potencia debido a la presencia de la trayectoria directa y del clutter, componentes altamente correlacionados con la referencia.
-
-Este comportamiento es consistente con el modelo de señal presentado en el capítulo anterior, donde la interferencia de trayectoria directa y el clutter dominan la energía de la señal recibida.
-
-\section{Efecto del filtro de clutter}
-
-El siguiente paso consiste en aplicar el filtro adaptativo \textit{block lattice} para cancelar la trayectoria directa y las reflexiones estacionarias.
-
-La Figura~\ref{fig:psd_caf_in} muestra la PSD de las señales que ingresan al bloque de cálculo de la CAF, es decir, la referencia y la señal de vigilancia luego del filtrado de clutter.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig03_psd_caf_in.png}
-	\caption{PSD a la entrada del bloque CAF luego del filtrado de clutter.}
-	\label{fig:psd_caf_in}
-\end{figure}
-
-Se observa una reducción significativa de la potencia asociada a las componentes correlacionadas con la referencia, mientras que el ancho de banda de la señal se mantiene inalterado. Este comportamiento es el esperado para un filtro adaptativo de cancelación de clutter, cuyo objetivo es eliminar únicamente las componentes correlacionadas con la señal de referencia sin distorsionar la información restante.
-
-Desde un punto de vista geométrico, este resultado refleja el proceso de proyección ortogonal descrito en la sección del filtro lattice: las componentes asociadas al subespacio generado por las copias retardadas de la referencia son removidas, preservando las componentes no correlacionadas, entre ellas los ecos de blancos en movimiento.
-
-\section{Función de ambigüedad cruzada}
+\subsubsection{Función de ambigüedad cruzada}
 
 Una vez filtrada la señal de vigilancia, se calcula la función de ambigüedad cruzada mediante el algoritmo \textit{batch}. Este proceso produce un mapa rango--Doppler en el cual los blancos se manifiestan como máximos locales.
 
-La Figura~\ref{fig:caf_no_cf} muestra la CAF obtenida sin aplicar el filtro de clutter.
+La Figura~\ref{fig:caf_no_cf} muestra la CAF obtenida sin aplicar el filtro de \textit{clutter}.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig04_caf_no_clutter_filter.png}
-	\caption{CAF sin filtrado de clutter.}
+	\includegraphics[width=0.8\textwidth]{sim_data/caf_no_remod.png}
+	\caption{CAF sin filtrado de \textit{clutter}.}
 	\label{fig:caf_no_cf}
 \end{figure}
 
-En este caso, la presencia de la trayectoria directa y del clutter genera un nivel elevado de energía alrededor del origen Doppler, lo cual dificulta la identificación del blanco.
+En este caso, la presencia de la trayectoria directa y del \textit{clutter} genera un nivel elevado de energía alrededor del origen Doppler, lo que dificulta la identificación del blanco.
 
-La Figura~\ref{fig:caf_cf} muestra la CAF obtenida luego de aplicar el filtro de clutter.
+La Figura~\ref{fig:caf_cf} muestra la CAF obtenida luego de aplicar el filtro de \textit{clutter}.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig05_caf_with_clutter_filter.png}
-	\caption{CAF luego del filtrado de clutter.}
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_caf_no_remod.png}
+	\caption{CAF luego del filtrado de \textit{clutter}.}
 	\label{fig:caf_cf}
 \end{figure}
 
-Puede observarse una mejora significativa en el contraste del mapa rango--Doppler, lo cual permite identificar con mayor claridad el eco del blanco. Este resultado confirma la utilidad del filtrado adaptativo para aumentar el rango dinámico efectivo del sistema.
+Puede observarse una mejora significativa en el contraste del mapa rango--Doppler, lo que permite identificar con mayor claridad el eco del blanco. Este resultado confirma la utilidad del filtrado adaptativo para aumentar el rango dinámico efectivo del sistema.
 
-\section{Detección mediante CFAR}
+\subsubsection{Reducción de lóbulos laterales}
 
-La detección de blancos se realiza aplicando el detector CA-CFAR sobre la magnitud de la CAF. Para analizar el comportamiento del detector, se considera un corte Doppler en el bin de rango correspondiente al blanco simulado.
-
-La Figura~\ref{fig:cut_no_cf} muestra este corte sin filtrado de clutter, mientras que la Figura~\ref{fig:cut_cf} muestra el resultado luego del filtrado.
+Para disminuir los lóbulos laterales observados en la Fig.~\ref{fig:caf_cf}, se utilizaron dos ventanas de Kaiser: una en el dominio temporal, para reducir los lóbulos en frecuencia, y otra en el dominio espectral, para reducir los lóbulos en rango. El resultado puede verse en la Fig.~\ref{fig:caf_cf_w}.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig06_cut_no_clutter_filter.png}
-	\caption{Corte Doppler sin filtrado de clutter.}
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_w_caf_no_remod.png}
+	\caption{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas.}
+	\label{fig:caf_cf_w}
+\end{figure}
+
+También puede observarse el efecto de las ventanas sobre la resolución del sistema, ya que producen un ensanchamiento del lóbulo principal.
+
+\subsubsection{Detección mediante CFAR}
+
+La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrado en la Fig.~\ref{fig:cfar_2d}. Para analizar el comportamiento del detector, además de resaltar las celdas identificadas como blanco, se considera un corte en el bin de rango y en el bin de frecuencia correspondientes al blanco simulado.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_w_detections_no_remod.png}
+	\caption{Detecciones obtenidas sobre la CAF.}
+	\label{fig:caf_det_cfar}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_no_remod.png}
+	\caption{Cortes en rango y frecuencia sobre la CAF en la detección del blanco.}
 	\label{fig:cut_no_cf}
 \end{figure}
 
+
+\section{Cadena con reconstructor de señal de referencia}
+
+\subsubsection{Reconstrucción de la señal de referencia}
+
+Una vez obtenida la señal de referencia ruidosa, se aplica el bloque reconstructor con el objetivo de generar una versión regenerada de la señal transmitida. Esta nueva referencia se utiliza posteriormente tanto en el filtrado adaptativo como en el cálculo de la función de ambigüedad cruzada.
+
+La ventaja esperada de este procedimiento es una disminución del piso de ruido asociado al canal de referencia. En consecuencia, la señal empleada como plantilla en el procesamiento resulta más cercana a la señal ideal, lo que en principio debería traducirse en una mejora de la relación señal a ruido y en una mayor sensibilidad del sistema frente a ecos débiles.
+
+\subsubsection{Función de ambigüedad cruzada}
+
+Una vez filtrada la señal de vigilancia, se calcula la función de ambigüedad cruzada mediante el algoritmo \textit{batch}, utilizando ahora la señal de referencia reconstruida. Al igual que en el caso anterior, el resultado es un mapa rango--Doppler en el que los blancos aparecen como máximos locales.
+
+La Figura~\ref{fig:caf_no_cf_remod} muestra la CAF obtenida sin aplicar el filtro de \textit{clutter}.
+
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.8\textwidth]{sim_data/fig07_cut_with_clutter_filter.png}
-	\caption{Corte Doppler luego del filtrado de clutter.}
-	\label{fig:cut_cf}
+	\includegraphics[width=0.8\textwidth]{sim_data/caf_remod.png}
+	\caption{CAF sin filtrado de \textit{clutter}, utilizando la señal de referencia reconstruida.}
+	\label{fig:caf_no_cf_remod}
 \end{figure}
 
-En el caso filtrado, el pico correspondiente al blanco supera claramente el umbral de detección estimado por el algoritmo CFAR. Este comportamiento es consistente con la teoría presentada en el capítulo anterior: al reducir la potencia del clutter, la estimación local del ruido disminuye y el detector puede operar con mayor sensibilidad.
+Si bien en esta instancia todavía se observa una fuerte concentración de energía en torno al origen Doppler, el uso de una referencia reconstruida modifica la relación entre la señal útil y el piso de ruido del mapa, haciendo más evidente la estructura asociada a la señal iluminadora.
 
-\section{Validación}
+La Figura~\ref{fig:caf_cf_remod} muestra el resultado luego de aplicar el filtro de \textit{clutter}.
 
-La posición del máximo detectado en la CAF coincide con los valores de rango bistático y frecuencia Doppler calculados por el simulador. Esto confirma la correcta implementación de la cadena de procesamiento completa.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_caf_remod.png}
+	\caption{CAF luego del filtrado de \textit{clutter}, utilizando la señal de referencia reconstruida.}
+	\label{fig:caf_cf_remod}
+\end{figure}
 
-En conjunto, los resultados obtenidos validan el funcionamiento del sistema de radar pasivo simulado y muestran la importancia del filtrado de clutter para mejorar la detectabilidad de blancos en escenarios con interferencias dominantes.
+En comparación con la cadena sin reconstructor, puede apreciarse que el blanco continúa siendo distinguible luego del filtrado, pero sobre un fondo en el que ciertas estructuras resultan más marcadas. Esto es consistente con la mejora en la relación señal a ruido del canal de referencia: al disminuir el piso de ruido, también se vuelven más notorios componentes determinísticos que antes quedaban parcialmente enmascarados.
+
+\subsubsection{Reducción de lóbulos laterales}
+
+Para reducir los lóbulos laterales presentes en la CAF, se aplicaron nuevamente dos ventanas de Kaiser: una en el dominio temporal, orientada a disminuir los lóbulos en frecuencia, y otra en el dominio espectral, destinada a atenuar los lóbulos en rango. El resultado se muestra en la Fig.~\ref{fig:caf_cf_w_remod}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_w_caf_remod.png}
+	\caption{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas, utilizando la señal de referencia reconstruida.}
+	\label{fig:caf_cf_w_remod}
+\end{figure}
+
+Al igual que en la cadena sin reconstructor, el uso de ventanas reduce el nivel de los lóbulos laterales a costa de un ensanchamiento del lóbulo principal. Sin embargo, en este caso la elección de los parámetros de ventana adquiere una importancia mayor, ya que la mejora en el piso de ruido hace más visibles componentes espurias y repeticiones de la estructura de la señal que antes quedaban menos expuestas.
+
+\subsubsection{Detección mediante CFAR}
+
+La detección se realizó nuevamente mediante un CA-CFAR 2D. La Fig.~\ref{fig:caf_det_cfar_remod} muestra las detecciones obtenidas sobre la CAF procesada, mientras que la Fig.~\ref{fig:cut_no_cf_remod} presenta los cortes en rango y en frecuencia correspondientes a la detección del blanco.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/filtered_w_detections_remod.png}
+	\caption{Detecciones obtenidas sobre la CAF al utilizar la señal de referencia reconstruida.}
+	\label{fig:caf_det_cfar_remod}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_remod.png}
+	\caption{Cortes en rango y frecuencia sobre la CAF en la detección del blanco, utilizando la señal de referencia reconstruida.}
+	\label{fig:cut_no_cf_remod}
+\end{figure}
+
+En estos resultados puede observarse que el blanco sigue siendo detectable, aunque la presencia de picos secundarios se vuelve más notoria que en la cadena sin reconstructor. Este comportamiento no necesariamente implica un deterioro de la detección, sino que responde a que la mejora en la relación señal a ruido también resalta con mayor claridad la estructura residual de la señal y sus réplicas.
+
+\subsubsection{Comparación con la cadena sin reconstructor}
+
+Con el fin de comparar ambas configuraciones, la Fig.~\ref{fig:cut_remod_vs_noremod} muestra en forma conjunta los cortes obtenidos con y sin reconstrucción de la señal de referencia.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_remod_vs_noremod.png}
+	\caption{Comparación de los cortes en rango y frecuencia obtenidos con y sin reconstrucción de la señal de referencia.}
+	\label{fig:cut_remod_vs_noremod}
+\end{figure}
+
+En esta comparación se observa el resultado esperado del bloque reconstructor: una reducción de aproximadamente $3$ dB en el piso de ruido. Esta mejora confirma que la referencia reconstruida permite trabajar con una plantilla menos ruidosa, lo que incrementa la relación señal a ruido efectiva del procesamiento.
+
+No obstante, esa misma mejora hace que la estructura propia de la señal resulte más visible, y con ello también aparecen picos fantasmas o máximos secundarios que antes quedaban parcialmente ocultos por el ruido. En otras palabras, la reconstrucción mejora la sensibilidad del sistema, pero al mismo tiempo exige un tratamiento más cuidadoso de las componentes determinísticas remanentes.
+
+Este efecto puede mitigarse de distintas maneras. Por un lado, es posible reajustar las ventanas utilizadas en tiempo y en frecuencia para controlar de forma más conveniente el compromiso entre resolución y nivel de lóbulos laterales. Por otro, puede incorporarse un bloque adicional de supresión de detecciones periódicas o espurias, capaz de identificar y descartar aquellas réplicas que responden a la estructura de la señal iluminadora y no a ecos reales del escenario.
+
+

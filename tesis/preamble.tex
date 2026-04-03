@@ -1,0 +1,94 @@
+% --- Encoding / typography ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{mathptmx} % Times New Roman-like font
+
+% --- Language ---
+\usepackage[spanish]{babel}
+\usepackage{csquotes}
+
+% --- Page geometry ---
+% headheight evita el warning de fancyhdr
+\usepackage[top=1in, bottom=1in, left=1.5in, right=1in, headheight=16pt]{geometry}
+
+% --- Index ---
+\usepackage{makeidx}
+
+% --- Code listings ---
+\usepackage{fvextra}
+
+% --- Tables ---
+\usepackage{tabularx}
+\newcolumntype{B}{>{\hsize=1.5\hsize}X}
+\newcolumntype{s}{>{\hsize=.5\hsize}X}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{longtable}
+% --- Bibliography ---
+\usepackage[backend=biber, style=ieee]{biblatex}
+\addbibresource{Bibliografia.bib}
+
+% --- Chapter formatting ---
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\Large\bfseries}
+  {\chaptertitlename\ \thechapter}
+  {20pt}
+  {\LARGE}
+\titlespacing*{\chapter}{0pt}{-30pt}{40pt}
+
+% --- TOC formatting ---
+\usepackage[titles]{tocloft}
+\renewcommand{\cftchapfont}{\normalfont\bfseries}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+
+% --- Figures / captions ---
+\usepackage{graphicx}
+\graphicspath{{./figuras/}}
+\usepackage[font=small, labelfont=bf]{caption}
+
+% --- Math ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% --- Theorems and definitions ---
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+% --- Header and footer (fancyhdr) ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+
+% En report, \leftmark suele ser "Capítulo N. Título". Esto lo deja consistente.
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% --- Line spacing ---
+\usepackage{setspace}
+\onehalfspacing
+
+
+
+\newcommand \imagen[2]{\centerline{\includegraphics[width=#1\textwidth]{#2}}}
+\newcommand \p[1] {\hspace{1pt}\par\vspace{#1 pt}}
+\newcommand \figura[5]{
+	\begin{figure}[H]
+		\imagen{#1}{#2}\p{5}
+		\caption[#3]{#3 #4}
+		#5
+	\end{figure}
+}

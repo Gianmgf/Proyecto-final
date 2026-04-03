@@ -1,0 +1,642 @@
+\chapter{Transmisión ISDB-Tb}
+\label{chap:isdbtb_tx}
+
+
+
+El estándar ISDB-Tb define un sistema de televisión digital terrestre basado en multiplexación por división de frecuencia ortogonal y en una organización segmentada del espectro radioeléctrico. Esta arquitectura permite combinar robustez frente al canal, flexibilidad en la asignación de servicios y transmisión jerárquica dentro de un mismo canal de 6 MHz. En particular, el sistema fue concebido para soportar simultáneamente servicios orientados a receptores fijos y portátiles, mediante el uso de diferentes configuraciones de modulación, codificación e intercalado sobre grupos de segmentos del espectro \cite{isdbt,portugues}.
+
+Desde el punto de vista del transmisor, la señal de radiofrecuencia se genera a partir de uno o más flujos MPEG-2 TS que atraviesan sucesivamente etapas de codificación de canal, intercalado, modulación, multiplexación en el cuadro OFDM, transformación IFFT e inserción del intervalo de guarda. El resultado final es una señal OFDM segmentada, apta para operar sobre canales con multitrayecto y compatible con la transmisión jerárquica característica del sistema \cite{isdbt,portugues}.
+
+\section{Estructura espectral y parámetros de transmisión}
+
+\subsection{Segmentación del canal y capas jerárquicas}
+
+El sistema ISDB-Tb utiliza una variante de OFDM conocida como \textit{Band Segmented Transmission OFDM} (BST-OFDM), en la que la banda útil del canal de televisión se divide en 13 segmentos de igual ancho de banda. Para un canal de 6 MHz, cada segmento ocupa aproximadamente
+
+\begin{equation}
+B_{Ws}=\frac{6\times 10^6}{14}\approx 428{,}571\ \mathrm{kHz}.
+\end{equation}
+
+Cada uno de estos segmentos contiene un conjunto de subportadoras OFDM, cuyo número depende del modo de transmisión seleccionado. Los 13 segmentos pueden agruparse en hasta tres capas jerárquicas, denominadas A, B y C, y cada una de ellas puede configurarse con distinta modulación, distinta tasa de codificación convolucional y distinta profundidad de intercalado temporal. Esta organización es la que permite que un mismo canal transporte simultáneamente servicios con requisitos de robustez y tasa binaria diferentes \cite{isdbt,portugues}.
+
+La configuración más habitual es la de dos capas. En ella, el segmento central, identificado como segmento 0, se asigna a una capa de transmisión más robusta, destinada a recepción portátil, mientras que los doce segmentos restantes se asignan a una segunda capa de mayor tasa binaria, típicamente orientada a receptores fijos. Esta posibilidad da lugar a la conocida recepción parcial o \textit{1-seg}, en la cual el receptor solo procesa el segmento central, en contraste con los receptores \textit{full-seg}, que demodulan los 13 segmentos \cite{isdbt,portugues}.
+
+\subsection{Canalización y frecuencia central}
+
+La canalización del sistema mantiene el ancho de 6 MHz empleado en televisión analógica. Sin embargo, la ubicación del espectro OFDM dentro del canal no es simétrica respecto del centro geométrico del mismo. En la disposición adoptada, existe una banda de guarda de $\frac{5}{14}\ \mathrm{MHz}$ en el extremo inferior del canal y otra de $\frac{1}{14}\ \mathrm{MHz}$ en el extremo superior. En consecuencia, la frecuencia central del conjunto de portadoras digitales se encuentra desplazada respecto del centro del canal \cite{portugues}.
+
+Para la banda VHF alta, la frecuencia central del canal digital asociado al canal de número $C$ puede expresarse como
+
+\begin{equation}
+f_c=(C-7)\cdot 6\times 10^6 + 174\times 10^6 + 22{,}7\times 10^6,
+\end{equation}
+
+mientras que para la banda UHF se tiene
+
+\begin{equation}
+f_c=(C-14)\cdot 6\times 10^6 + 470\times 10^6 + 22{,}7\times 10^6.
+\end{equation}
+
+Estas expresiones permiten fijar la portadora central del sistema para cada canal asignado \cite{portugues}.
+
+\subsection{Modos de transmisión y parámetros OFDM}
+
+El estándar define tres modos de transmisión, que difieren en el número de subportadoras por segmento, en el tamaño de la FFT/IFFT, en el espaciamiento entre subportadoras y en la duración útil del símbolo OFDM. El parámetro principal que cambia con el modo es el tamaño de la transformada,
+
+\begin{equation}
+N = 2048\cdot 2^{M-1},
+\end{equation}
+
+donde $M\in\{1,2,3\}$ es el modo de transmisión. A su vez, el número de subportadoras por segmento resulta
+
+\begin{equation}
+s_c = 108\cdot 2^{M-1},
+\end{equation}
+
+y el número total de portadoras activas es
+
+\begin{equation}
+c = 13s_c + 1.
+\end{equation}
+
+La frecuencia de muestreo asociada a la FFT/IFFT se mantiene constante en los tres modos y vale aproximadamente
+
+\begin{equation}
+f_s \approx 8{,}126984\ \mathrm{MHz}.
+\end{equation}
+
+Como consecuencia, el espaciamiento entre subportadoras resulta
+
+\begin{equation}
+c_s = \frac{f_s}{N},
+\end{equation}
+
+mientras que la duración útil del símbolo OFDM es
+
+\begin{equation}
+T_u = \frac{N}{f_s}.
+\end{equation}
+
+La Tabla~\ref{tab:isdbtb_modos} resume los parámetros principales para cada modo de transmisión \cite{isdbt,portugues}.
+
+\begin{table}[htbp]
+\centering
+\caption{Parámetros OFDM principales para los modos de transmisión del ISDB-Tb.}
+\label{tab:isdbtb_modos}
+\begin{tabular}{cccccc}
+\hline
+Modo & $s_c$ & $c$ & $N$ & $c_s$ & $T_u$ \\
+\hline
+1 & 108 & 1405 & 2048 & 3968 Hz & $252\ \mu s$ \\
+2 & 216 & 2809 & 4096 & 1984 Hz & $504\ \mu s$ \\
+3 & 432 & 5617 & 8192 & 992 Hz & $1008\ \mu s$ \\
+\hline
+\end{tabular}
+\end{table}
+
+La elección del modo implica un compromiso entre tolerancia al multitrayecto y sensibilidad a errores de frecuencia o Doppler. Un símbolo más largo favorece la robustez frente a dispersión temporal del canal, mientras que un mayor espaciamiento entre subportadoras favorece la tolerancia a desvíos de frecuencia \cite{portugues}.
+
+\subsection{Intervalo de guarda, duración de símbolo y cuadro}
+
+El símbolo OFDM transmitido no está compuesto únicamente por su parte útil. A la salida de la IFFT se inserta un prefijo cíclico cuya duración se expresa como una fracción de la duración útil del símbolo. El intervalo de guarda puede adoptar los valores
+
+\begin{equation}
+IG \in \left\{\frac14,\frac18,\frac1{16},\frac1{32}\right\}.
+\end{equation}
+
+En consecuencia, la duración del intervalo de guarda es
+
+\begin{equation}
+T_g = T_u \cdot IG,
+\end{equation}
+
+y la duración total del símbolo OFDM resulta
+
+\begin{equation}
+T_s = T_u + T_g.
+\end{equation}
+
+Como cada cuadro OFDM contiene 204 símbolos, la duración total de cuadro es
+
+\begin{equation}
+T_q = 204\,T_s.
+\end{equation}
+
+El intervalo de guarda se introduce para absorber ecos del símbolo anterior y prevenir interferencia intersimbólica en presencia de multitrayecto. Sin embargo, su incremento reduce la eficiencia espectral, ya que una fracción mayor del símbolo transporta redundancia temporal en lugar de información útil \cite{isdbt,portugues}.
+
+\subsection{Tasa binaria y portadoras de datos}
+
+No todas las portadoras activas de un segmento transportan datos de usuario. Una parte de ellas se reserva para pilotos, TMCC y canales auxiliares. El número de portadoras de datos por segmento se expresa como
+
+\begin{equation}
+n_c = \frac{8}{9}s_c.
+\end{equation}
+
+Si se denota por $b$ el número de bits por símbolo complejo, entonces
+
+\begin{equation}
+b=
+\begin{cases}
+2, & \text{DQPSK o QPSK},\\[4pt]
+4, & \text{16QAM},\\[4pt]
+6, & \text{64QAM},
+\end{cases}
+\end{equation}
+
+y la tasa líquida de transmisión por segmento puede escribirse como
+
+\begin{equation}
+B=\frac{b\,R\,n_c\left(\frac{188}{204}\right)}{T_s},
+\end{equation}
+
+donde $R$ es la tasa del codificador convolucional. Esta expresión pone en evidencia el efecto conjunto de la modulación, de la codificación interna y del intervalo de guarda sobre la capacidad efectiva del sistema \cite{portugues}.
+
+\section{Cadena de transmisión}
+
+\subsection{Estructura general}
+
+La cadena transmisora del ISDB-Tb parte de uno o más flujos MPEG-2 TS y los transforma progresivamente en una señal OFDM en banda base. A grandes rasgos, las etapas de procesamiento incluyen codificación externa Reed--Solomon, división jerárquica por capas, dispersión de energía, intercalado de bytes, codificación convolucional, intercalado de bits, modulación, intercalado temporal y frecuencial, inserción de señales piloto y TMCC, armado del cuadro OFDM, IFFT e inserción del intervalo de guarda \cite{isdbt,portugues}.
+
+Las etapas que operan sobre bytes, bits, símbolos complejos y subportadoras están distribuidas de manera tal que la robustez frente al canal se incrementa progresivamente antes de la multiplexación OFDM. Además, como la norma permite transmitir hasta tres capas, una parte importante de esta cadena se ejecuta de manera independiente para cada capa jerárquica \cite{isdbt,portugues}.
+
+Como resumen de las etapas descritas, la Figura~\ref{fig:bloques_isdb} muestra el diagrama en bloques general del transmisor ISDB-Tb. En ella puede observarse la secuencia de codificación, entrelazado, modulación, conformación del cuadro OFDM y generación temporal de la señal.
+
+\figura{0.9}{./isdb/cod_bloques.png}
+{Diagrama en bloques general del transmisor ISDB-Tb.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:bloques_isdb}}
+
+\subsection{Codificación externa Reed--Solomon}
+
+La primera etapa de protección frente a errores es la codificación externa Reed--Solomon RS(204,188). Este código toma cada paquete MPEG-2 TS de 188 bytes y agrega 16 bytes de paridad, generando un paquete TSP de 204 bytes. En recepción, este código permite corregir hasta 8 bytes erróneos por paquete \cite{isdbt,portugues}.
+
+Desde el punto de vista funcional, esta protección resulta especialmente útil frente a errores residuales que sobrevivan a la codificación interna y a la demodulación, y constituye el último nivel de corrección aplicado al flujo antes de su reconstrucción final en el receptor.
+
+\subsection{Dispersión de energía}
+
+Luego de la codificación Reed--Solomon, el flujo atraviesa el bloque de dispersión de energía. Esta etapa realiza una operación XOR bit a bit entre la secuencia de entrada y una secuencia pseudoaleatoria binaria generada por un registro de desplazamiento con realimentación lineal. El objetivo de esta dispersión es evitar patrones prolongados de bits idénticos y aproximar la equiprobabilidad entre ceros y unos, haciendo a la señal más adecuada para las etapas siguientes de codificación y modulación \cite{isdbt,portugues}.
+
+La secuencia PRBS empleada está definida por el polinomio
+
+\begin{equation}
+g(x)=x^{15}+x^{14}+1,
+\end{equation}
+
+y el generador se reinicia al comienzo de cada cuadro OFDM con el estado inicial
+
+\begin{equation}
+100101010000000.
+\end{equation}
+
+La dispersión se aplica sobre los paquetes TSP de 204 bytes, es decir, luego de la codificación RS. Sin embargo, el byte de sincronismo del transport stream, de valor \texttt{0x47}, no se somete a la operación de dispersión \cite{isdbt,portugues}.
+
+\subsection{Intercalado de bytes}
+
+La siguiente etapa es el intercalado de bytes, implementado mediante 12 memorias FIFO de longitudes crecientes y conmutadores sincronizados a la entrada y a la salida. Este bloque redistribuye temporalmente los bytes de cada paquete, con el objetivo de transformar errores concentrados en ráfagas en errores más dispersos y, por lo tanto, más manejables por los bloques de corrección de canal \cite{portugues}.
+
+El conmutador de entrada avanza cíclicamente byte a byte y comienza en la posición 0 cuando se procesa el byte de sincronismo de cada paquete. De esta forma, el intercalador preserva la estructura de paquete pero redistribuye su contenido en el tiempo.
+
+La estructura del entrelazador de bytes puede interpretarse como un banco de memorias FIFO con retardos crecientes y conmutación cíclica en la entrada y la salida. La Figura~\ref{fig:intrlv_conv} ilustra este esquema y permite visualizar cómo se redistribuyen temporalmente los bytes de un mismo paquete antes de la codificación interna.
+
+\figura{0.9}{./isdb/intrlv_conv.png}
+{Esquema del entrelazador de bytes empleado en ISDB-Tb.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:intrlv_conv}}
+
+\subsection{Codificación convolucional}
+
+La codificación interna del sistema se basa en un codificador convolucional de longitud de restricción
+
+\begin{equation}
+K=7
+\end{equation}
+
+y tasa madre
+
+\begin{equation}
+R=\frac12.
+\end{equation}
+
+A partir de este código base, la norma permite obtener las tasas efectivas
+
+\begin{equation}
+R \in \left\{\frac12,\frac23,\frac34,\frac56,\frac78\right\}
+\end{equation}
+
+mediante puncionado. La tasa seleccionada forma parte de la configuración individual de cada capa jerárquica y representa uno de los compromisos fundamentales del sistema entre robustez y eficiencia espectral \cite{isdbt,portugues}.
+
+La implementación conceptual del código convolucional puede representarse mediante un registro de desplazamiento y dos polinomios generadores, tal como se muestra en la Figura~\ref{fig:conv_code}. Esta representación resulta útil para interpretar cómo se introduce redundancia antes del proceso de puncionado.
+
+\figura{0.9}{./isdb/conv_code.png}
+{Diagrama conceptual del codificador convolucional de tasa madre $1/2$.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:conv_code}}
+
+\subsection{Intercalado de bits y modulación}
+
+La salida binaria del codificador convolucional se reorganiza mediante un intercalador de bits asociado al modulador seleccionado. El estándar admite cuatro modulaciones:
+
+\begin{itemize}
+    \item DQPSK,
+    \item QPSK,
+    \item 16QAM,
+    \item 64QAM.
+\end{itemize}
+
+La DQPSK pertenece a la categoría de modulación diferencial, mientras que QPSK, 16QAM y 64QAM corresponden a modulaciones síncronas \cite{isdbt,portugues}.
+
+En DQPSK y QPSK se transmiten 2 bits por símbolo complejo. En 16QAM y 64QAM se transmiten 4 y 6 bits por símbolo, respectivamente. El intercalado de bits se implementa mediante líneas de retardo distintas según la modulación: una línea de 120 bits para DQPSK y QPSK, tres líneas de 40, 80 y 120 bits para 16QAM, y cinco líneas de 24, 48, 72, 96 y 120 bits para 64QAM \cite{portugues}. Estas demoras distribuyen los bits codificados antes del mapeo sobre la constelación, reduciendo la sensibilidad frente a perturbaciones selectivas.
+
+La configuración del entrelazador de bits depende de la modulación seleccionada. En las Figuras~\ref{fig:bit_intrl_4}, \ref{fig:bit_intrl_16} y \ref{fig:bit_intrl_64} se muestran los esquemas correspondientes a QPSK, 16QAM y 64QAM, respectivamente. Puede observarse que, a medida que aumenta el orden de la constelación, también se incrementa la cantidad de ramas y retardos requeridos para redistribuir los bits antes del mapeo.
+
+\figura{0.9}{./isdb/bit_intrl_4.png}
+{Esquema del entrelazador de bits para QPSK.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:bit_intrl_4}}
+
+\figura{0.9}{./isdb/bit_intrl_16.png}
+{Esquema del entrelazador de bits para 16QAM.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:bit_intrl_16}}
+
+\figura{0.9}{./isdb/bit_intrl_64.png}
+{Esquema del entrelazador de bits para 64QAM.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:bit_intrl_64}}
+
+\subsubsection{Mapeo de símbolos}
+
+Una vez aplicado el intercalado de bits, la secuencia resultante se agrupa en bloques de $\log_2(M)$ bits y se asigna a símbolos complejos de acuerdo con la modulación seleccionada, donde $M$ es el orden de la constelación. En las modulaciones síncronas empleadas por el sistema, los bits asociados a la componente en fase y a la componente en cuadratura se asignan de manera separada, siguiendo el mapeo definido por la norma \cite{portugues}.
+
+Para QPSK, el símbolo complejo puede expresarse como
+
+\begin{equation}
+a_k = (1 - 2b_0) + j(1 - 2b_1).
+\end{equation}
+
+La Figura~\ref{fig:qpsk} muestra la constelación QPSK y el etiquetado binario asociado a cada símbolo.
+
+\figura{0.75}{./isdb/qpsk.png}
+{Mapeo de bits sobre la constelación QPSK.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:qpsk}}
+
+Para 16QAM, las componentes real e imaginaria vienen dadas por
+
+\begin{align}
+\Re\{a_k\} &= (1 - 2 b_0)\left[1 + 2(1 - 2 b_2)\right], \\
+\Im\{a_k\} &= (1 - 2 b_1)\left[1 + 2(1 - 2 b_3)\right].
+\end{align}
+
+En el caso de 16QAM, la asignación de bits sobre las componentes en fase y cuadratura da lugar a la constelación mostrada en la Figura~\ref{fig:16qam}.
+
+\figura{0.8}{./isdb/16qam.png}
+{Mapeo de bits sobre la constelación 16QAM.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:16qam}}
+
+Para 64QAM, el mapeo queda
+
+\begin{align}
+\Re\{a_k\} &= (1 - 2 b_0)\left[1 + 2(1 - 2 b_2) + 4(1 - 2 b_4)\right], \\
+\Im\{a_k\} &= (1 - 2 b_1)\left[1 + 2(1 - 2 b_3) + 4(1 - 2 b_5)\right].
+\end{align}
+
+Para 64QAM, el mismo criterio de asignación se extiende a una constelación de mayor cardinalidad, como se observa en la Figura~\ref{fig:64qam}.
+
+\figura{0.8}{./isdb/64qam.png}
+{Mapeo de bits sobre la constelación 64QAM.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:64qam}}
+
+En el caso de DQPSK, la información no se transmite mediante la fase absoluta del símbolo, sino a través de la diferencia de fase entre símbolos consecutivos \cite{portugues}.
+
+\subsection{Intercalado temporal}
+
+Luego de la modulación, cada capa atraviesa un intercalador temporal que actúa sobre los símbolos complejos. Este bloque está compuesto por $n_c$ buffers FIFO de longitud variable, donde la longitud del $i$-ésimo buffer viene dada por
+
+\begin{equation}
+L_i = I\,m_i,
+\end{equation}
+
+con
+
+\begin{equation}
+m_i = i\cdot 5 \bmod 96, \qquad 0\leq i \leq n_c-1.
+\end{equation}
+
+El parámetro $I$ depende del modo de transmisión y de la profundidad de intercalado seleccionada para la capa. La Tabla~\ref{tab:isdbtb_interc_tiempo} resume las opciones previstas por la norma \cite{portugues}.
+
+\begin{table}[htbp]
+\centering
+\caption{Opciones del intercalador temporal en ISDB-Tb.}
+\label{tab:isdbtb_interc_tiempo}
+\begin{tabular}{cccc}
+\hline
+Opción & Modo 1 & Modo 2 & Modo 3 \\
+\hline
+A (0 ms) & $I=0,\ \max(L_i)=0$ & $I=0,\ \max(L_i)=0$ & $I=0,\ \max(L_i)=0$ \\
+B (95,76 ms) & $I=4,\ \max(L_i)=380$ & $I=2,\ \max(L_i)=190$ & $I=1,\ \max(L_i)=95$ \\
+C (191,52 ms) & $I=8,\ \max(L_i)=760$ & $I=4,\ \max(L_i)=380$ & $I=2,\ \max(L_i)=190$ \\
+D (383,04 ms) & $I=16,\ \max(L_i)=1520$ & $I=8,\ \max(L_i)=760$ & $I=4,\ \max(L_i)=380$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Esta etapa incrementa la inmunidad frente a perturbaciones impulsivas y desvanecimientos breves, a costa de introducir latencia adicional en la transmisión.
+
+\subsection{Intercalado en frecuencia}
+
+Tras la combinación jerárquica de capas, la señal se somete a un intercalado en frecuencia. Este proceso puede incluir hasta tres operaciones: intercalado entre segmentos de una misma categoría de modulación, rotación de portadoras dentro de cada segmento y aleatorización de portadoras dentro del segmento \cite{isdbt,portugues}.
+
+El intercalado entre segmentos redistribuye las portadoras pertenecientes a segmentos que comparten la misma categoría de modulación. La rotación dentro del segmento desplaza el índice de las portadoras de datos según el número de segmento. Finalmente, la aleatorización intra-segmento aplica una permutación adicional de acuerdo con tablas especificadas por la norma. El efecto conjunto de estas operaciones es dispersar la información en el dominio de la frecuencia para hacerla menos sensible a desvanecimientos selectivos \cite{isdbt,portugues}.
+
+\subsubsection{Rotación de portadoras dentro del segmento}
+
+Una de las etapas del intercalado en frecuencia consiste en una rotación de las portadoras dentro de cada segmento. Si $i$ es el índice original de una portadora de datos y $k$ el número de segmento, entonces la portadora transmitida se obtiene como
+
+\begin{equation}
+j = (k + i) \bmod n_c,
+\end{equation}
+
+donde $n_c$ es el número de portadoras de datos por segmento. Esta operación introduce una redistribución dependiente del segmento, contribuyendo a dispersar la información en frecuencia \cite{portugues}.
+
+\subsection{Pilotos y TMCC}
+
+El cuadro OFDM no solo transporta datos. También incluye señales piloto, canales auxiliares y la señal TMCC (\textit{Transmission and Multiplexing Configuration Control}). Los pilotos se utilizan para facilitar la ecualización del receptor. En capas con modulación diferencial se emplea el \textit{Continual Pilot} (CP), mientras que en capas con modulación síncrona se utilizan \textit{Scattered Pilots} (SP), cuyas posiciones cambian con el tiempo \cite{isdbt,portugues}.
+
+La secuencia piloto se genera mediante un PRBS definido por
+
+\begin{equation}
+g(x)=x^{11}+x^9+1,
+\end{equation}
+
+y se modula en BPSK. En particular, si $W_i$ es la salida del generador, el mapeo utilizado es
+
+\begin{equation}
+W_i=1 \rightarrow \left(-\frac43,0\right), \qquad
+W_i=0 \rightarrow \left(+\frac43,0\right).
+\end{equation}
+
+La Figura~\ref{fig:prbs} muestra el esquema conceptual del LFSR utilizado para generar la secuencia pseudoaleatoria asociada a las portadoras piloto.
+
+\figura{0.8}{./isdb/prbs.png}
+{Generador PRBS utilizado para la síntesis de pilotos.}
+{Adaptado de \cite{isdbt}.}
+{\label{fig:prbs}}
+
+
+\subsubsection{Scattered Pilots}
+
+Las portadoras SP se distribuyen de manera periódica dentro del cuadro OFDM. Su posición depende del símbolo OFDM considerado y sigue un patrón que puede expresarse como
+
+\begin{equation}
+i = I_{\min} + 3(j \bmod 4) + 12p,
+\end{equation}
+
+donde $j$ es el índice temporal del símbolo OFDM, $p \in \mathbb{N}$ e $i$ debe pertenecer al rango de portadoras válidas del segmento. De esta forma, los pilotos se repiten cada 12 portadoras dentro de un símbolo y su posición se desplaza cíclicamente de un símbolo a otro \cite{portugues}.
+
+Esta disposición permite estimar la respuesta del canal en frecuencia y tiempo, evitando al mismo tiempo situaciones patológicas asociadas a desvanecimientos profundos persistentes sobre un conjunto fijo de portadoras.
+
+La señal TMCC, por su parte, se transmite de forma continua y contiene la configuración de transmisión vigente para las distintas capas jerárquicas. Su modulación es DBPSK y permite al receptor recuperar parámetros tales como la modulación, la tasa de codificación convolucional, la profundidad del intercalador temporal y el número de segmentos asignados a cada capa \cite{isdbt,portugues}.
+
+\subsubsection{Contenido de la señal TMCC}
+
+La señal TMCC transmite de manera continua la configuración de transmisión del sistema. Entre sus campos principales se encuentran una referencia para la demodulación diferencial, un patrón de sincronismo de cuadro, la identificación del tipo de segmento, el tipo de sistema, información de conmutación de parámetros, un bit de emergencia y dos bloques de información denominados \texttt{info\_actual} e \texttt{info\_proxima} \cite{portugues}.
+
+Estos últimos campos contienen, para cada capa jerárquica, la modulación utilizada, la tasa del codificador convolucional, la profundidad del intercalado temporal y el número de segmentos asignados. También permiten indicar si el segmento central se utiliza para recepción parcial. De este modo, el TMCC constituye el mecanismo mediante el cual el receptor puede reconstruir la configuración efectiva de la transmisión y ajustar en consecuencia los bloques de demodulación y decodificación posteriores \cite{isdbt,portugues}.
+
+\section{Cuadro OFDM y generación temporal de la señal}
+
+\subsection{Estructura del cuadro OFDM}
+
+El cuadro OFDM tiene una duración de 204 símbolos OFDM. Su función es multiplexar, sobre las portadoras de cada segmento, los símbolos de datos, los pilotos, las señales auxiliares AC y la información TMCC. La distribución exacta de estas señales depende del modo de transmisión, del número de segmento y de la categoría de modulación utilizada \cite{isdbt,portugues}.
+
+Independientemente de la configuración específica, el sistema reserva una fracción fija de recursos para señales no asociadas a datos. En consecuencia, los datos ocupan únicamente $\frac{8}{9}$ de las portadoras disponibles para cada segmento, lo que implica un \textit{overhead} del orden de
+
+\begin{equation}
+1-\frac89 = \frac19 \approx 11{,}1\%.
+\end{equation}
+
+\subsection{IFFT}
+
+Una vez construido el conjunto de símbolos en el dominio de la frecuencia, el transmisor aplica una IFFT de tamaño $N$. Si se denota por $\{S_k\}$ al conjunto de símbolos complejos asignados a las subportadoras, el símbolo OFDM en el dominio temporal puede escribirse como
+
+\begin{equation}
+s_n = \mathcal{F}^{-1}(S_k)
+=
+\frac{1}{N}
+\sum_{k=0}^{N-1}
+S_k e^{j2\pi kn/N}.
+\end{equation}
+
+Las subportadoras no utilizadas, desde $S_c$ hasta $S_{N-1}$, se fijan en cero y constituyen portadoras virtuales que colaboran en la conformación de las bandas de guarda del espectro transmitido \cite{isdbt,portugues}.
+
+\subsection{Inserción del intervalo de guarda}
+
+La etapa final del transmisor consiste en insertar un prefijo cíclico de duración $T_g$ a la salida de la IFFT. Este prefijo está formado por una copia de la parte final del símbolo útil y se antepone al mismo. Su presencia permite absorber ecos del símbolo anterior y preservar la ortogonalidad entre subportadoras siempre que la dispersión temporal del canal sea menor que el propio intervalo de guarda \cite{isdbt,portugues}.
+
+Con esta última operación queda definida la señal OFDM temporal en banda base, lista para su conversión a radiofrecuencia y posterior transmisión.
+
+\chapter{Demodulación ISDB-Tb}
+\label{chap:isdbtb_rx}
+
+
+La cadena receptora del ISDB-Tb puede interpretarse como la inversión ordenada de los bloques descritos en el Capítulo~\ref{chap:isdbtb_tx}. Su objetivo es recuperar, a partir de la señal OFDM recibida, uno o más flujos MPEG-2 TS correspondientes a las capas jerárquicas activas en la transmisión. Para ello, el receptor debe resolver primero la sincronización temporal y frecuencial del sistema, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, invertir las operaciones de intercalado, modulación y codificación de canal aplicadas en el transmisor \cite{isdbt,portugues,uruguay_rx}.
+
+A diferencia de la descripción del transmisor, la recepción requiere incorporar explícitamente mecanismos de estimación y seguimiento, ya que la señal llega afectada por errores de frecuencia, errores de muestreo, rotaciones de fase y distorsión introducida por el canal. En este sentido, la sincronización y la ecualización constituyen el núcleo del receptor, porque no solo acondicionan la señal para la demodulación, sino que también hacen posible la recuperación robusta de la información TMCC necesaria para configurar el resto de la cadena \cite{uruguay_rx}.
+
+\section{Sincronización y ecualización}
+\label{sec:isdbtb_sync_eq}
+
+La sincronización y la ecualización constituyen una de las etapas más críticas del receptor ISDB-Tb, ya que de su correcto funcionamiento depende que las portadoras OFDM puedan ser interpretadas de manera consistente por los bloques posteriores de demodulación y decodificación. En términos generales, este bloque debe resolver tres problemas principales: la delimitación temporal de los símbolos OFDM, la estimación y corrección de los errores de frecuencia, y la compensación de la respuesta del canal sobre las subportadoras activas \cite{uruguay_rx}.
+
+De acuerdo con la estrategia descrita en \cite{uruguay_rx}, este proceso puede dividirse en dos etapas complementarias. En primer lugar, una etapa de adquisición obtiene una estimación inicial del comienzo del símbolo y del error fraccional de frecuencia. Luego, una etapa de seguimiento refina esa estimación y compensa tanto el error residual de frecuencia como el error de muestreo, utilizando para ello la información de canal estimada a partir de los pilotos. Una vez estabilizado este proceso, el receptor se encuentra en condiciones de extraer la información TMCC y configurar adecuadamente el resto de la cadena de recepción.
+
+\subsection{Adquisición de sincronismo OFDM}
+
+La etapa de adquisición busca obtener un bloque de muestras complejas que corresponda a un símbolo OFDM útil y que resulte suficientemente correcto como para permitir la operación de la FFT, del ecualizador y de los bloques de decisión posteriores \cite{uruguay_rx}. Para ello, el método aprovecha la redundancia introducida por el prefijo cíclico.
+
+Si se denota por $N$ la longitud útil del símbolo OFDM y por $L$ la longitud del prefijo cíclico, entonces los últimos $L$ samples del símbolo transmitido coinciden con los primeros $L$ samples del mismo símbolo. Esta propiedad permite construir una métrica de autocorrelación sobre la señal recibida $r[k]$ que presenta un máximo cuando la ventana de observación coincide con el final del prefijo cíclico. El estimador de máxima verosimilitud utilizado se expresa como
+
+\begin{equation}
+\hat{\theta}_{ML}
+=
+\arg \max_{\theta}
+\left|
+\sum_{k=\theta}^{\theta+L-1} r[k]\,r^{*}[k+N]
+\right|
+-
+\rho
+\sum_{k=\theta}^{\theta+L-1}
+\frac{|r[k]|^2 + |r[k+N]|^2}{2},
+\end{equation}
+
+donde $\theta$ representa el instante de comienzo del símbolo y
+
+\begin{equation}
+\rho = \frac{\sigma_s^2}{\sigma_s^2+\sigma_n^2}
+      = \frac{\mathrm{SNR}}{1+\mathrm{SNR}}.
+\end{equation}
+
+El primer término de esta expresión favorece aquellas posiciones en las cuales existe una alta correlación entre el prefijo cíclico y el final del símbolo útil, mientras que el segundo término penaliza máximos espurios asociados a muestras de gran amplitud \cite{uruguay_rx}.
+
+Una vez determinada la posición del símbolo, la misma correlación puede emplearse para estimar el error fraccional de frecuencia. En efecto, la diferencia de fase entre las muestras separadas $N$ posiciones está asociada directamente al desajuste de frecuencia entre transmisor y receptor. El estimador correspondiente es
+
+\begin{equation}
+\hat{\varepsilon}_{ML}
+=
+-\frac{1}{2\pi}
+\arg
+\left\{
+\sum_{k=\hat{\theta}_{ML}}^{\hat{\theta}_{ML}+L-1}
+r[k]\,r^{*}[k+N]
+\right\}.
+\end{equation}
+
+Este valor corrige únicamente la parte fraccional del error de frecuencia, ya que la ambigüedad de la función argumento restringe la estimación a un intervalo unitario en unidades de espaciamiento entre subportadoras \cite{uruguay_rx}.
+
+El mismo trabajo señala que, si el modo de transmisión y la longitud del prefijo cíclico no son conocidos a priori, es posible evaluar esta métrica para todos los pares posibles $(N,L)$ y seleccionar la combinación correcta a partir de la forma de la serie temporal resultante. El valor correcto de $N$ y $L$ produce una evolución aproximadamente constante con un pico triangular bien definido, mientras que valores incorrectos generan respuestas degradadas o inconsistentes \cite{uruguay_rx}.
+
+\subsection{Corrección entera del error de frecuencia mediante TMCC}
+
+Tras compensar el error fraccional de frecuencia y delimitar el símbolo OFDM, el receptor aplica la FFT y pasa al dominio de la frecuencia. En este punto puede persistir un corrimiento entero de portadoras, equivalente a un desplazamiento múltiplo del espaciamiento entre subportadoras. En tal caso, la salida de la FFT contiene las portadoras correctas, pero desplazadas respecto de las posiciones esperadas \cite{uruguay_rx}.
+
+En sistemas OFDM como DVB-T esta ambigüedad puede resolverse mediante \textit{continual pilots}. Sin embargo, en ISDB-Tb la presencia de este tipo de pilotos es prácticamente nula. Por ello, el método descrito en \cite{uruguay_rx} recurre a las portadoras TMCC, que ocupan posiciones fijas y transmiten dentro de un mismo símbolo el mismo bit mediante modulación DBPSK.
+
+Si se denota por $M$ la cantidad de portadoras TMCC por símbolo, por $T[i]$ sus posiciones ideales sin corrimiento, por $Y[k]$ la salida de la FFT y por $w(T[i])$ el valor diferencial inicial asociado a cada portadora, entonces la correlación
+
+\begin{equation}
+\Gamma[m]
+=
+\sum_{i=0}^{M-2}
+w(T[i])\,Y[T[i]+m]\,
+w(T[i+1])\,Y^{*}[T[i+1]+m]
+\end{equation}
+
+alcanza su máximo cuando $m$ coincide con el error entero de frecuencia $\Delta f_I$ \cite{uruguay_rx}. De esta manera, el TMCC cumple una doble función: ayuda a completar la sincronización en frecuencia y, una vez decodificado, suministra la configuración que utilizarán los bloques posteriores del receptor.
+
+\subsection{Estimación de canal y ecualización}
+
+Una vez identificadas correctamente las posiciones de las portadoras, el receptor debe compensar la distorsión introducida por el canal. Si $X[i]$ denota el símbolo transmitido en la portadora $i$ y $Y[i]$ el símbolo recibido luego de la FFT, la relación entre ambos puede escribirse como
+
+\begin{equation}
+Y[i] = X[i]\,H[i],
+\end{equation}
+
+donde $H[i]$ es la ganancia compleja del canal sobre la subportadora correspondiente \cite{uruguay_rx}. La ecualización consiste, por lo tanto, en estimar $H[i]$ para las portadoras activas y compensar posteriormente esa respuesta.
+
+Para realizar esta tarea, el receptor utiliza los \textit{scattered pilots} (SP), cuyas posiciones y valores son conocidos. Como dichas posiciones cambian cíclicamente de un símbolo a otro, el receptor debe identificar primero cuál de las configuraciones de pilotos corresponde al símbolo OFDM actual. El método descrito en \cite{uruguay_rx} emplea una estrategia de detección análoga a la utilizada para localizar las portadoras TMCC.
+
+Una vez identificados los pilotos dispersos del símbolo actual, la respuesta del canal se estima directamente sobre dichas portadoras, aprovechando que el valor transmitido es conocido. Luego, los valores de $H[i]$ para las subportadoras restantes se obtienen mediante interpolación lineal entre pilotos adyacentes \cite{uruguay_rx}. Aunque se trata de una solución sencilla, resulta suficiente para construir un ecualizador funcional y, además, proporciona la información de canal necesaria para la etapa de seguimiento.
+
+\subsection{Seguimiento de frecuencia y error de muestreo}
+
+La adquisición inicial permite obtener una estimación suficientemente buena del comienzo del símbolo y del error fraccional de frecuencia, pero no elimina completamente todos los desajustes. En particular, puede persistir un error residual de frecuencia, denotado por $\varepsilon'$, así como un error de muestreo $\delta$, correspondiente al caso en que la señal analógica es muestreada cada $(1+\delta)T$ en lugar de cada $T$ \cite{uruguay_rx}.
+
+La combinación de ambos errores genera una rotación de fase variante en el tiempo que se incorpora a la respuesta aparente del canal. Más precisamente, para la portadora $i$ del símbolo OFDM $k$, el símbolo complejo queda multiplicado por un fasor de la forma
+
+\begin{equation}
+e^{j2\pi \phi_i (k(N+L)+L)/N},
+\end{equation}
+
+donde
+
+\begin{equation}
+\phi_i = \varepsilon' + \delta i.
+\end{equation}
+
+En consecuencia, la diferencia de fase entre dos estimaciones consecutivas del canal para una misma portadora resulta proporcional a $\varepsilon' + \delta i$ \cite{uruguay_rx}. Esta observación permite construir un esquema de seguimiento análogo a un PLL, en el cual la evolución temporal de la fase del canal actúa como señal de error.
+
+Si se denota por $H_k[i]$ a la estimación del canal en la portadora $i$ durante el símbolo $k$, las señales de error propuestas en \cite{uruguay_rx} son
+
+\begin{equation}
+e_{\varepsilon'}[k]
+=
+\arg
+\left(
+\sum_{i=-I}^{I} H_k[i]\,H_{k-1}^{*}[i]
+\right),
+\end{equation}
+
+\begin{equation}
+e_{\delta}[k]
+=
+\arg
+\left(
+\sum_{i=1}^{I} H_k[i]\,H_{k-1}^{*}[i]
+\left(
+\sum_{i=-I}^{0} H_k[i]\,H_{k-1}^{*}[i]
+\right)^{*}
+\right),
+\end{equation}
+
+donde $I$ representa el índice máximo de portadora activa para el modo considerado. En esencia, estas expresiones ajustan una recta sobre la evolución de fase entre símbolos consecutivos a lo largo de las subportadoras: el término independiente se asocia al error residual de frecuencia, mientras que la pendiente representa el error de muestreo \cite{uruguay_rx}.
+
+Con estas señales de error, el receptor puede realimentar los bloques de corrección y refinar continuamente la derotación en frecuencia y la compensación del desajuste de muestreo. El resultado es una sincronización mucho más robusta que la obtenida únicamente durante la adquisición.
+
+\section{Recuperación de la configuración de transmisión}
+
+\subsection{Decodificación del TMCC}
+
+Una vez estabilizadas la sincronización y la ecualización, el receptor puede decodificar la señal TMCC con suficiente confiabilidad como para configurar adecuadamente el resto de la cadena. El TMCC contiene 204 bits por cuadro OFDM y transmite todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda, que deben ser determinados por otras vías \cite{isdbt,portugues,uruguay_rx}.
+
+En el receptor descrito en \cite{uruguay_rx}, para cada símbolo OFDM se demodula el bit presente en cada portadora TMCC y se realiza un voto mayoritario entre ellas para decidir el bit correspondiente. Luego, un buffer de 204 bits se compara con las palabras de sincronismo del TMCC, y cuando se detecta un cuadro válido se verifica su consistencia mediante el código de paridad. A partir de ese momento puede recuperarse la configuración actual de la transmisión y propagarse dicha información a los bloques posteriores \cite{uruguay_rx}.
+
+\subsection{Parámetros recuperados}
+
+Los campos TMCC permiten determinar, para cada capa jerárquica activa, la modulación utilizada, la tasa del código convolucional, la profundidad del intercalado temporal y el número de segmentos asignados. También permiten identificar si el segmento 0 está reservado para recepción parcial. En consecuencia, el TMCC fija la configuración del demodulador, del desintercalador y de los decodificadores de canal, y por ello constituye el nexo entre la sincronización/equalización y el resto del receptor \cite{isdbt,portugues,uruguay_rx}.
+
+\section{Procesamiento del cuadro OFDM y separación de capas}
+
+\subsection{Extracción de portadoras de datos}
+
+Una vez conocida la estructura del cuadro OFDM, el receptor separa las portadoras destinadas a datos de aquellas reservadas para pilotos, TMCC y canales auxiliares. Esta operación invierte el armado del cuadro realizado en transmisión y deja únicamente los símbolos complejos asociados a los flujos de información útil \cite{isdbt,portugues}.
+
+En el caso descrito en \cite{uruguay_rx}, el bloque decodificador de TMCC también es responsable de filtrar las portadoras de control y de entregar a la salida solo las portadoras de datos, reordenadas por número de segmento.
+
+\subsection{Desintercalado en frecuencia}
+
+Luego de la extracción de portadoras de datos, el receptor debe invertir el intercalado en frecuencia aplicado en transmisión. Esta operación comprende el desintercalado entre segmentos, la desrotación dentro del segmento y la desaleatorización intra-segmento \cite{isdbt,portugues}.
+
+Si la transmisión utilizó agrupamientos de segmentos con la misma categoría de modulación, el desintercalado entre segmentos restituye a cada símbolo su segmento original. La desrotación compensa el desplazamiento aplicado dentro de cada segmento según el número de segmento, y la desaleatorización invierte la permutación adicional especificada por la norma. Tras estas etapas, los símbolos quedan en el orden adecuado para la separación por capas y para la demodulación posterior.
+
+\subsection{Separación jerárquica y diferencia entre recepción \textit{full-seg} y \textit{1-seg}}
+
+Con la información recuperada desde el TMCC, el receptor puede reagrupar los datos según la capa jerárquica a la que pertenecen. En configuraciones jerárquicas típicas, esto permite separar el flujo correspondiente al segmento central, destinado a recepción portátil, del flujo asociado a los doce segmentos restantes, destinado a recepción fija \cite{isdbt,portugues}.
+
+Esta distinción es precisamente la que separa conceptualmente a un receptor \textit{full-seg} de un receptor \textit{1-seg}. El primero procesa los 13 segmentos del canal y puede reconstruir todos los transport streams presentes. El segundo, en cambio, solo necesita sintonizar y demodular el segmento central, con lo cual reduce tanto el ancho de banda de procesamiento como la complejidad computacional del receptor \cite{isdbt,portugues,uruguay_rx}.
+
+\section{Demodulación y decodificación de canal}
+
+\subsection{Demodulación e inversión del intercalado de bits}
+
+Una vez separados los símbolos por capa, el receptor debe aplicar el demodulador correspondiente a la modulación indicada en el TMCC. En DQPSK, la recuperación de bits se basa en la diferencia de fase entre símbolos consecutivos, ya que se trata de una modulación diferencial. En QPSK, 16QAM y 64QAM, en cambio, la decisión se realiza sobre la constelación ecualizada \cite{isdbt,portugues}.
+
+Después de la decisión de símbolos, el receptor invierte el intercalado de bits específico de la modulación empleada. Esta operación recompone la secuencia de bits codificados tal como salía del codificador convolucional del transmisor.
+
+\subsection{Desintercalado temporal}
+
+La siguiente etapa consiste en invertir el intercalado temporal aplicado sobre cada capa. Para ello, el receptor utiliza la profundidad de intercalado indicada por el TMCC y realinea los símbolos o bits según la estructura de retardos descrita en la norma \cite{isdbt,portugues}. Esta operación es necesaria para restituir el orden temporal original de la secuencia antes de la decodificación interna.
+
+\subsection{Decodificación convolucional}
+
+Una vez restaurado el orden temporal, el receptor aplica la decodificación convolucional correspondiente a la tasa seleccionada en transmisión. Si la tasa efectiva fue obtenida por puncionado a partir del código madre de tasa $1/2$, el receptor debe deshacer implícitamente esa operación antes o durante la decodificación. El resultado de esta etapa es la secuencia binaria previa a la codificación interna del transmisor \cite{isdbt,portugues}.
+
+En la implementación descrita en \cite{uruguay_rx}, tanto el decodificador de Viterbi como el decodificador Reed--Solomon fueron reutilizados a partir de bloques compatibles con DVB-T, dado que en ese punto la estructura algorítmica es equivalente.
+
+\subsection{Desintercalado de bytes y desdispersión de energía}
+
+Luego de la decodificación convolucional, el flujo binario se reagrupa nuevamente en bytes y se aplica el desintercalado de bytes, que invierte la redistribución temporal efectuada en transmisión. Tras ello, el receptor aplica la desdispersión de energía utilizando la misma secuencia PRBS del transmisor. Como la operación XOR es involutiva, basta con volver a aplicar la misma secuencia pseudoaleatoria, con la misma inicialización y respetando la exclusión del byte de sincronismo \cite{isdbt,portugues}.
+
+En el receptor implementado en \cite{uruguay_rx}, esta etapa se utiliza además como verificación de consistencia: el byte inmediatamente anterior al comienzo de un nuevo cuadro OFDM debe corresponder al byte de sincronismo \texttt{0x47} del transport stream.
+
+\subsection{Decodificación Reed--Solomon}
+
+La última etapa de corrección de errores es la decodificación externa Reed--Solomon RS(204,188). Este bloque elimina los 16 bytes de redundancia agregados en transmisión y corrige, cuando es posible, hasta 8 bytes erróneos por paquete. Una vez aplicada esta operación, el receptor recupera nuevamente paquetes MPEG-2 TS de 188 bytes \cite{isdbt,portugues,uruguay_rx}.
+
+\section{Recuperación del flujo MPEG-2 TS}
+
+Al finalizar la decodificación Reed--Solomon, el receptor obtiene uno o más flujos MPEG-2 TS, según la cantidad de capas jerárquicas activas en la transmisión. En una configuración de una sola capa, el resultado es un único transport stream. En configuraciones jerárquicas de dos o tres capas, el receptor puede reconstruir varios flujos independientes, cada uno asociado a un conjunto de segmentos y a una configuración de modulación y codificación propia \cite{isdbt,portugues}.
+
+Desde esta perspectiva, la cadena receptora completa del ISDB-Tb puede entenderse como una secuencia de inversiones perfectamente alineada con la cadena transmisora: primero se sincroniza y ecualiza la señal, luego se recupera la estructura del cuadro OFDM y la configuración TMCC, y finalmente se deshacen las operaciones de intercalado, modulación y codificación de canal hasta llegar nuevamente al MPEG-2 TS. Así, junto con el Capítulo~\ref{chap:isdbtb_tx}, queda descrita una visión integral del transceptor ISDB-Tb.

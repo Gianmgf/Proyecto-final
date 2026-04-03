@@ -1,252 +1,145 @@
 \documentclass[12pt, letterpaper, oneside]{report}
 
-% --- Encoding / typography ---
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{microtype}
-\usepackage{mathptmx} % Times New Roman-like font
-
-% --- Language ---
-\usepackage[spanish]{babel}
-\usepackage{csquotes}
-
-% --- Page geometry ---
-% headheight evita el warning de fancyhdr
-\usepackage[top=1in, bottom=1in, left=1.5in, right=1in, headheight=16pt]{geometry}
-
-% --- Index ---
-\usepackage{makeidx}
-
-% --- Tables ---
-\usepackage{tabularx}
-\newcolumntype{B}{>{\hsize=1.5\hsize}X}
-\newcolumntype{s}{>{\hsize=.5\hsize}X}
-\usepackage{booktabs}
-\usepackage{float}
-
-% --- Bibliography ---
-\usepackage[backend=biber, style=ieee]{biblatex}
-\addbibresource{Bibliografia.bib}
-
-% --- Chapter formatting ---
-\usepackage{titlesec}
-\titleformat{\chapter}[display]
-  {\normalfont\Large\bfseries}
-  {\chaptertitlename\ \thechapter}
-  {20pt}
-  {\LARGE}
-\titlespacing*{\chapter}{0pt}{-30pt}{40pt}
-
-% --- TOC formatting ---
-\usepackage[titles]{tocloft}
-\renewcommand{\cftchapfont}{\normalfont\bfseries}
-\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
-\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
-
-% --- Figures / captions ---
-\usepackage{graphicx}
-\graphicspath{{./figuras/}}
-\usepackage[font=small, labelfont=bf]{caption}
-
-% --- Math ---
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
-
-% --- Theorems and definitions ---
-\newtheorem{theorem}{Theorem}[chapter]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
-\theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-
-% --- Header and footer (fancyhdr) ---
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\fancyhf{}
-
-% En report, \leftmark suele ser "Capítulo N. Título". Esto lo deja consistente.
-\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
-
-\fancyhead[L]{\nouppercase{\leftmark}}
-\fancyfoot[C]{\thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0pt}
-
-% --- Line spacing ---
-\usepackage{setspace}
-\onehalfspacing
-
-
-
-\newcommand \imagen[2]{\centerline{\includegraphics[width=#1\textwidth]{#2}}}
-\newcommand \p[1] {\hspace{1pt}\par\vspace{#1 pt}}
-\newcommand \figura[5]{
-	\begin{figure}[H]
-		\imagen{#1}{#2}\p{5}
-		\caption[#3]{#3 #4}
-		#5
-	\end{figure}
-}
-
+\input{./preamble}
 
 \begin{document}
-	
+
 	% Title page
 	\begin{titlepage}
 		\begin{center}
 			\vspace*{1cm}
 			\LARGE
 			PROYECTO INTEGRADOR DE LA CARRERA DE INGENIERÍA EN TELECOMUNICACIONES
-			
-			
+
 			\vspace{1.5cm}
-			
-		
-			
-			
-			
+
 			\textbf{\MakeUppercase{Mejora de la detección  en radares biestaticos pasivos basados en la señal de televisión digital ISDB-T a partir de la reconstrucción de la misma }}
-			
-		
-			
-			
-			
+
 			\vspace{1.5cm}
-			
+
 			\textbf{Mangieri Gianfranco}
-			
-			
-			
+
+
 			\vspace{1.5cm}
-			
+
 			\textbf{Dr. Javier Areta}\\Director
-			
-			
+
+
 			\vspace{1.5cm}
-			
-			
+
+
 			\today
-			
-			
+
+
 			\vspace{1.5cm}
 			\Large
 			Universidad Nacional De Rio Negro\\
 			Argentina
-			
+
 		\end{center}
 	\end{titlepage}
-	
 
-	
-	% Dedication (optional)
-	\cleardoublepage
-	\thispagestyle{empty}
-	\vspace*{\fill}
-	\begin{center}
-		\textit{To my family and mentors...}
-	\end{center}
-	\vspace*{\fill}
-	\cleardoublepage
-	
+
+
+\chapter*{Acrónimos}
+\addcontentsline{toc}{chapter}{Acrónimos}
+
+	\begin{longtable}{>{\bfseries}p{0.18\textwidth} p{0.75\textwidth}}
+	AC    & Canal auxiliar, por sus siglas en inglés (\textit{Auxiliary Channel}).\\
+	CAF   & Función de ambigüedad cruzada, por sus siglas en inglés (\textit{Cross-Ambiguity Function}).\\
+	CFAR  & Tasa constante de falsas alarmas, por sus siglas en inglés (\textit{Constant False Alarm Rate}).\\
+	COFDM & Multiplexación por división de frecuencias ortogonales codificada, por sus siglas en inglés (\textit{Coded Orthogonal Frequency Division Multiplexing}).\\
+	DBPSK & Modulación por desplazamiento diferencial de fase binaria, por sus siglas en inglés (\textit{Differential Binary Phase Shift Keying}).\\
+	DSI   & Interferencia de señal directa, por sus siglas en inglés (\textit{Direct Signal Interference}).\\
+	FEC   & Corrección de errores hacia adelante, por sus siglas en inglés (\textit{Forward Error Correction}).\\
+	FFT   & Transformada rápida de Fourier, por sus siglas en inglés (\textit{Fast Fourier Transform}).\\
+	IFFT  & Transformada rápida inversa de Fourier, por sus siglas en inglés (\textit{Inverse Fast Fourier Transform}).\\
+	IQ    & En fase y en cuadratura, por sus siglas en inglés (\textit{In-phase and Quadrature}).\\
+	ISDB-Tb & Radiodifusión digital de servicios integrados terrestre, versión brasileña, por sus siglas en inglés (\textit{Integrated Services Digital Broadcasting -- Terrestrial, Brazilian version}).\\
+	LFSR  & Registro de desplazamiento con realimentación lineal, por sus siglas en inglés (\textit{Linear Feedback Shift Register}).\\
+	MPEG  & Grupo de expertos en imágenes en movimiento, por sus siglas en inglés (\textit{Moving Picture Experts Group}).\\
+	MPEG-2 TS & Flujo de transporte MPEG-2, por sus siglas en inglés (\textit{MPEG-2 Transport Stream}).\\
+	OFDM  & Multiplexación por división de frecuencias ortogonales, por sus siglas en inglés (\textit{Orthogonal Frequency Division Multiplexing}).\\
+	PLL   & Bucle de enganche de fase, por sus siglas en inglés (\textit{Phase-Locked Loop}).\\
+	PRBS  & Secuencia binaria pseudoaleatoria, por sus siglas en inglés (\textit{Pseudo-Random Binary Sequence}).\\
+	QAM   & Modulación de amplitud en cuadratura, por sus siglas en inglés (\textit{Quadrature Amplitude Modulation}).\\
+	QPSK  & Modulación por desplazamiento de fase en cuadratura, por sus siglas en inglés (\textit{Quadrature Phase Shift Keying}).\\
+	RCS   & Sección eficaz de radar, por sus siglas en inglés (\textit{Radar Cross Section}).\\
+	RS    & Reed--Solomon.\\
+	SNR   & Relación señal a ruido, por sus siglas en inglés (\textit{Signal-to-Noise Ratio}).\\
+	SP    & Piloto disperso, por sus siglas en inglés (\textit{Scattered Pilot}).\\
+	TDT   & Televisión digital terrestre.\\
+	TMCC  & Control de configuración de transmisión y multiplexación, por sus siglas en inglés (\textit{Transmission and Multiplexing Configuration Control}).\\
+	TSP   & Paquete de flujo de transporte, por sus siglas en inglés (\textit{Transport Stream Packet}).\\
+	\end{longtable}
+
+\cleardoublepage
+
 
 	\cleardoublepage
-	\chapter*{Acronimos}
-	\addcontentsline{toc}{chapter}{Acronimos}
-		\begin{tabularx}{\textwidth}{sB}
 
-			\textbf{CAF}& Función de ambigüedad cruzada, por sus siglas en inglés.\\
-			\textbf{COFDM}& Multiplexación por división de frecuencias ortogonales codificada, por sus siglas en inglés.\\
-			\textbf{DBPSK}& Modulación por desplazamiento de fase binaria diferencial, por sus siglas en inglés.\\
-			\textbf{FEC} & Corrección de errores hacia adelante, por sus siglas en inglés.\\
-			\textbf{FFT} & Transformada rápida de Fourier, por sus siglas en inglés.\\
-			\textbf{IFFT} & Transformada rápida de Fourier inversa, por sus siglas en inglés.\\
-			\textbf{IQ} & En fase y cuadratura, por sus siglas en inglés.\\
-			\textbf{ISDB-T} & Radiodifusión Digital de Servicios Integrados - Terrestre, por sus siglas en inglés.\\
-			\textbf{OFDM} & Multiplexación por división de frecuencias ortogonales, por sus siglas en inglés.\\
-			\textbf{PRBS} & Secuencia binaria psudo-random, por sus siglas en inglés.\\
-			\textbf{QAM} & Modulación de amplitud en cuadratura, por sus siglas en inglés.\\
-			\textbf{QPSK} & Modulación por desplazamiento de fase cuaternaria, por sus siglas en inglés.\\
-			\textbf{RCS} & Sección equivalente de radar, por sus siglas en inglés.\\
-			\textbf{RS} & Reed-Solomon.\\
-			\textbf{SNR} & Relación señal a ruido, por sus siglas en inglés.\\
-			\textbf{TDT} & Televisión digital terrestre.\\
-			\textbf{TMCC} & [completar].\\
-			\textbf{CFAR} & [completar]\\
-			\textbf{DSI} &  [completar]\\	
-			\textbf{LFSR} &  [completar]\\		
-			
-		\end{tabularx}
-		
-	
-	\cleardoublepage
-	
-	
+
 	% Table of Contents
 	\tableofcontents
 	\cleardoublepage
-	
+
 	% List of Figures
 	\listoffigures
 	\addcontentsline{toc}{chapter}{Índice de figuras}
 	\cleardoublepage
-	
+
 	% List of Tables
-	
+
 	\renewcommand*\listtablename{Índice de tablas}
 	\listoftables
 	\addcontentsline{toc}{chapter}{Índice de tablas}
 	\cleardoublepage
-	
+
 		% Abstract
 	\cleardoublepage
 	\addcontentsline{toc}{chapter}{Resumen}
 	\begin{abstract}
 
-		
+
 		El radar pasivo biestático constituye una alternativa de interés para la detección de
 		objetivos en escenarios donde no resulta viable el uso de transmisores dedicados. En
 		particular, el empleo de iluminadores de oportunidad, como las señales de Televisión
 		Digital Terrestre, introduce una serie de desafíos asociados a la interferencia de señal
 		directa y a las reflexiones estacionarias del entorno, las cuales pueden degradar
 		severamente la capacidad de detección.
-		
+
 		En este trabajo se presenta una cadena de procesamiento orientada a sistemas de radar
 		pasivo basados en señales ISDB-T, aprovechando el conocimiento detallado de su
 		estructura para reconstruir la señal transmitida y utilizarla como referencia coherente.
 		Sobre esta base, se implementan técnicas de cancelación de clutter y de interferencia de
 		trayectoria directa, seguidas por el cálculo de la función de ambigüedad cruzada y un
 		esquema de detección con tasa de falsas alarmas constante.
-		
-		La propuesta se evalúa tanto mediante simulaciones como a partir de datos reales
-		adquiridos en un entorno experimental. Los resultados obtenidos muestran una reducción
-		significativa del nivel de interferencia dominante y una mejora en la detección de blancos
-		móviles, lo que confirma la aplicabilidad del enfoque desarrollado en escenarios reales de
-		radar pasivo.
-		
-		
-		
+
 		\vspace{0.5cm}
-		
+
 		\textbf{Palabras clave:} radar pasivo, ISDB-T, detección de objetivos, clutter, CFAR.
-		
+
 	\end{abstract}
 	\cleardoublepage
 
 	\include{capitulos/introduccion}
 	\include{capitulos/radar pasivo}
-	
-	\include{capitulos/isdb-tb}
+	\include{capitulos/isdbt-b}
 	\include{capitulos/cadena de procesamiento}
 	\include{capitulos/resultados}
 	\include{capitulos/conclusiones}
-	% References
+
+	\appendix
+	\cleardoublepage
+	\addcontentsline{toc}{part}{Apéndices}
+
+	\include{anexos/docu_cadena}
+
+		% References
 	\cleardoublepage
 	\addcontentsline{toc}{chapter}{Bibliografía}
 
 	\printbibliography
-	
-	
+
+
 	\end{document}

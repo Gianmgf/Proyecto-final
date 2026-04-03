@@ -1,0 +1,8 @@
+biestática
+biestático
+ENACOM
+shift
+Entralazador
+FIFO
+Entrelazador
+entrelazador

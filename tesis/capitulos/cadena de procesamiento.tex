@@ -1,39 +1,32 @@
 \chapter{Cadena de procesamiento radar}
-	
+
 	\section{Filtro de clutter y rayo directo}
 
 	La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de la interferencia de trayectoria directa (ITD) y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando éstos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto *BT* utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
-	
+
 	En este contexto, el filtrado adaptativo se convierte en una herramienta fundamental para mejorar el rango dinámico efectivo del sistema. La señal de vigilancia está compuesta por la contribución directa del transmisor, por múltiples reflexiones estacionarias de distinto retardo (clutter), por los ecos de los objetivos en movimiento y por ruido. La ITD suele ser el componente de mayor potencia, seguida por el clutter, cuyas copias retardadas de la señal de referencia pueden estar entre 20 y 40 dB por debajo de la trayectoria directa. Ambos, no obstante, se mantienen muy por encima del ruido térmico o del ruido antropogénico dominante en bandas UHF y VHF, generando un enmascaramiento que debe ser reducido mediante procesamiento digital.
-	
+
 	Si bien existen métodos físicos o analógicos para mitigar estas interferencias, como el blindaje de antenas o la cancelación en RF, su efectividad es limitada. Por este motivo, prácticamente todas las implementaciones modernas recurren a técnicas digitales de cancelación. Entre ellas se incluyen enfoques iterativos basados en filtros adaptativos —como LMS, NLMS, RLS o estructuras en celosía— y métodos de procesamiento por bloques. Cada familia de algoritmos presenta ventajas y desventajas en términos de velocidad de convergencia, estabilidad, complejidad computacional y capacidad para discriminar componentes estrechamente espaciados en frecuencia. También existen métodos afines al filtrado adaptativo tradicional, como el algoritmo CLEAN, que permiten eliminar componentes dominantes de forma secuencial.
-	
+
 	El propósito de este capítulo es presentar el problema de la cancelación de clutter e ITD desde un marco unificado, describir los principales algoritmos utilizados para tal fin y analizar su comportamiento en escenarios reales. Se introduce un modelo de señal adecuado para formular el problema del filtrado adaptativo y se discute cómo las características de los ecos —tanto estacionarios como móviles— afectan la capacidad de cancelación. Finalmente, se muestran resultados obtenidos con señales reales y se examinan aspectos prácticos como la convergencia y la selectividad espectral de los filtros.
-	
+
 		\subsection{Filtro de lattice en bloque}
-		
-		
-		El filtro \textit{block lattice} se basa en una serie de proyecciones sucesivas entre señales, cuya dinámica queda determinada por los coeficientes de reflexión $\kappa_i$. Estos coeficientes pueden interpretarse como proyecciones normalizadas entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro. En términos geométricos, el cálculo de $\kappa_i$ equivale a medir cuánta energía de una señal puede explicarse mediante la otra, por lo que constituye una operación análoga al proceso de ortogonalización de Gram--Schmidt aplicado en un espacio vectorial de señales.
-		
-		Como resultado de estas proyecciones, los errores de predicción hacia atrás $b_i(n)$ se vuelven mutuamente ortogonales. Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores, garantizando así que la información aportada por cada $b_i(n)$ sea \emph{nueva} en el sentido estadístico. Esta propiedad de ortogonalidad es fundamental para la capacidad del filtro de separar componentes correlacionadas sin interferencia entre ellas.
-		
+
+
+		El filtro \textit{block lattice} se basa en una serie de proyecciones sucesivas entre señales, cuya dinámica queda determinada por los coeficientes de reflexión $\kappa_i$. Estos coeficientes pueden interpretarse como proyecciones normalizadas entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro.
+
+		Como resultado de estas proyecciones, los errores de predicción hacia atrás $b_i(n)$ se vuelven mutuamente ortogonales. Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores. Esta propiedad de ortogonalidad es fundamental para la capacidad del filtro de separar componentes correlacionadas sin interferencia entre ellas.
+
 		La ortogonalidad implica que cada $b_i(n)$ está asociado a un subespacio distinto y no superpuesto. Esto permite que las copias retardadas de la señal de referencia presentes en la señal de eco $x_e(n)$ puedan ser tratadas de manera independiente. Para cada etapa, se estima un coeficiente de correlación $h_i$ calculado como la proyección de $x_e(n)$ sobre el error de predicción hacia atrás. Este coeficiente determina cuánta contribución de $b_i(n)$ está presente en el eco.
-		
-		El proceso de cancelación del eco se realiza mediante la resta
-		\[
-		e_{i+1}(n) = e_i(n) - h_i\, b_i(n),
-		\]
-		que elimina únicamente la componente de $x_e(n)$ que está alineada con $b_i(n)$. Debido a la ortogonalidad entre los $b_i(n)$, esta operación no afecta a ninguna otra componente del eco. En consecuencia, la señal remanente conserva intacta toda porción que no esté correlacionada con la referencia, preservando así las reflexiones asociadas a objetivos reales.
-		
-		En términos geométricos, el filtro \textit{block lattice} realiza una secuencia de sustracciones ortogonales: en cada etapa, se extrae de $x_e(n)$ la proyección correspondiente a una copia retardada de la referencia. Esto permite remover el \textit{clutter} de forma progresiva y precisa, sin introducir distorsiones ni interferencias cruzadas entre etapas. Esta propiedad lo convierte en una herramienta especialmente adecuada para aplicaciones de radar pasivo, donde el eco contiene múltiples réplicas del pulso directo con distintos retardos y amplitudes.
-		
+
+
 		\figura{.9}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
-		
-		En donde el algoritmo de procesamiento esta dados las ecuaciones de la Tabla \ref{table:lattice}.
-		
-		
+
+		En donde el algoritmo de procesamiento este dado por las ecuaciones de la Tabla \ref{table:lattice}.
+
+
 		\begin{table}[H]
-			
+
 			\centering
 			\begin{tabular}{|l|c|}
 				\hline
@@ -45,7 +38,7 @@
 				&\\
 				&$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\\\hline
 				 &\\
-				
+
 				Filtrado&$h_i = \dfrac{<e_i(n); b_i(n)> }{|| b_i(n)||^2} $\\
 				&\\
 				&$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\\\hline
@@ -53,17 +46,17 @@
 			\centering
 			\caption[Algoritmo de filtro lattice en bloque.]{Algoritmo de filtro lattice en bloque. Adaptado de \cite{malanowski}.}
 			\label{table:lattice}
-			
+
 		\end{table}
-		
-		
+
+
 	\section{Función de ambigüedad cruzada}
 
 
-	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ec. \ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.   
-	
+	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ec. \ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
+
 	Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
-	
+
 	\begin{equation}
 		\label{eq:caf}
 		\psi(R,V) =
@@ -73,7 +66,7 @@
 		\exp\!\left(-j\,\frac{2\pi}{\lambda} V t\right)
 		\,\mathrm{d}t
 	\end{equation}
-	
+
 	\begin{equation}
 		\label{eq:caf_dig}
 		\psi(m,k) =
@@ -82,85 +75,78 @@
 		x_r^{\ast}\!\left(n - m \right) \cdot \,
 		\exp\!\left(-j\,\frac{2\pi}{N} k n\right)
 	\end{equation}
-	
+
 		\subsection{Algoritmo Batch}
-		
-		Este algoritmo se centra en la aproximación de que en un segmento P, el desplazamiento doppler es despreciable. Con esta aproximación puede crearse una matriz análoga a la matriz de un radar pulsado 
-		en donde existe la dimensión de tiempo rápido y lento. Sin embargo, en un sistema continuo estas no representan exactamente los mismo siendo el tiempo lento los diferentes tramos de segmentes y el rápido 
-		los retardos de la señal. 
-		Luego, ya para obtener el mapa rango-doppler, se toma la FFT de las filas de la matriz y llegando así a la Ec. [X]. La demostración de la aproximacion puede verse en el anexo [X].
-		
+
+		Este algoritmo se centra en la aproximación de que en un segmento P, el desplazamiento doppler es despreciable. Con esta aproximación puede crearse una matriz análoga a la matriz de un radar pulsado
+		en donde existe la dimensión de tiempo rápido y lento. Sin embargo, en un sistema continuo estas no representan exactamente los mismos siendo el tiempo lento los diferentes tramos de segmentos y el rápido
+		los retardos de la señal.
+		Luego, ya para obtener el mapa rango-doppler, se toma la FFT de las filas de la matriz y llegando así a la Ec. [X]. La demostración de la aproximación puede verse en el anexo [X].
+
 		\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
 	\section{Detección de objetivos}
-		
-	
-		
-	
-	La detección de objetivos se basa en la comparación entre la potencia de la señal recibida y un umbral de decisión. En entornos reales, el nivel de ruido y \textit{clutter} puede variar significativamente en el tiempo y el espacio, lo que hace que el uso de un umbral fijo resulte ineficiente. En este contexto, los algoritmos CFAR (\textit{Constant False Alarm Rate}) permiten ajustar dinámicamente el umbral de detección a partir de una estimación local del nivel de ruido, garantizando una probabilidad de falsa alarma aproximadamente constante.
-	
-	El principio fundamental del CFAR consiste en estimar la potencia promedio del entorno circundante a la muestra bajo análisis y establecer un umbral proporcional a dicha estimación. De este modo, el detector se adapta automáticamente a variaciones en las condiciones del ruido, evitando degradaciones significativas en su desempeño.
-	
-	En un esquema CFAR típico, la señal procesada (por ejemplo, la salida de una Transformada Rápida de Fourier) se analiza mediante una ventana móvil compuesta por tres tipos de celdas:
-	
+
+
+
+
+	La detección de objetivos se basa en la comparación entre la potencia de la señal recibida y un umbral de decisión. En entornos reales, el nivel de ruido y \textit{clutter} puede variar significativamente en el tiempo y el espacio, lo que hace que el uso de un umbral fijo resulte ineficiente. En este contexto, los algoritmos CFAR (\textit{Constant False Alarm Rate}) permiten ajustar localmente el umbral de detección a partir de una estimación del nivel de ruido en la zona siendo analizada, garantizando una probabilidad de falsa alarma aproximadamente constante.
+
+	El detector CFAR se basa en estimar la potencia promedio del entorno circundante a la muestra bajo análisis y establecer un umbral proporcional a dicha estimación. Definiendo tres tipos diferentes de celdas:
+
+
 	\begin{itemize}
 		\item \textbf{Celda bajo prueba (CUT, \textit{Cell Under Test})}: muestra en la cual se evalúa la posible presencia de un blanco.
-		\item \textbf{Celdas de guarda}: muestras adyacentes a la CUT que se excluyen del proceso de estimación del ruido, con el fin de evitar la contaminación de dicha estimación por la energía del blanco.
-		\item \textbf{Celdas de referencia}: conjunto de muestras utilizadas para estimar el nivel local de ruido o \textit{clutter}.
+		\item \textbf{Celdas de guarda ($N_g$)}: muestras adyacentes a la CUT que se excluyen del proceso de estimación del ruido.
+		\item \textbf{Celdas de referencia($N_w$)}: conjunto de muestras utilizadas para estimar el nivel local de ruido.
 	\end{itemize}
-	
-	A partir de las celdas de referencia se obtiene una estimación del nivel de ruido, la cual se multiplica por un factor de escala dependiente de la probabilidad de falsa alarma deseada. Este producto define el umbral de detección. Si la potencia medida en la CUT supera dicho umbral, el sistema declara la detección de un blanco.
-	
-	\figura{.9}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{Adaptado de \cite{richards2014radar}}{\label{fig:cfar}}
-	
+
+	En donde la celda CUT se va moviendo a través de toda la CAF hasta generar un umbral para cada elemento de la misma.
+
+	\figura{.9}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{}{\label{fig:cfar}}
+
+
+	\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR Bidimensional. }{}{\label{fig:cfar_2d}}
 	\subsection{Algoritmo CA-CFAR (\textit{Cell Averaging CFAR})}
-	
-	El algoritmo CA-CFAR (\textit{Cell Averaging CFAR}) es una de las variantes más simples y ampliamente utilizadas dentro de la familia CFAR. En este enfoque, la estimación del nivel de ruido se obtiene calculando el promedio aritmético de la potencia medida en las celdas de referencia ubicadas a ambos lados de la CUT.
-	
-	Sea $x(i)$ la potencia de la señal en la celda $i$, $N_g$ el número de celdas de guarda y $N_w$ el número de celdas de referencia por cada lado. La estimación del nivel de ruido $\hat{\sigma}$ se calcula como:
-	
+
+	El algoritmo CA-CFAR (\textit{Cell Averaging CFAR}) es una de las variantes más simples de la familia CFAR, en donde la estimación del nivel de ruido se obtiene calculando la media de la potencia medida en las celdas de referencia ubicadas alrededor de la CUT.
+
 	\begin{equation}
-		\hat{\sigma} = \dfrac{1}{2N_w}
-		\left(
-		\sum_{i = n - N_w - N_g}^{n - N_g - 1} x(i)
-		+
-		\sum_{i = n + N_g + 1}^{n + N_w + N_g} x(i)
-		\right)
+		\hat{\sigma} = \dfrac{1}{N}
+		\sum_{i = 1}^{N} {x_{nw}}_{(i)}
 	\end{equation}
-	
-	El umbral de detección $T$ se obtiene multiplicando esta estimación por un factor de escala $\alpha$:
-	
+con N siendo el total de celdas de referencia. El umbral de detección $T$ se obtiene multiplicando esta estimación por un factor de escala $\alpha$:
+
 	\begin{equation}
 		T = \alpha \cdot \hat{\sigma}
 	\end{equation}
-	
-	El factor de escala $\alpha$ depende del número total de celdas de referencia $N = 2N_w$ y de la probabilidad de falsa alarma deseada $P_{fa}$. Bajo la hipótesis de ruido con distribución exponencial, $\alpha$ puede expresarse analíticamente como:
-	
+
+	El factor de escala $\alpha$ depende de N y de la probabilidad de falsa alarma deseada $P_{fa}$. Bajo la hipótesis de ruido con distribución exponencial, $\alpha$ puede expresarse analíticamente como:
+
 	\begin{equation}
 		\alpha = N \left( P_{fa}^{-1/N} - 1 \right)
 	\end{equation}
-	
+
 	Esta expresión asegura que, en ausencia de blancos, la probabilidad de que la potencia de la CUT supere el umbral de detección sea igual a $P_{fa}$.
-	
-	El algoritmo CA-CFAR presenta un desempeño adecuado en entornos homogéneos, donde las estadísticas del ruido son similares en todas las celdas de referencia. No obstante, su rendimiento se degrada en escenarios no homogéneos, como aquellos con múltiples blancos cercanos o interferencias localizadas, ya que la estimación promedio del ruido puede verse sesgada. Estas limitaciones han motivado el desarrollo de variantes más robustas, tales como GO-CFAR, SO-CFAR y OS-CFAR.
-	
-	\subsection{Relación entre detección, SNR y probabilidad de falsa alarma}
-	
-	El desempeño de un detector CFAR se caracteriza principalmente mediante dos métricas: la probabilidad de detección $P_d$ y la probabilidad de falsa alarma $P_{fa}$. Ambas se encuentran estrechamente relacionadas con la relación señal a ruido (SNR, \textit{Signal-to-Noise Ratio}).
-	
-	La probabilidad de falsa alarma $P_{fa}$ se define como la probabilidad de declarar la presencia de un blanco cuando en realidad solo está presente el ruido. En los algoritmos CFAR, $P_{fa}$ es un parámetro de diseño fijado a priori y determina directamente el valor del umbral de detección. Un valor reducido de $P_{fa}$ disminuye la cantidad de detecciones espurias, pero incrementa el umbral, dificultando la detección de señales de baja potencia.
-	
-	Por su parte, la probabilidad de detección $P_d$ representa la probabilidad de detectar correctamente un blanco cuando este efectivamente está presente. Esta probabilidad depende de diversos factores, entre los que se destacan:
-	
-	\begin{itemize}
-		\item La relación señal a ruido de la señal bajo prueba.
-		\item El valor de $P_{fa}$ seleccionado.
-		\item El número de celdas de referencia empleadas en la estimación del ruido.
-		\item El modelo estadístico asumido para el ruido y el blanco.
-	\end{itemize}
-	
-	A medida que la SNR aumenta, la distribución de la potencia de la señal en la CUT se separa progresivamente de la distribución del ruido, incrementando la probabilidad de que dicha potencia supere el umbral de detección. En consecuencia, la probabilidad de detección $P_d$ crece con la SNR. Para una SNR fija, una disminución de $P_{fa}$ implica un aumento del umbral, lo que conlleva una reducción de $P_d$.
-	
-	Este comportamiento refleja el compromiso inherente entre sensibilidad y confiabilidad del detector. Desde un punto de vista estadístico, la relación entre $P_d$, $P_{fa}$ y la SNR suele analizarse mediante curvas ROC (\textit{Receiver Operating Characteristic}), las cuales representan la probabilidad de detección en función de la probabilidad de falsa alarma para distintos valores de SNR. Estas curvas constituyen una herramienta fundamental para comparar el desempeño de distintos algoritmos CFAR y evaluar su comportamiento bajo diversas condiciones de operación.
-	
-	En síntesis, los algoritmos CFAR, y en particular el CA-CFAR, permiten el diseño de detectores adaptativos capaces de mantener constante la tasa de falsas alarmas frente a variaciones del nivel de ruido. No obstante, la probabilidad de detección permanece limitada por la SNR disponible, lo que impone un límite fundamental al desempeño de cualquier sistema de detección.
-	
+
+
+
+	% \subsection{Relación entre detección, SNR y probabilidad de falsa alarma}
+
+	% El desempeño de un detector CFAR se caracteriza principalmente mediante dos métricas: la probabilidad de detección $P_d$ y la probabilidad de falsa alarma $P_{fa}$. Ambas se encuentran estrechamente relacionadas con la relación señal a ruido (SNR, \textit{Signal-to-Noise Ratio}).
+
+	% La probabilidad de falsa alarma $P_{fa}$ se define como la probabilidad de declarar la presencia de un blanco cuando en realidad solo está presente el ruido. En los algoritmos CFAR, $P_{fa}$ es un parámetro de diseño fijado a priori y determina directamente el valor del umbral de detección. Un valor reducido de $P_{fa}$ disminuye la cantidad de detecciones espurias, pero incrementa el umbral, dificultando la detección de señales de baja potencia.
+
+	% Por su parte, la probabilidad de detección $P_d$ representa la probabilidad de detectar correctamente un blanco cuando este efectivamente está presente. Esta probabilidad depende de diversos factores, entre los que se destacan:
+
+	% \begin{itemize}
+	% 	\item La relación señal a ruido de la señal bajo prueba.
+	% 	\item El valor de $P_{fa}$ seleccionado.
+	% 	\item El número de celdas de referencia empleadas en la estimación del ruido.
+	% 	\item El modelo estadístico asumido para el ruido y el blanco.
+	% \end{itemize}
+
+	% A medida que la SNR aumenta, la distribución de la potencia de la señal en la CUT se separa progresivamente de la distribución del ruido, incrementando la probabilidad de que dicha potencia supere el umbral de detección. En consecuencia, la probabilidad de detección $P_d$ crece con la SNR. Para una SNR fija, una disminución de $P_{fa}$ implica un aumento del umbral, lo que conlleva una reducción de $P_d$.
+
+	% Este comportamiento refleja el compromiso inherente entre sensibilidad y confiabilidad del detector. Desde un punto de vista estadístico, la relación entre $P_d$, $P_{fa}$ y la SNR suele analizarse mediante curvas ROC (\textit{Receiver Operating Characteristic}), las cuales representan la probabilidad de detección en función de la probabilidad de falsa alarma para distintos valores de SNR. Estas curvas constituyen una herramienta fundamental para comparar el desempeño de distintos algoritmos CFAR y evaluar su comportamiento bajo diversas condiciones de operación.
+
+	% En síntesis, los algoritmos CFAR, y en particular el CA-CFAR, permiten el diseño de detectores adaptativos capaces de mantener constante la tasa de falsas alarmas frente a variaciones del nivel de ruido. No obstante, la probabilidad de detección permanece limitada por la SNR disponible, lo que impone un límite fundamental al desempeño de cualquier sistema de detección.

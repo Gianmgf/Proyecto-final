@@ -1,0 +1,132 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global}
+    \entry{malanowski}{book}{}
+      \name{author}{1}{}{%
+        {{hash=ae9688a18dd65b4a267931685ef16b5b}{%
+           family={Malanowski},
+           familyi={M\bibinitperiod},
+           given={Mateusz},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Artech House}%
+      }
+      \strng{namehash}{ae9688a18dd65b4a267931685ef16b5b}
+      \strng{fullhash}{ae9688a18dd65b4a267931685ef16b5b}
+      \strng{bibnamehash}{ae9688a18dd65b4a267931685ef16b5b}
+      \strng{authorbibnamehash}{ae9688a18dd65b4a267931685ef16b5b}
+      \strng{authornamehash}{ae9688a18dd65b4a267931685ef16b5b}
+      \strng{authorfullhash}{ae9688a18dd65b4a267931685ef16b5b}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Signal Processing for Passive Bistatic Radar}
+      \field{year}{2019}
+    \endentry
+    \entry{cristallini2023passive}{book}{}
+      \name{editor}{2}{}{%
+        {{hash=3e2826d74c2757e46a8865a45c5de8f2}{%
+           family={Cristallini},
+           familyi={C\bibinitperiod},
+           given={Diego},
+           giveni={D\bibinitperiod}}}%
+        {{hash=932a3a595d36b6816a559485e7e574a0}{%
+           family={O'Hagan},
+           familyi={O\bibinitperiod},
+           given={Daniel\bibnamedelima W.},
+           giveni={D\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London, United Kingdom}%
+      }
+      \list{publisher}{1}{%
+        {SciTech Publishing}%
+      }
+      \strng{namehash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \strng{fullhash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \strng{bibnamehash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \strng{editorbibnamehash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \strng{editornamehash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \strng{editorfullhash}{98a80b3716a25b8a5fb9b781fdd9f4f1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{editor}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-1-83953-118-7}
+      \field{note}{Imprint of The Institution of Engineering and Technology}
+      \field{title}{Passive Radars on Moving Platforms}
+      \field{year}{2023}
+    \endentry
+    \entry{isdbt}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=c0461e548ec7e8e5c937d7506f30f6cf}{%
+           family={{Ente Nacional de Comunicaciones (ENACOM)}},
+           familyi={E\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {ENACOM}%
+      }
+      \strng{namehash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \strng{fullhash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \strng{bibnamehash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \strng{authorbibnamehash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \strng{authornamehash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \strng{authorfullhash}{c0461e548ec7e8e5c937d7506f30f6cf}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Documento PDF}
+      \field{note}{\url{https://www.enacom.gob.ar/multimedia/normativas/2013/Resolucion-7\_13-Anexo\%201.pdf}}
+      \field{title}{Resolución 7/2013 -- Anexo 1}
+      \field{year}{2013}
+    \endentry
+    \entry{richards2014radar}{book}{}
+      \name{author}{1}{}{%
+        {{hash=33441aa63a5b1447e638483dbefcb507}{%
+           family={Richards},
+           familyi={R\bibinitperiod},
+           given={Mark\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {McGraw-Hill Education}%
+      }
+      \strng{namehash}{33441aa63a5b1447e638483dbefcb507}
+      \strng{fullhash}{33441aa63a5b1447e638483dbefcb507}
+      \strng{bibnamehash}{33441aa63a5b1447e638483dbefcb507}
+      \strng{authorbibnamehash}{33441aa63a5b1447e638483dbefcb507}
+      \strng{authornamehash}{33441aa63a5b1447e638483dbefcb507}
+      \strng{authorfullhash}{33441aa63a5b1447e638483dbefcb507}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Fundamentals of Radar Signal Processing}
+      \field{year}{2014}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
