@@ -1,153 +1,153 @@
 \chapter{Radar Pasivo}
 	La principal diferencia de un sistema de radar pasivo con respecto a uno convencional es que no cuenta con un transmisor propio, sino que utiliza fuentes externas de iluminación. La detección de objetivos se realiza comparando la señal directa del transmisor con la señal reflejada por el blanco.
-	
+
 	Para ello, el sistema cuenta al menos con dos canales de recepción: un canal de referencia y un canal de vigilancia. El canal de referencia captura una versión directa de la señal transmitida, ya sea mediante una antena orientada hacia el emisor o a través de la formación digital de un haz en dicha dirección. El canal de vigilancia, en cambio, recibe los ecos reflejados por los objetos ubicados en
 	la zona de interés, además de posibles contribuciones de \textit{clutter} y ruido.
-	
-	El procesamiento conjunto de ambas señales permite la detección de blancos y la estimación de sus parámetros. A partir del retardo temporal entre la señal de referencia y el eco recibido es posible estimar el rango biestático del blanco, definido como la diferencia entre la trayectoria transmisor--blanco--receptor y la trayectoria directa transmisor--receptor. De forma análoga, el desplazamiento Doppler observado permite calcular la velocidad biestática, asociada a la variación temporal de dicho rango. 
-	
-	
+
+	El procesamiento conjunto de ambas señales permite la detección de blancos y la estimación de sus parámetros. A partir del retardo temporal entre la señal de referencia y el eco recibido es posible estimar el rango biestático del blanco, definido como la diferencia entre la trayectoria transmisor--blanco--receptor y la trayectoria directa transmisor--receptor. De forma análoga, el desplazamiento Doppler observado permite calcular la velocidad biestática, asociada a la variación temporal de dicho rango.
+
+
 	\section{Geometría y coordenadas biestáticas}
-	
+
 	Consideremos la geometría de un radar pasivo. Un blanco se encuentra en la posición \(\overline{p_t} = (x(t), y(t), z(t))\) con un vector de velocidad \(\overline{v_c} = (v_x(t), v_y(t), v_z(t))\); el transmisor está ubicado en \(\overline{p_{tx}} =(x_{t}, y_{t}, z_{t})\) y el receptor en \(\overline{p_{rx}} =(x_{r}, y_{r}, z_{r})\). Esto no permite definir las siguientes distancias: la distancia transmisor--blanco ($R_1$), el receptor--blanco ($R_2$) y la distancia transmisor--receptor ($R_b$).
-	
+
 	\begin{equation}
 		R_1(t) = || \overline{p_{t}} - \overline{p_{tx}} ||
 	\end{equation}
-	
+
 	\begin{equation}
 		R_2(t) = || \overline{p_{t}} - \overline{p_{rx}} ||
 	\end{equation}
-	
+
 	\begin{equation}
 		R_b = || \overline{p_{tx}} - \overline{p_{rx}} ||
 	\end{equation}
-	
+
 	En donde el ángulo entre los segmentos transmisor–blanco y receptor–blanco,  \(\beta\), se conoce como ángulo biestático.
-	
-	
+
+
 	\figura{.7}{./pr/geometria.png}{Geometría en un esquema biestático.}{ Fuente: \cite{malanowski}.}{\label{fig:geo}}
-	
-	
-	
+
+
+
 	El rango biestático se calcula a partir de la diferencia entre el camino directo, $R_b$, y el indirecto, $R_1(t) + R_2(t)$. Esto puede hacerse a partir del retardo \(\tau\) medido entre las señales de eco y de referencia, y la velocidad de la luz \(c\).
-	
+
 	\begin{equation}
 		R(t) = R_1(t) + R_2(t) - R_b = c \cdot \tau
 		\label{eq:rango_biestatico}
 	\end{equation}
-	
-	Los distintos puntos que generan un mismo rango biestáticos forman un elipsoide biestático en el espacio tridimensional.  En donde los focos de este elipsoide se encuentran en las posiciones del transmisor y del receptor.  
+
+	Los distintos puntos que generan un mismo rango biestáticos forman un elipsoide biestático en el espacio tridimensional.  En donde los focos de este elipsoide se encuentran en las posiciones del transmisor y del receptor.
 	Al fijar la coordenada z de tal manera que en el plano resultante se incluyan al receptor y al transmisor se obtiene una elipse biestática.
 	\figura{.9}{./pr/rango_bi_3d.png}{Elipsoide biestático de iso-rango.}{ Fuente: \cite{malanowski}.}{\label{fig:rango_3d}}
 	\figura{.9}{./pr/rango_bi.png}{Elipses biestáticas.}{ Fuente: \cite{malanowski}.}{\label{fig:rango}}
-	
-	
-	
+
+
+
 	En la Figura~\ref{fig:rango} se muestran elipses biestáticas con distintos rangos asociados, en donde un mayor rango corresponde a una elipses de mayor tamaño.
 
-	
+
 	La velocidad biestática, definida como la derivada temporal del rango biestático, se calcula a partir del desplazamiento Doppler \(f_{d}\) medido entre las señales de referencia y de eco, y de la longitud de onda \(\lambda = \frac{c}{f_{c}}\), donde \(f_{c}\) es la frecuencia portadora:
-	
+
 	\begin{equation}
 		V = \dfrac{\partial R}{\partial t} = -\lambda f_d
 		\label{eq:vel_biestatica}
 	\end{equation}
-	
+
 	Otra forma de expresar la velocidad biestática es a partir de la velocidad cartesiana del blanco. Podemos obtener V sumando las proyecciones del vector de velocidad $\overline{v}_c$ sobre los vectores unitarios de $R_1$ y $R_2$, como se muestra en la Ec.~\ref{eq:vel_biestatica_proy}.
-	
+
 	\begin{equation}
 		\label{eq:vel_biestatica_proy}
 		V = \langle \overline{v_c} , \overline{u_{r1}} \rangle + \langle \overline{v_c} , \overline{u_{r2}} \rangle
 	\end{equation}
-	
+
 	En la práctica, esta expresión no puede emplearse directamente, ya que requiere conocimiento previo de la velocidad y la posición del objetivo. No obstante, resulta útil para la generación de escenarios de simulación, en los cuales todos los parámetros del sistema y del blanco son conocidos y pueden controlarse.
 
-		
-		
+
+
 	\section{Ecuación Radar}
-	
+
 	Se considera una geometría biestática en la que el transmisor y el receptor se encuentran en posiciones distintas. La distancia entre el transmisor y el blanco es $R_{1}$, mientras que la distancia entre el blanco y el receptor es $R_{2}$. El transmisor emite una potencia $P_{t}$ con una ganancia $G_{t}$ en la dirección del blanco.
-	
+
 	La densidad de potencia incidente sobre el objetivo es:
-	
+
 	\begin{equation}
 		S_{1}=\frac{P_{t} G_{t}}{4\pi R_{1}^{2}}
 	\end{equation}
-	
+
 	El blanco se caracteriza por su RCS $\sigma$, que modela la potencia dispersada hacia el receptor. Bajo el modelo de dispersión isotrópica equivalente, la densidad de potencia en el receptor a una distancia $R_{2}$ es:
-	
+
 	\begin{equation}
 		S_{2}=\frac{P_{t} G_{t} \sigma}{(4\pi)^{2} R_{1}^{2} R_{2}^{2}}
 	\end{equation}
-	
+
 	La potencia recibida depende además del área efectiva de la antena receptora $A_{\text{ef}}$ y expresando el área efectiva en función de la ganancia receptora $G_{r}$,
-	
+
 	\begin{equation}
 		A_{\text{ef}}=\frac{G_{r}\lambda^{2}}{4\pi}
 	\end{equation}
-	
+
 	se obtiene finalmente la ecuación radar biestática:
-	
+
 	\begin{equation}
 		P_{r}=\frac{P_{t} G_{t} G_{r} \lambda^{2} \sigma}{(4\pi)^{3} R_{1}^{2} R_{2}^{2}}
 	\end{equation}
 
 	\section{Iluminadores de Oportunidad}
-	
+
 	A diferencia de un sistema de radar convencional, en un radar biestático pasivo no generamos la señal de referencia, pero podemos elegir cuál utilizar. Dependiendo de la aplicación, cada señal tendrá sus ventajas y desventajas. Los dos principales parámetros para seleccionar el iluminador son la frecuencia y el ancho de banda.
-	
+
 	Al observar la ecuación de resolución en rango, podemos ver que aumentar el ancho de banda reduce el tamaño de la celda de resolución en rango; además, al incrementar la frecuencia también aumentan las pérdidas por propagación en el espacio libre, dadas por
-	
+
 	\begin{equation}
 		\label{eq:pel}
 		\alpha_{PEL} = \left(\frac{4 \pi d f}{c}\right)^2
 	\end{equation}
-	
 	donde \(f\), \(d\) y \(c\) representan la frecuencia, la distancia recorrida por la señal y la velocidad de la luz, respectivamente. Esto puede llegar a crear una limitante en la potencia recibida debido a la sensibilidad del receptor y la SNR necesaria para un correcto funcionamiento del sistema.
-	
+
 	Algunas de las señales más comunes para este uso son:
-	
-	\begin{table}[H]
-		
-		\begin{tabular}{l l l l}
+
+{	\begin{table}[H]
+		\renewcommand{\arraystretch}{1.4}
+		\caption[Ejemplos de iluminadores para radar pasivo.]{Ejemplos de iluminadores para radar pasivo. Adaptado de \cite{malanowski}.}
+		\begin{tabular}{|l | l |l | l|}
 			\hline
 			Iluminador & Banda de frecuencia & BW & P$_{t}$ \\
 			\hline
-			DVB-T & 470--860 MHz & 7.6 MHz & Máx. 100 kW \\
-			GSM & 935--960 MHz & 200 kHz & Máx. 320 W \\
-			LTE & 700 MHz--2.6 GHz & 1.4--20 MHz & Máx. 200 mW \\
+			DVB-T & 470--860 MHz & 7.6 MHz & Máx. 100 kW \\\hline
+			GSM & 935--960 MHz & 200 kHz & Máx. 320 W \\\hline
+			LTE & 700 MHz--2.6 GHz & 1.4--20 MHz & Máx. 200 mW \\\hline
 			WiFi & 2.4 GHz--5 GHz--6 GHz & 16 MHz & Máx. 200 mW \\
 			\hline
 		\end{tabular}
 		\centering
-		\caption[Ejemplos de iluminadores para radar pasivo.]{Ejemplos de iluminadores para radar pasivo. Adaptado de \cite{malanowski}.}
-		\label{iluminadores}
-	\end{table}
-	
+
+		\label{tab:iluminadores}
+	\end{table}}
+
 	En este trabajo se eligió la señal de TDT. Uno de los motivos es que su estructura y procesamiento están estrictamente definidos, lo que permite conocer exactamente cómo la estación transmisora emitió la señal y qué pasos seguir para demodularla y volverla a modular. Sin embargo, un problema intrínseco de esta señal es la aparición de lóbulos laterales determinísticos debido a sus prefijos cíclicos y herramientas de sincronización (véase Capítulo~4).
-	
+
 	Si bien originalmente la señal de TDT cuenta con un ancho de banda de aproximadamente 8 GHz, utilizar el espectro completo complejiza notablemente el modulador y el demodulador, por lo que se optó por emplear el segmento central de transmisión parcial. Este cuenta con un ancho de banda de [completar], el cual es menor pero suficiente para aplicarlo como base de trabajo.
-	
+
 
 	\section{Canal de referencia y canal de vigilancia}
-	
+
 	Siguiendo el modelo propuesto en \cite{cristallini2023passive}, se modelaron las señales recibidas considerando un único canal de vigilancia con:
 	\begin{equation}
 	\label{eq:x_e}
 	x_e[n] = A \, x_r[n-m] \, e^{j2\pi f_D n T}
 	\end{equation}
-	
+
 	En esta expresión, $m$ representa el retardo, expresado en muestras, asociado al eco del blanco; $A$ es la amplitud compleja correspondiente a la RCS del blanco y el paso de la señal por el aire.
-	
-	Idealmente, cada canal debería estar aislado del otro y las señales no deberían contener componentes de los canales opuestos. Sin embargo, esto representa un problema ya que, por más directivas que sean las antenas, siempre se filtrará cierta cantidad de potencia. 
+
+	Idealmente, cada canal debería estar aislado del otro y las señales no deberían contener componentes de los canales opuestos. Sin embargo, esto representa un problema ya que, por más directivas que sean las antenas, siempre se filtrará cierta cantidad de potencia.
 	\figura{.9}{./pr/canales.png}{Correlación entre antenas de vigilancia y referencia.}{ Fuente: \cite{malanowski}.}{\label{fig:canales}}
-	En la Figura~\ref{fig:canales} se observa cómo una componente de la señal eco, $A_{surv}(\phi_{tx})$, es captada por el diagrama de radiación de la antena de vigilancia y, de forma inversa, la señal de referencia, $A_{ref}(\phi_{target})$, es recibida por la antena de vigilancia. 
-	
+	En la Figura~\ref{fig:canales} se observa cómo una componente de la señal eco, $A_{surv}(\phi_{tx})$, es captada por el diagrama de radiación de la antena de vigilancia y, de forma inversa, la señal de referencia, $A_{ref}(\phi_{target})$, es recibida por la antena de vigilancia.
+
 	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, lo mismo no ocurre en sentido inverso, ya que sin un tratamiento previo la señal directa enmascara completamente al objetivo. Este fenómeno se conoce como \textit{interferencia de señal directa} (DSI, por sus siglas en inglés).
-	
+
 	Otro fenómeno que también interfiere en la correcta detección de blancos es el \textit{clutter}. En la señal $x_e$ no solo están presentes la componente del eco del blanco y la señal directa, sino también las reflexiones provenientes de objetos inmóviles en el entorno del radar. Estas reflexiones son réplicas de la señal transmitida cuya amplitud y retardo dependen de la RCS del \textit{clutter} y de su posición relativa. Sin embargo, al tratarse de objetos estáticos, no presentan shifteo Doppler. La presencia de estas contribuciones puede generar falsos positivos o enmascarar el blanco de interés por lo que
 	para solucionar esto se aplica un filtro anti-\textit{clutter} encargado de eliminar de la señal eco todos los componentes con $f_{\text{doppler}}$ nula. La selectividad con la que se suprimen estos componentes depende del tipo de filtro y de la cantidad de coeficientes empleados.
-      
-	
+
+
 	\figura{.9}{./pr/filtro.png}{Diagrama de un filtro anti clutter.}{}{\label{fig:filtro_clutter}}

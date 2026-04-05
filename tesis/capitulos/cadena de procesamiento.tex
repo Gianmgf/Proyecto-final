@@ -2,13 +2,8 @@
 
 	\section{Filtro de clutter y rayo directo}
 
-	La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de la interferencia de trayectoria directa (ITD) y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando éstos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto *BT* utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
+	La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de DSI y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando estos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto *BT* utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
 
-	En este contexto, el filtrado adaptativo se convierte en una herramienta fundamental para mejorar el rango dinámico efectivo del sistema. La señal de vigilancia está compuesta por la contribución directa del transmisor, por múltiples reflexiones estacionarias de distinto retardo (clutter), por los ecos de los objetivos en movimiento y por ruido. La ITD suele ser el componente de mayor potencia, seguida por el clutter, cuyas copias retardadas de la señal de referencia pueden estar entre 20 y 40 dB por debajo de la trayectoria directa. Ambos, no obstante, se mantienen muy por encima del ruido térmico o del ruido antropogénico dominante en bandas UHF y VHF, generando un enmascaramiento que debe ser reducido mediante procesamiento digital.
-
-	Si bien existen métodos físicos o analógicos para mitigar estas interferencias, como el blindaje de antenas o la cancelación en RF, su efectividad es limitada. Por este motivo, prácticamente todas las implementaciones modernas recurren a técnicas digitales de cancelación. Entre ellas se incluyen enfoques iterativos basados en filtros adaptativos —como LMS, NLMS, RLS o estructuras en celosía— y métodos de procesamiento por bloques. Cada familia de algoritmos presenta ventajas y desventajas en términos de velocidad de convergencia, estabilidad, complejidad computacional y capacidad para discriminar componentes estrechamente espaciados en frecuencia. También existen métodos afines al filtrado adaptativo tradicional, como el algoritmo CLEAN, que permiten eliminar componentes dominantes de forma secuencial.
-
-	El propósito de este capítulo es presentar el problema de la cancelación de clutter e ITD desde un marco unificado, describir los principales algoritmos utilizados para tal fin y analizar su comportamiento en escenarios reales. Se introduce un modelo de señal adecuado para formular el problema del filtrado adaptativo y se discute cómo las características de los ecos —tanto estacionarios como móviles— afectan la capacidad de cancelación. Finalmente, se muestran resultados obtenidos con señales reales y se examinan aspectos prácticos como la convergencia y la selectividad espectral de los filtros.
 
 		\subsection{Filtro de lattice en bloque}
 
@@ -26,7 +21,7 @@
 
 
 		\begin{table}[H]
-
+			\caption[Algoritmo de filtro lattice en bloque.]{Algoritmo de filtro lattice en bloque. Adaptado de \cite{malanowski}.}
 			\centering
 			\begin{tabular}{|l|c|}
 				\hline
@@ -36,15 +31,15 @@
 				Predicción&\\
 				&$b_{i+1}(n) = b_i(n-1) - k_{i+1} \cdot f_i(n)$\\
 				&\\
-				&$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\\\hline
+				&$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
 				 &\\
 
 				Filtrado&$h_i = \dfrac{<e_i(n); b_i(n)> }{|| b_i(n)||^2} $\\
 				&\\
-				&$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\\\hline
+				&$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
 			\end{tabular}
 			\centering
-			\caption[Algoritmo de filtro lattice en bloque.]{Algoritmo de filtro lattice en bloque. Adaptado de \cite{malanowski}.}
+
 			\label{table:lattice}
 
 		\end{table}
