@@ -755,64 +755,33 @@ Con estas señales de error, el receptor puede realimentar los bloques de correc
 
 \subsection{Decodificación del TMCC}
 
-Una vez estabilizadas la sincronización y la ecualización, el receptor puede decodificar la señal TMCC con suficiente confiabilidad como para configurar adecuadamente el resto de la cadena. El TMCC contiene 204 bits por cuadro OFDM y transmite todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda, que deben ser determinados por otras vías \cite{isdbt,portugues,uruguay_rx}.
+Una vez estabilizadas la sincronización y la ecualización, el receptor puede decodificar la señal TMCC con suficiente confiabilidad como para configurar adecuadamente el resto de la cadena. El TMCC contiene todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda. Para demodularlo, el receptor debe identificar la secuencia de referencia en el primer símbolo del cuadro y luego aplicar la modulación diferencial DBPSK inversa sobre los símbolos siguientes, aplicando una votación sobre las subportadoras TMCC para determinar si se invirtió la secuencia del símbolo anterior o no y luego aplicar la decodificación del código DSC(184,102) para corregir errores y recuperar los bits de información.
 
-En el receptor descrito en \cite{uruguay_rx}, para cada símbolo OFDM se demodula el bit presente en cada portadora TMCC y se realiza un voto mayoritario entre ellas para decidir el bit correspondiente. Luego, un buffer de 204 bits se compara con las palabras de sincronismo del TMCC, y cuando se detecta un cuadro válido se verifica su consistencia mediante el código de paridad. A partir de ese momento puede recuperarse la configuración actual de la transmisión y propagarse dicha información a los bloques posteriores \cite{uruguay_rx}.
 
-\subsection{Parámetros recuperados}
-
-Los campos TMCC permiten determinar, para cada capa jerárquica activa, la modulación utilizada, la tasa del código convolucional, la profundidad del entrelazado temporal y el número de segmentos asignados. También permiten identificar si el segmento 0 está reservado para recepción parcial. En consecuencia, el TMCC fija la configuración del demodulador, del desentrelazador y de los decodificadores de canal, y por ello constituye el nexo entre la sincronización/equalización y el resto del receptor \cite{isdbt,portugues,uruguay_rx}.
+Los campos TMCC permiten determinar, para cada capa jerárquica activa, la modulación utilizada, la tasa del código convolucional, la profundidad del entrelazado temporal y el número de segmentos asignados. También permiten identificar si el segmento 0 está reservado para recepción parcial. En consecuencia, el TMCC fija la configuración de la cadena de recepción.
 
 \section{Procesamiento del cuadro OFDM y separación de capas}
 
-\subsection{Extracción de portadoras de datos}
+Una vez obtenidas las subportadoras ecualizadas, el receptor invierte las etapas aplicadas durante la conformación del cuadro OFDM. En primer lugar, separa las portadoras de datos de aquellas reservadas para pilotos, TMCC y canales auxiliares, conservando únicamente los símbolos complejos asociados a la información útil. En la implementación descrita en \cite{uruguay_rx}, el mismo bloque encargado de procesar el TMCC también filtra las portadoras de control y entrega a la salida únicamente las portadoras de datos, ya ordenadas por número de segmento.
 
-Una vez conocida la estructura del cuadro OFDM, el receptor separa las portadoras destinadas a datos de aquellas reservadas para pilotos, TMCC y canales auxiliares. Esta operación invierte el armado del cuadro realizado en transmisión y deja únicamente los símbolos complejos asociados a los flujos de información útil \cite{isdbt,portugues}.
+A continuación, se invierte el entrelazado en frecuencia aplicado en transmisión. Este proceso se realiza en el orden inverso al del transmisor: primero se deshace la aleatorización intra-segmento, luego la rotación de portadoras dentro del segmento y, finalmente, el entrelazado entre segmentos. De esta manera, los símbolos recuperan la posición espectral que tenían antes de la etapa de intercalado frecuencial.
 
-En el caso descrito en \cite{uruguay_rx}, el bloque decodificador de TMCC también es responsable de filtrar las portadoras de control y de entregar a la salida solo las portadoras de datos, reordenadas por número de segmento.
-
-\subsection{Desentrelazado en frecuencia}
-
-Luego de la extracción de portadoras de datos, el receptor debe invertir el entrelazado en frecuencia aplicado en transmisión. Esta operación comprende el desentrelazado entre segmentos, la desrotación dentro del segmento y la desaleatorización intra-segmento \cite{isdbt,portugues}.
-
-Si la transmisión utilizó agrupamientos de segmentos con la misma categoría de modulación, el desentrelazado entre segmentos restituye a cada símbolo su segmento original. La desrotación compensa el desplazamiento aplicado dentro de cada segmento según el número de segmento, y la desaleatorización invierte la permutación adicional especificada por la norma. Tras estas etapas, los símbolos quedan en el orden adecuado para la separación por capas y para la demodulación posterior.
-
-\subsection{Separación jerárquica y diferencia entre recepción \textit{full-seg} y \textit{1-seg}}
-
-Con la información recuperada desde el TMCC, el receptor puede reagrupar los datos según la capa jerárquica a la que pertenecen. En configuraciones jerárquicas típicas, esto permite separar el flujo correspondiente al segmento central, destinado a recepción portátil, del flujo asociado a los doce segmentos restantes, destinado a recepción fija \cite{isdbt,portugues}.
-
-Esta distinción es precisamente la que separa conceptualmente a un receptor \textit{full-seg} de un receptor \textit{1-seg}. El primero procesa los 13 segmentos del canal y puede reconstruir todos los transport streams presentes. El segundo, en cambio, solo necesita sintonizar y demodular el segmento central, con lo cual reduce tanto el ancho de banda de procesamiento como la complejidad computacional del receptor \cite{isdbt,portugues,uruguay_rx}.
+Una vez restaurado ese orden, el receptor puede reagrupar los datos según la capa jerárquica a la que pertenecen. En configuraciones típicas, esto permite separar el segmento central asociado a recepción parcial de los restantes segmentos destinados a recepción total. En este sentido, un receptor \textit{full-seg} procesa los 13 segmentos del sistema, mientras que un receptor \textit{1-seg} únicamente demodula el segmento central \cite{isdbt,portugues,uruguay_rx}.
 
 \section{Demodulación y decodificación de canal}
 
-\subsection{Demodulación e inversión del entrelazado de bits}
+Luego de la separación por capas, el receptor aplica el demodulador correspondiente a la modulación indicada por el TMCC. Después del demapeo, se invierte el entrelazado de bits. Este bloque es el inverso del entrelazador del transmisor, por lo que puede interpretarse como la misma estructura de retardos pero recorrida en sentido contrario. De esta manera, los bits recuperan el orden con el que salían originalmente del codificador convolucional.
 
-Una vez separados los símbolos por capa, el receptor debe aplicar el demodulador correspondiente a la modulación indicada en el TMCC. En DQPSK, la recuperación de bits se basa en la diferencia de fase entre símbolos consecutivos, ya que se trata de una modulación diferencial. En QPSK, 16QAM y 64QAM, en cambio, la decisión se realiza sobre la constelación ecualizada \cite{isdbt,portugues}.
+A continuación, se invierte el entrelazado temporal. Del mismo modo que en el caso anterior, el desentrelazador puede verse como el mismo banco de retardos del transmisor, pero aplicado en orden inverso. Esto permite restituir la secuencia temporal original de símbolos antes de la decodificación interna.
 
-Después de la decisión de símbolos, el receptor invierte el entrelazado de bits específico de la modulación empleada. Esta operación recompone la secuencia de bits codificados tal como salía del codificador convolucional del transmisor.
+Una vez restaurado el orden temporal, el receptor aplica la decodificación convolucional correspondiente a la tasa configurada en transmisión. Si la tasa efectiva se obtuvo mediante punzado, el receptor debe reconstruir primero la secuencia equivalente al código madre de tasa \(1/2\) y luego aplicar el algoritmo de Viterbi para estimar la secuencia de bits más probable \cite{isdbt,portugues}. En la implementación descrita en \cite{uruguay_rx}, el decodificador convolucional reutiliza bloques equivalentes a los empleados en receptores DVB-T.
 
-\subsection{Desentrelazado temporal}
-
-La siguiente etapa consiste en invertir el entrelazado temporal aplicado sobre cada capa. Para ello, el receptor utiliza la profundidad de entrelazado indicada por el TMCC y realinea los símbolos o bits según la estructura de retardos descrita en la norma \cite{isdbt,portugues}. Esta operación es necesaria para restituir el orden temporal original de la secuencia antes de la decodificación interna.
-
-\subsection{Decodificación convolucional}
-
-Una vez restaurado el orden temporal, el receptor aplica la decodificación convolucional correspondiente a la tasa seleccionada en transmisión. Si la tasa efectiva fue obtenida por punzado a partir del código madre de tasa $1/2$, el receptor debe deshacer implícitamente esa operación antes o durante la decodificación. El resultado de esta etapa es la secuencia binaria previa a la codificación interna del transmisor \cite{isdbt,portugues}.
-
-En la implementación descrita en \cite{uruguay_rx}, tanto el decodificador de Viterbi como el decodificador Reed--Solomon fueron reutilizados a partir de bloques compatibles con DVB-T, dado que en ese punto la estructura algorítmica es equivalente.
-
-\subsection{Desentrelazado de bytes y desdispersión de energía}
-
-Luego de la decodificación convolucional, el flujo binario se reagrupa nuevamente en bytes y se aplica el desentrelazado de bytes, que invierte la redistribución temporal efectuada en transmisión. Tras ello, el receptor aplica la desdispersión de energía utilizando la misma secuencia PRBS del transmisor. Como la operación XOR es involutiva, basta con volver a aplicar la misma secuencia pseudoaleatoria, con la misma inicialización y respetando la exclusión del byte de sincronismo \cite{isdbt,portugues}.
-
-En el receptor implementado en \cite{uruguay_rx}, esta etapa se utiliza además como verificación de consistencia: el byte inmediatamente anterior al comienzo de un nuevo cuadro OFDM debe corresponder al byte de sincronismo \texttt{0x47} del transport stream.
-
-\subsection{Decodificación Reed--Solomon}
+Luego de la decodificación interna, el flujo binario se vuelve a agrupar en bytes y se aplica el desentrelazado de byte, nuevamente como el bloque inverso del entrelazador convolucional de bytes del transmisor. Tras ello, se realiza la desdispersión de energía utilizando la misma secuencia PRBS y la misma inicialización empleadas en transmisión. Como la operación XOR es involutiva, basta con volver a aplicar la misma secuencia pseudoaleatoria para recuperar el flujo original, preservando el byte de sincronismo del transport stream \cite{isdbt,portugues}.
 
 La última etapa de corrección de errores es la decodificación externa Reed--Solomon RS(204,188). Este bloque elimina los 16 bytes de redundancia agregados en transmisión y corrige, cuando es posible, hasta 8 bytes erróneos por paquete. Una vez aplicada esta operación, el receptor recupera nuevamente paquetes MPEG-2 TS de 188 bytes \cite{isdbt,portugues,uruguay_rx}.
 
 \section{Recuperación del flujo MPEG-2 TS}
 
-Al finalizar la decodificación Reed--Solomon, el receptor obtiene uno o más flujos MPEG-2 TS, según la cantidad de capas jerárquicas activas en la transmisión. En una configuración de una sola capa, el resultado es un único transport stream. En configuraciones jerárquicas de dos o tres capas, el receptor puede reconstruir varios flujos independientes, cada uno asociado a un conjunto de segmentos y a una configuración de modulación y codificación propia \cite{isdbt,portugues}.
+Al finalizar la decodificación Reed--Solomon, el receptor obtiene uno o más flujos MPEG-2 TS, según la cantidad de capas jerárquicas activas en la transmisión. En una configuración de una sola capa, el resultado es un único \textit{transport stream}. En configuraciones jerárquicas, en cambio, pueden recuperarse varios flujos independientes, cada uno asociado a una capa y a su correspondiente grupo de segmentos.
 
-Desde esta perspectiva, la cadena receptora completa del ISDB-Tb puede entenderse como una secuencia de inversiones perfectamente alineada con la cadena transmisora: primero se sincroniza y ecualiza la señal, luego se recupera la estructura del cuadro OFDM y la configuración TMCC, y finalmente se deshacen las operaciones de entrelazado, modulación y codificación de canal hasta llegar nuevamente al MPEG-2 TS. Así, junto con el Capítulo~\ref{chap:isdbtb_tx}, queda descrita una visión integral del transceptor ISDB-Tb.
+En conjunto, la cadena receptora puede entenderse como la inversión ordenada de la cadena transmisora: primero se desarma el cuadro OFDM y se recuperan las capas, luego se invierten los entrelazados, la modulación y la codificación de canal, y finalmente se reconstruye el flujo MPEG-2 TS. De este modo, junto con el Capítulo~\ref{chap:isdbtb_tx}, queda descrita una visión completa del transceptor ISDB-Tb.

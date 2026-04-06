@@ -10,14 +10,14 @@ En este capítulo se presentan resultados de simulación obtenidos con la cadena
 \end{figure}
 
 
-Para implementar el reconstructor se utilizó como base el software abierto presentado en \cite{uruguay_rx,uruguay_tx}. La implementación receptora permite recuperar de la señal ISDB-Tb recibida tanto el flujo MPEG-2 TS como los parámetros efectivos de transmisión, mientras que la implementación transmisora permite volver a sintetizar una señal coherente con dicha configuración. En consecuencia, el reconstructor adoptado en esta tesis puede entenderse como el encadenamiento de ambas etapas: una recuperación controlada de la información transmitida seguida por una regeneración de la señal de referencia. El software utilizado como base para la implementación del receptor y del transmisor se encuentra disponible de manera abierta en el proyecto \texttt{gr-isdbt} \cite{grisdbt_repo}.
+Para implementar el reconstructor se utilizó como base el software abierto presentado en \cite{uruguay_rx,uruguay_tx}. El software utilizado como base para la implementación del receptor y del transmisor se encuentra disponible de manera abierta en el proyecto \texttt{gr-isdbt} \cite{grisdbt_repo}.
 
 \section{Simulación de señales}
 \label{sec:impl_sim}
 
 Inicialmente, se toman todos los parámetros cartesianos (posiciones y velocidad) y la señal de referencia sintética. A partir de este se crean las réplicas de clutter y la señal del blanco y se combinan, junto con la señal de referencia para crear DSI, en la señal de vigilancia $x_s$.
 
-[FIGURA ESCENARIO]
+\figura{.8}{./sim_data/scenario_geometry.png}{Geometría biestatica del escenario de simulación.}{}{\label{fig:sim_geometria}}
 
 
 Una vez generadas las señales, estas pasan por un canal de ruido blanco gaussiano aditivo en donde se les suman $\sigma_1$ y $\sigma_2$. Para las simulaciones se decidió utilizar ruidos no correlacionados debido a que ambas señales deberían tener su propio front-end RF con su propio ruido térmico.

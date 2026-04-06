@@ -50,7 +50,7 @@
 
 	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ec. \ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
 
-	Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
+
 
 	\begin{equation}
 		\label{eq:caf}
@@ -66,62 +66,95 @@
 		\label{eq:caf_dig}
 		\psi(m,k) =
 		\mathop{\sum}_{n = 0}^{T}
-		x_e(t) \cdot \,
-		x_r^{\ast}\!\left(n - m \right) \cdot \,
+		x_e[n] \cdot \,
+		x_r^{\ast}\!\left[n - m \right] \cdot \,
 		\exp\!\left(-j\,\frac{2\pi}{N} k n\right)
 	\end{equation}
+	Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
 
-		\subsection{Algoritmo Batch}
-
-		Este algoritmo se centra en la aproximación de que en un segmento P, el desplazamiento doppler es despreciable. Con esta aproximación puede crearse una matriz análoga a la matriz de un radar pulsado
-		en donde existe la dimensión de tiempo rápido y lento. Sin embargo, en un sistema continuo estas no representan exactamente los mismos siendo el tiempo lento los diferentes tramos de segmentos y el rápido
-		los retardos de la señal.
-		Luego, ya para obtener el mapa rango-doppler, se toma la FFT de las filas de la matriz y llegando así a la Ec. [X]. La demostración de la aproximación puede verse en el anexo [X].
-
-		\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
-	\section{Detección de objetivos}
+	\subsection{Algoritmo Batch}
 
 
 
 
-	La detección de objetivos se basa en la comparación entre la potencia de la señal recibida y un umbral de decisión. En entornos reales, el nivel de ruido y \textit{clutter} puede variar significativamente en el tiempo y el espacio, lo que hace que el uso de un umbral fijo resulte ineficiente. En este contexto, los algoritmos CFAR (\textit{Constant False Alarm Rate}) permiten ajustar localmente el umbral de detección a partir de una estimación del nivel de ruido en la zona siendo analizada, garantizando una probabilidad de falsa alarma aproximadamente constante.
+	El algoritmo \textit{batch} se basa en dividir las señales en \(Q\) segmentos de
+	\(P\) muestras, reescribiendo el índice temporal como
 
-	El detector CFAR se basa en estimar la potencia promedio del entorno circundante a la muestra bajo análisis y establecer un umbral proporcional a dicha estimación. Definiendo tres tipos diferentes de celdas:
+	\begin{equation}
+	n=qP+p,
+	\end{equation}
+	donde \(q=0,\ldots,Q-1\) identifica el segmento y \(p=0,\ldots,P-1\) la muestra
+	dentro de dicho bloque. A partir de esta partición, la CAF puede expresarse como
+	\begin{equation}
+	\psi(m,k)=\sum_{q=0}^{Q-1}\sum_{p=0}^{P-1}
+	x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]\,
+	\exp\!\left(-j\frac{2\pi}{N}k(qP+p)\right).
+	\end{equation}
 
+	La simplificación central del método consiste en asumir que, dentro de cada
+	segmento de longitud \(P\), el corrimiento Doppler es suficientemente pequeño
+	como para que la variación de fase del término exponencial sea despreciable.
+	Bajo esta hipótesis, dicho término puede considerarse aproximadamente constante
+	dentro del bloque y extraerse de la suma interna, obteniéndose
+	\begin{equation}
+	\psi(m,k)\approx
+	\sum_{q=0}^{Q-1}
+	\left\{
+	\sum_{p=0}^{P-1}
+	x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]
+	\right\}
+	\exp\!\left(-j\frac{2\pi}{N}kq\right).
+	\end{equation}
+
+	De esta manera, el cálculo se separa en dos etapas. En primer lugar, para cada
+	segmento se realiza una correlación de corta duración entre la señal de
+	vigilancia y la señal de referencia, lo que permite obtener la información de
+	retardo. Luego, sobre la secuencia de correlaciones de los distintos segmentos,
+	se aplica una FFT en la dimensión \(q\), obteniendo así la información Doppler.
+	En consecuencia, el mapa rango--Doppler se construye de forma eficiente a partir
+	de correlaciones por bloque seguidas de una transformada de Fourier entre
+	segmentos.
+
+	\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
+
+
+	\section{Detección de blancos}
+
+	La detección de objetivos sobre la CAF se realiza comparando la potencia de cada celda con un umbral de decisión. En presencia de ruido, el uso de un umbral fijo resulta poco adecuado, ya que el nivel de interferencia puede variar a lo largo del mapa rango--Doppler. Por este motivo, se emplean detectores CFAR, los cuales ajustan localmente el umbral a partir de una estimación del nivel de fondo, manteniendo aproximadamente constante la probabilidad de falsa alarma.
+
+	En este tipo de detectores, para cada celda analizada se define una ventana local compuesta por tres tipos de celdas:
 
 	\begin{itemize}
-		\item \textbf{Celda bajo prueba (CUT, \textit{Cell Under Test})}: muestra en la cual se evalúa la posible presencia de un blanco.
-		\item \textbf{Celdas de guarda ($N_g$)}: muestras adyacentes a la CUT que se excluyen del proceso de estimación del ruido.
-		\item \textbf{Celdas de referencia($N_w$)}: conjunto de muestras utilizadas para estimar el nivel local de ruido.
+		\item \textbf{Celda bajo prueba (CUT):} celda en la que se evalúa la posible presencia de un blanco.
+		\item \textbf{Celdas de guarda (\(N_g\))}: celdas vecinas a la CUT que se excluyen de la estimación para evitar que la energía de un posible blanco afecte el cálculo del umbral.
+		\item \textbf{Celdas de referencia (\(N_w\))}: celdas utilizadas para estimar el nivel local de ruido.
 	\end{itemize}
 
-	En donde la celda CUT se va moviendo a través de toda la CAF hasta generar un umbral para cada elemento de la misma.
+	La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral adaptativo calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
 
-	\figura{.9}{./pr/cfar.png}{Ventana de CFAR Unidimensional. }{}{\label{fig:cfar}}
+	\figura{.9}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
 
+	\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR bidimensional. }{}{\label{fig:cfar_2d}}
 
-	\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR Bidimensional. }{}{\label{fig:cfar_2d}}
-	\subsection{Algoritmo CA-CFAR (\textit{Cell Averaging CFAR})}
+	\subsection{Algoritmo CA-CFAR}
 
-	El algoritmo CA-CFAR (\textit{Cell Averaging CFAR}) es una de las variantes más simples de la familia CFAR, en donde la estimación del nivel de ruido se obtiene calculando la media de la potencia medida en las celdas de referencia ubicadas alrededor de la CUT.
-
-	\begin{equation}
-		\hat{\sigma} = \dfrac{1}{N}
-		\sum_{i = 1}^{N} {x_{nw}}_{(i)}
-	\end{equation}
-con N siendo el total de celdas de referencia. El umbral de detección $T$ se obtiene multiplicando esta estimación por un factor de escala $\alpha$:
+	El algoritmo CA-CFAR (Cell Averaging CFAR) es una de las variantes más simples de la familia CFAR. En este caso, la estimación del nivel de ruido se obtiene calculando la media de la potencia en las celdas de referencia ubicadas alrededor de la CUT.
 
 	\begin{equation}
-		T = \alpha \cdot \hat{\sigma}
+		\hat{\sigma} = \frac{1}{N}\sum_{i=1}^{N} x_{nw(i)}
 	\end{equation}
-
-	El factor de escala $\alpha$ depende de N y de la probabilidad de falsa alarma deseada $P_{fa}$. Bajo la hipótesis de ruido con distribución exponencial, $\alpha$ puede expresarse analíticamente como:
+donde \(N\) es la cantidad total de celdas de referencia y \(x_{nw(i)}\) representa la potencia medida en la \(i\)-ésima celda de referencia. A partir de esta estimación, el umbral de detección se define como
 
 	\begin{equation}
-		\alpha = N \left( P_{fa}^{-1/N} - 1 \right)
+		T = \alpha \hat{\sigma}
+	\end{equation}
+siendo \(\alpha\) un factor de escala que depende de \(N\) y de la probabilidad de falsa alarma deseada \(P_{fa}\). Bajo la hipótesis de ruido con distribución exponencial, este factor puede expresarse como
+
+	\begin{equation}
+		\alpha = N\left(P_{fa}^{-1/N} - 1\right).
 	\end{equation}
 
-	Esta expresión asegura que, en ausencia de blancos, la probabilidad de que la potencia de la CUT supere el umbral de detección sea igual a $P_{fa}$.
+	De esta manera, se declara una detección cuando la potencia de la CUT supera el umbral \(T\). Este procedimiento se repite para todas las celdas de la CAF, obteniéndose un mapa de detecciones con umbral adaptado al nivel local de interferencia.
 
 
 

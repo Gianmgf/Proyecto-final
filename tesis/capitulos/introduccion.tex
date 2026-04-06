@@ -1,74 +1,44 @@
 \chapter{Introducción}
 
-El radar pasivo biestático constituye una alternativa de creciente interés para la detección de objetivos en escenarios donde no resulta conveniente, o directamente no es posible, emplear un transmisor dedicado. A diferencia de un radar convencional, este tipo de sistema aprovecha señales emitidas por fuentes externas, denominadas iluminadores de oportunidad, y basa su funcionamiento en la comparación entre una versión de referencia de la señal transmitida y la señal reflejada por los blancos presentes en la escena. Esta filosofía permite concebir sistemas de bajo costo, con baja probabilidad de interceptación y capaces de reutilizar infraestructuras de radiodifusión o telecomunicaciones ya existentes.
+El radar pasivo biestático constituye una alternativa para la detección de objetivos sin necesidad de emplear un transmisor dedicado. En este tipo de sistemas, la información de interés se obtiene a partir de señales emitidas por fuentes externas, denominadas iluminadores de oportunidad, mediante la comparación entre una señal de referencia y una señal de vigilancia que contiene los ecos reflejados por los blancos presentes en la zona de vigilancia.
 
-Dentro de las posibles señales iluminadoras, la televisión digital terrestre presenta características especialmente atractivas para su uso en radar pasivo. Por un lado, se trata de señales de alta disponibilidad, transmitidas con potencias elevadas y cobertura geográfica extensa. Por otro, poseen una estructura estrictamente normalizada, con esquemas de modulación, codificación e intercalado bien definidos. En particular, el estándar ISDB-Tb, adoptado en gran parte de Latinoamérica, ofrece un marco especialmente interesante para este tipo de aplicaciones, ya que combina una señal OFDM de ancho de banda apreciable con una arquitectura de transmisión altamente estructurada. Sin embargo, esta misma complejidad introduce desafíos específicos: la presencia de interferencia de señal directa, clutter estacionario, lóbulos laterales determinísticos y componentes propias de la estructura de la señal pueden degradar severamente la capacidad de detección si no se dispone de una referencia adecuada.
+Dentro de las posibles fuentes iluminadoras, la televisión digital terrestre resulta de particular interés debido a su amplia disponibilidad, su elevada potencia de transmisión, su estructura bien definida y su gran ancho de banda. En este contexto, el estándar ISDB-Tb, adoptado en Argentina, presenta características que lo convierten en una opción atractiva para su utilización en radar pasivo.
 
-En ese contexto, la motivación principal de este trabajo fue estudiar en profundidad el estándar de televisión digital ISDB-Tb, no solamente desde el punto de vista de su uso como sistema de comunicaciones, sino también como posible iluminador de oportunidad para radar pasivo. La hipótesis que guía el desarrollo es que un conocimiento detallado de la señal transmitida permite reconstruir una referencia más limpia y coherente que la obtenida directamente por un canal de referencia físico, y que esa mejora puede traducirse en un aumento de la relación señal a ruido efectiva del procesamiento radar y, en consecuencia, en una mejora de la detección.
+A partir de este escenario, el presente trabajo analiza la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. En particular, se estudia si el conocimiento de la estructura de la señal permite reconstruir una referencia de mejor calidad y, a partir de ello, mejorar la capacidad de detección del sistema.
 
-A partir de esta idea, el trabajo se estructuró como un proyecto integrador en el que convergen tres ejes complementarios. El primero consistió en estudiar y comprender el funcionamiento del estándar ISDB-Tb, tanto del lado del transmisor como del receptor, con el objetivo de identificar aquellos bloques y parámetros que resultan relevantes para la reconstrucción de la señal. El segundo fue analizar la viabilidad de la señal de televisión digital como iluminador de oportunidad, teniendo en cuenta tanto sus ventajas en términos de disponibilidad y estructura como sus limitaciones prácticas dentro de un esquema de radar biestático pasivo. El tercer eje fue diseñar e implementar una cadena propia de procesamiento radar, de código abierto y libre uso, que permitiera simular escenarios, procesar señales de referencia y vigilancia, y validar el impacto de utilizar una referencia reconstruida sobre el desempeño del sistema.
-
-En este sentido, el trabajo no se limitó a una revisión bibliográfica o a una implementación parcial de bloques aislados. Por el contrario, se buscó construir una cadena integrada que conectara el estudio del estándar ISDB-Tb con el procesamiento radar pasivo propiamente dicho. Para ello, se desarrolló un recorrido que comienza con la descripción del radar pasivo y de los iluminadores de oportunidad, continúa con el estudio de la modulación y demodulación de la señal ISDB-Tb, y culmina con el diseño e implementación de una cadena de procesamiento radar compuesta por cancelación de clutter e interferencia de señal directa, cálculo de la función de ambigüedad cruzada y detección mediante CFAR.
+Para ello, se aborda el estudio del estándar ISDB-Tb desde la perspectiva de su posible aplicación radar y se desarrolla una cadena de procesamiento que incluye supresión de clutter e interferencia de señal directa, cálculo de la función de ambigüedad cruzada y detección de blancos. Finalmente, el desempeño del sistema se evalúa por simulación, comparando los resultados obtenidos con y sin reconstrucción de la señal de referencia.
 
 \section{Objetivos}
 
-El objetivo general de este trabajo fue analizar la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático, y evaluar el impacto de reconstruir dicha señal sobre la capacidad de detección de blancos.
+El objetivo general de este trabajo es analizar la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático, y evaluar el impacto de reconstruir dicha señal sobre la capacidad de detección de blancos.
 
 De este objetivo general se desprenden los siguientes objetivos específicos:
 
 \begin{itemize}
     \item estudiar la estructura y el funcionamiento del estándar ISDB-Tb, con énfasis en aquellos bloques necesarios para comprender la señal transmitida y su procesamiento en recepción;
-    \item analizar las características de la señal de televisión digital terrestre como iluminador de oportunidad para radar pasivo, identificando sus ventajas y limitaciones;
-    \item desarrollar una cadena propia de procesamiento radar, de código abierto y orientada a libre uso, que permita integrar generación de señales, filtrado anti-clutter, cálculo de la CAF y detección;
+    \item desarrollar una cadena propia de procesamiento radar que permita integrar generación de señales, filtrado anti-clutter, cálculo de la función de ambigüedad cruzada y detección;
     \item incorporar dentro de dicha cadena un bloque reconstructor de señal de referencia, basado en el conocimiento de la estructura del estándar;
     \item validar por simulación el efecto de la reconstrucción de la referencia sobre el desempeño global del procesamiento, comparando los resultados obtenidos con y sin dicho bloque.
 \end{itemize}
 
-\section{Aportes del trabajo}
+\section{Alcance del trabajo}
 
-Los principales aportes de este trabajo pueden resumirse en los siguientes puntos.
+El alcance de este trabajo se concentra en una validación por simulación. Esta aproximación permite estudiar de forma controlada el comportamiento de la cadena propuesta y analizar con claridad el efecto de la reconstrucción de la referencia sobre las distintas etapas del procesamiento radar. Si bien esta metodología resulta adecuada para una primera validación conceptual y funcional, la aplicación del esquema propuesto sobre capturas reales queda planteada como una línea de trabajo futuro.
 
-En primer lugar, se presenta un estudio unificado del estándar ISDB-Tb desde la perspectiva específica de su utilización en radar pasivo. Esto incluye no solo la descripción de su cadena de transmisión, sino también de su recepción, sincronización y ecualización, entendidas como herramientas necesarias para comprender cómo reconstruir la señal de referencia.
-
-En segundo lugar, se desarrolla una cadena de procesamiento radar propia, implementada con una arquitectura modular y orientada a libre uso, capaz de generar escenarios simulados, procesar señales complejas en banda base y evaluar distintas configuraciones de filtrado y detección. Este aspecto constituye un aporte práctico del trabajo, ya que deja como resultado una base reutilizable para futuras extensiones, pruebas y validaciones.
-
-En tercer lugar, se incorpora y valida un bloque de reconstrucción de la señal de referencia. Los resultados obtenidos muestran que este bloque produce el efecto esperado: una reducción aproximada de 3 dB en el piso de ruido del procesamiento, lo que incrementa la relación señal a ruido efectiva de la cadena. Al mismo tiempo, se observa que esa mejora vuelve más visibles componentes determinísticas y máximos secundarios previamente enmascarados, lo que introduce nuevas exigencias sobre el posprocesamiento y la supresión de detecciones espurias.
-
-\section{Alcance y metodología}
-
-El alcance de este trabajo se concentró en una validación por simulación. Esto permitió estudiar de forma controlada el comportamiento de la cadena propuesta y aislar con claridad el efecto de la reconstrucción de la referencia sobre los distintos productos intermedios del procesamiento radar. En particular, se analizaron escenarios con clutter, señal directa y blanco de interés, evaluando la salida de la CAF, el efecto del ventaneo y el comportamiento del detector CFAR.
-
-Si bien esta aproximación resulta adecuada para una primera validación conceptual y funcional, no agota el problema práctico de utilizar señales reales de televisión digital como iluminadores de oportunidad. En consecuencia, la aplicación de la cadena a capturas reales queda planteada como una línea natural de continuación del presente trabajo.
-
-\section{Organización del trabajo}
-
-El resto de esta tesis se organiza de la siguiente manera.
-
-En el Capítulo 2 se presentan los fundamentos del radar pasivo, incluyendo la geometría biestática, la ecuación radar, el concepto de iluminadores de oportunidad y la modelización de los canales de referencia y vigilancia.
-
-En el Capítulo 3 se desarrolla la cadena de transmisión del estándar ISDB-Tb, con énfasis en su estructura espectral, sus parámetros de transmisión y los distintos bloques que intervienen en la generación de la señal OFDM.
-
-En el Capítulo 4 se estudia la cadena receptora del ISDB-Tb, incluyendo la sincronización, la ecualización, la recuperación de la configuración de transmisión y los distintos bloques de demodulación y decodificación de canal.
-
-En el Capítulo 5 se presenta la cadena de procesamiento radar desarrollada en este trabajo. Allí se describen el filtro de clutter y señal directa, el cálculo de la función de ambigüedad cruzada y la etapa de detección mediante CA-CFAR.
-
-En el Capítulo 6 se expone la simulación y validación de la cadena propuesta, comparando el desempeño del sistema con y sin reconstrucción de la señal de referencia.
-
-Finalmente, en el Capítulo 7 se resumen las principales conclusiones del trabajo y se discuten posibles líneas de mejora y trabajo futuro.
 
 \section{Notación}
 
-A lo largo de este trabajo, los vectores se denotan mediante una barra superior, por ejemplo, \(\overline{x}\). El conjugado complejo se representa mediante \((\cdot)^*\).
+A lo largo de este trabajo, los vectores se denotan mediante una barra superior, por ejemplo, \(\overline{x}\), mientras que los escalares se representan en letra itálica. El conjugado complejo se indica mediante \((\cdot)^*\).
 
 Para \(\overline{x}, \overline{y} \in \mathbb{C}^N\), el producto interno se define como
 \[
 \langle \overline{x}, \overline{y} \rangle
-= \sum_{i=1}^{N} x_i y_i^{*},
+=
+\sum_{i=1}^{N} x_i y_i^*,
 \]
-mientras que la norma asociada viene dada por
+y la norma asociada se expresa como
 \[
 \|\overline{x}\| = \sqrt{\langle \overline{x}, \overline{x} \rangle}.
 \]
 
-
-
+Cuando no se indique lo contrario, las señales se considerarán complejas en banda base y de tiempo discreto.

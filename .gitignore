@@ -16,4 +16,8 @@ prueba.wav
 *.asv
 *.iso
 *.npz
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl-SAVE-ERROR
 Data/
