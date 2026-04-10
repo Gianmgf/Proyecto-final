@@ -1,0 +1,128 @@
+
+\chapter{Demodulación ISDB-Tb}
+\label{chap:isdbtb_rx}
+
+
+La cadena receptora del ISDB-Tb puede interpretarse como la inversión ordenada de los bloques descritos en el Capítulo~\ref{chap:isdbtb_tx}. Su objetivo es recuperar, a partir de la señal OFDM recibida, uno o más flujos MPEG-2 TS correspondientes a las capas jerárquicas activas en la transmisión. Para ello, el receptor debe resolver primero la sincronización temporal y frecuencial del sistema, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, invertir las operaciones de entrelazado, modulación y codificación de canal aplicadas en el transmisor \cite{isdbt,portugues,uruguay_rx}.
+
+A diferencia de la descripción del transmisor, la recepción requiere incorporar explícitamente mecanismos de estimación y seguimiento, ya que la señal llega afectada por errores de frecuencia, errores de muestreo, rotaciones de fase y distorsión introducida por el canal. En este sentido, la sincronización y la ecualización constituyen el núcleo del receptor, porque no solo acondicionan la señal para la demodulación, sino que también hacen posible la recuperación robusta de la información TMCC necesaria para configurar el resto de la cadena \cite{uruguay_rx}.
+
+La cadena receptora del ISDB-Tb invierte, en términos generales, las operaciones realizadas en transmisión. Su objetivo es recuperar, a partir de la señal OFDM recibida, los flujos MPEG-2 TS asociados a las capas jerárquicas activas. Para ello, el receptor debe sincronizar temporal y frecuencialmente la señal, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, deshacer las etapas de entrelazado, modulación y codificación de canal \cite{isdbt,portugues,uruguay_rx}.
+
+\section{Sincronización y ecualización}
+\label{sec:isdbtb_sync_eq}
+
+La sincronización y la ecualización tienen como objetivo ubicar correctamente los símbolos OFDM, corregir los errores de frecuencia y compensar la respuesta del canal sobre las subportadoras activas.
+
+\subsection{Sincronización OFDM}
+
+La adquisición inicial del símbolo OFDM aprovecha la redundancia introducida por el prefijo cíclico. Si $N$ es la longitud útil del símbolo y $L$ la longitud del prefijo cíclico, los últimos $L$ samples del símbolo coinciden con sus primeros $L$ samples. Esta propiedad permite construir una métrica de autocorrelación sobre la señal recibida $r[k]$ y estimar el comienzo del símbolo mediante
+
+\begin{equation}
+\hat{\theta}_{ML}
+=
+\arg \max_{\theta}
+\left|
+\sum_{k=\theta}^{\theta+L-1} r[k]\,r^{*}[k+N]
+\right|
+-
+\rho
+\sum_{k=\theta}^{\theta+L-1}
+\frac{|r[k]|^2 + |r[k+N]|^2}{2},
+\end{equation}
+
+donde $\rho$ depende de la relación señal a ruido \cite{uruguay_rx}. A partir de esta misma correlación también puede estimarse el desfasaje en frecuencia. Dado que el prefijo cíclico contiene una copia de los últimos samples del símbolo OFDM, las muestras separadas por \(N\) posiciones corresponden, idealmente, a los mismos datos. Por lo tanto, la diferencia de fase entre ambas puede asociarse al desfasaje de frecuencia presente en la señal recibida y utilizarse para obtener una estimación de dicho error \cite{uruguay_rx}.
+
+\begin{equation}
+\hat{\varepsilon}_{ML}
+=
+-\frac{1}{2\pi}
+\arg
+\left\{
+\sum_{k=\hat{\theta}_{ML}}^{\hat{\theta}_{ML}+L-1}
+r[k]\,r^{*}[k+N]
+\right\}.
+\end{equation}
+
+Esta estimación corrige únicamente la parte fraccional del error de frecuencia \cite{uruguay_rx}.
+
+\subsection{Corrección entera del error de frecuencia}
+
+Luego de compensar el error fraccional y aplicar la FFT, puede permanecer un corrimiento entero de portadoras. En ISDB-Tb, este problema puede resolverse a partir de las portadoras TMCC, ya que ocupan posiciones fijas y presentan una estructura conocida \cite{uruguay_rx}.
+
+Si $T[i]$ representa las posiciones ideales de las portadoras TMCC, $Y[k]$ la salida de la FFT y $w(T[i])$ el valor diferencial asociado a cada una de ellas, la correlación
+
+\begin{equation}
+\Gamma[m]
+=
+\sum_{i=0}^{M-2}
+w(T[i])\,Y[T[i]+m]\,
+w(T[i+1])\,Y^{*}[T[i+1]+m]
+\end{equation}
+
+presenta un máximo cuando $m$ coincide con el error entero de frecuencia. Una vez resuelta esta ambigüedad, la información TMCC puede utilizarse además para configurar los bloques posteriores del receptor \cite{uruguay_rx}.
+
+\subsection{Estimación de canal y ecualización}
+
+Corregida la ubicación de las portadoras, el siguiente paso consiste en compensar la respuesta del canal. Si $X[i]$ es el símbolo transmitido y $Y[i]$ el símbolo recibido luego de la FFT, entonces
+
+\begin{equation}
+Y[i] = X[i]\,H[i],
+\end{equation}
+
+donde $H[i]$ representa la ganancia compleja del canal en la subportadora $i$. La ecualización consiste en estimar esta respuesta y compensarla sobre las portadoras activas.
+
+Para ello se utilizan los SP, cuyas posiciones y valores son conocidos. Como su ubicación varía de un símbolo a otro, primero debe identificarse la configuración correspondiente al símbolo actual. Luego, la respuesta del canal se estima sobre esas portadoras piloto y se utiliza alguna interpolación para el resto de las subportadoras activas \cite{uruguay_rx}.
+\section{Cadena de recepción}
+\subsection{Recuperación de TMCC y AC}
+
+Una vez estabilizadas la sincronización y la ecualización, es posible decodificar la señal TMCC para configurar adecuadamente el resto de la cadena. El TMCC contiene todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda. Para demodularla, se debe identificar la secuencia de referencia en el primer símbolo del cuadro y luego ir determinando si en el siguiente símbolo se invirtió o no la secuencia anterior hasta conseguir los 203 bits y luego aplicar la decodificación del código DSC(184,102) para corregir errores y recuperar los bits de información. Cabe aclarar que los datos de las subportadoras AC se demodulan de manera análoga.
+
+\subsection{Obtención de los segmentos de datos}
+
+Ya una vez decodificada la señal TMCC, el siguiente paso es aislar las subportadoras de datos y volver a construir los segmentos de datos. Para ello simplemente se deben filtrar todas las subportadoras que no correspondan a datos, es decir, aquellas reservadas para pilotos, TMCC y canales auxiliares.
+
+
+\subsection{Desentrelazado en frecuencia}
+
+\subsubsection{Desaleatorización de portadoras dentro del segmento}
+
+En primer lugar, se revierte la aleatorización de portadoras dentro de cada segmento aplicando la permutación inversa de la utilizada en transmisión. Es decir, se deshace el mapeo definido para la aleatorización de portadoras en la Subsección~\ref{subsubsec:aleatorizacion_portadoras}. De esta manera, cada símbolo vuelve a la posición de portadora que ocupaba antes de dicha permutación.
+
+\subsubsection{Desrotación de portadoras dentro del segmento}
+
+A continuación, se deshace la rotación de portadoras dentro del segmento aplicando el mapeo inverso del descrito en las Ecuaciones~\eqref{eq:rotacion_segmento} y~\eqref{eq:rotacion_segmento_j}. Con ello, cada símbolo regresa al índice de portadora que tenía antes del corrimiento cíclico, recuperándose así la disposición original de las portadoras dentro de cada segmento.
+
+\subsubsection{Desentrelazado entre segmentos}
+
+Finalmente, se revierte el entrelazado entre segmentos aplicando el mapeo inverso del definido en la Ecuación~\eqref{eq:entrelazado_segmentos}. Así, las portadoras que habían sido redistribuidas entre segmentos con igual esquema de modulación retornan a su segmento original, restituyendo la organización previa al entrelazado en frecuencia. Al igual que en transmisión, esta operación no se aplica sobre la porción correspondiente al servicio de recepción parcial 1-seg.
+
+\subsection{Desentrelazado temporal}
+
+Una vez recuperados los datos en frecuencia, se revierte el entrelazado temporal aplicando el proceso inverso al descrito en la subsección de transmisión. Para ello, se compensan los retardos introducidos por las distintas ramas del entrelazador temporal, de modo que los símbolos que en transmisión atravesaron las ramas de menor retardo pasan ahora por las de mayor retardo, y viceversa. Así, todos los datos vuelven a quedar alineados temporalmente.
+
+\figura{0.8}{./isdb/time_deintrl_seccion.png}{Desentrelazador temporal.}{Adaptado de \cite{abnt}.}{\label{fig:desentrelazador_t}}
+
+\subsection{Separación de capas jerárquicas y demodulación de portadoras}
+
+Ya con los segmentos de datos recuperados, se deben separar los distintos segmentos en función de las capas jerárquicas utilizadas en la transmisión y utilizar el respectivo esquema de demodulación según lo indicado por la señal TMCC.
+
+Una vez demodulados los símbolos, es necesario desentrelazar los bits siguiendo el mismo esquema que el desentrelazador temporal, pero aplicado a nivel de bit y con los retardos correspondientes a la modulación utilizada.
+
+\figura{0.8}{./isdb/bit_deintrl_16.png}{Ejemplo de desentrelazador de bits para 16-QAM.}{}{\label{fig:bit_deintrl}}
+
+\subsection{Decodificación interna convolucional}
+
+Una vez recuperado el flujo de bits, sigue el bloque de decodificación convolucional correspondiente a la tasa configurada en transmisión. Utilizando los patrones de la Tabla~\ref{tab:punzado}, se debe reconstruir primero la secuencia equivalente al código base de tasa \(1/2\) y luego aplicar el algoritmo de Viterbi para estimar la secuencia de bits más probable.
+
+\subsection{Desentrelazado de bytes}
+
+Análogamente a todas las etapas de desentrelazado anteriores, se revierte el mezclado de bytes invirtiendo el orden y, por lo tanto, también los retardos de las ramas del entrelazador de bytes. De esta manera, los bytes que en transmisión pasaron por las ramas de menor retardo ahora atraviesan las de mayor retardo, y viceversa, recuperándose así la secuencia original de bytes antes del entrelazado. Cabe destacar que, para mantener el sincronismo con la secuencia de bytes del \textit{transport stream}, el byte de sincronismo debe necesariamente pasar por la rama de mayor retardo.
+
+\subsection{Inversión de dispersión de energía}
+
+Para deshacer la dispersión de energía se utiliza la misma secuencia PRBS y la misma inicialización empleadas en transmisión. Como la operación XOR es involutiva, basta con volver a aplicar la misma secuencia pseudoaleatoria de la Figura~\ref{fig:prbs} para recuperar el flujo original, preservando el byte de sincronismo del transport stream.
+
+\subsection{Decodificación externa RS}
+
+La última etapa de corrección de errores es la decodificación externa Reed--Solomon RS(204,188). Este bloque elimina los 16 bytes de redundancia agregados en transmisión y corrige, cuando es posible, hasta 8 bytes erróneos por paquete. Una vez aplicada esta operación, el receptor recupera nuevamente paquetes MPEG-2 TS de 188 bytes.

@@ -93,6 +93,47 @@
 		P_{r}=\frac{P_{t} G_{t} G_{r} \lambda^{2} \sigma}{(4\pi)^{3} R_{1}^{2} R_{2}^{2}}
 	\end{equation}
 
+	\section{Ganancia de integración}
+
+	El procesamiento correlativo en el que se basan los sistemas de radar continuo permite realizar una integración coherente de la señal a lo largo del intervalo de observación. Cuando la referencia utilizada en el procesamiento se encuentra alineada con la señal de interés, la contribución de esta última se suma de manera coherente, mientras que el ruido, al no estar correlacionado, se acumula de forma no coherente. Como consecuencia, la relación señal a ruido a la salida aumenta respecto de la relación señal a ruido de entrada.
+
+	Esta mejora puede expresarse como
+
+	\begin{equation}
+	\mathrm{SNR}_{\mathrm{out}} = \mathrm{SNR}_{\mathrm{in}}\, B T,
+	\end{equation}
+	donde \(B\) es el ancho de banda de la señal y \(T\) el intervalo de integración.
+
+	A partir de esta expresión, la ganancia asociada se define como
+
+	\begin{equation}
+	G_{\mathrm{int}} = B T.
+	\end{equation}
+
+	Por lo tanto, \(G_{\mathrm{int}}\) depende del ancho de banda de la señal y del valor de \(T\). En general, el ancho de banda queda determinado por la señal iluminadora utilizada, mientras que \(T\) puede ajustarse para modificar el desempeño del sistema.
+
+	Si el ancho de banda de la señal es aproximadamente igual a la frecuencia de muestreo \(f_s\), entonces puede escribirse
+
+	\begin{equation}
+	G_{\mathrm{int}} \approx f_s T.
+	\end{equation}
+
+	Además, como \(t_s = 1/f_s\) es el período de muestreo y \(N\) es la cantidad de muestras contenidas en el intervalo \(T\), se tiene que
+
+	\begin{equation}
+	T = N t_s,
+	\end{equation}
+
+	y, en consecuencia,
+
+	\begin{equation}
+	G_{\mathrm{int}} \approx f_s T = \frac{T}{t_s} = N.
+	\end{equation}
+
+	Bajo esta aproximación, \(G_{\mathrm{int}}\) resulta aproximadamente igual al número de muestras integradas.
+
+	Si bien aumentar \(T\) mejora \(G_{\mathrm{int}}\) y, en consecuencia, el rendimiento del sistema, esta elección no puede hacerse de manera arbitraria. En escenarios con blancos en movimiento, un valor demasiado grande de \(T\) puede provocar migración en rango, ya que el objetivo puede no permanecer en una misma celda durante todo el intervalo de observación. En esos casos, el aumento de \(G_{\mathrm{int}}\) debe balancearse con la pérdida de coherencia asociada al movimiento del blanco.
+
 	\section{Iluminadores de Oportunidad}
 
 	A diferencia de un sistema de radar convencional, en un radar biestático pasivo no generamos la señal de referencia, pero podemos elegir cuál utilizar. Dependiendo de la aplicación, cada señal tendrá sus ventajas y desventajas. Los dos principales parámetros para seleccionar el iluminador son la frecuencia y el ancho de banda.

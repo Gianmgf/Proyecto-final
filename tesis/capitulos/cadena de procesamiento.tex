@@ -8,9 +8,9 @@
 		\subsection{Filtro de lattice en bloque}
 
 
-		El filtro \textit{block lattice} se basa en una serie de proyecciones sucesivas entre señales, cuya dinámica queda determinada por los coeficientes de reflexión $\kappa_i$. Estos coeficientes pueden interpretarse como proyecciones normalizadas entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro.
+		El filtro de lattice en bloque se basa en una serie de proyecciones sucesivas determinadas por los coeficientes de reflexión $\kappa_i$. Estos coeficientes pueden interpretarse como proyecciones normalizadas entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro.
 
-		Como resultado de estas proyecciones, los errores de predicción hacia atrás $b_i(n)$ se vuelven mutuamente ortogonales. Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores. Esta propiedad de ortogonalidad es fundamental para la capacidad del filtro de separar componentes correlacionadas sin interferencia entre ellas.
+		Como resultado de estas proyecciones, los errores de predicción hacia atrás $b_i(n)$ se vuelven mutuamente ortogonales. Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores, permitiendo separar componentes correlacionadas sin interferencia entre ellas.
 
 		La ortogonalidad implica que cada $b_i(n)$ está asociado a un subespacio distinto y no superpuesto. Esto permite que las copias retardadas de la señal de referencia presentes en la señal de eco $x_e(n)$ puedan ser tratadas de manera independiente. Para cada etapa, se estima un coeficiente de correlación $h_i$ calculado como la proyección de $x_e(n)$ sobre el error de predicción hacia atrás. Este coeficiente determina cuánta contribución de $b_i(n)$ está presente en el eco.
 
@@ -27,14 +27,14 @@
 				\hline
 				&\\
 				&
-				$k_{i+1} = 2 \cdot \dfrac{< b_i(n-1); f_i(n)>}{|| b_i(n-1)||^2 + || f_i(n)||^2} $\\
+				$k_{i+1} = 2 \cdot \dfrac{< b_i(n-1);\ f_i(n)>}{|| b_i(n-1)||^2 + || f_i(n)||^2} $\\
 				Predicción&\\
 				&$b_{i+1}(n) = b_i(n-1) - k_{i+1} \cdot f_i(n)$\\
 				&\\
 				&$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
 				 &\\
 
-				Filtrado&$h_i = \dfrac{<e_i(n); b_i(n)> }{|| b_i(n)||^2} $\\
+				Filtrado&$h_i = \dfrac{<e_i(n);\ b_i(n)> }{|| b_i(n)||^2} $\\
 				&\\
 				&$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
 			\end{tabular}
@@ -120,7 +120,7 @@
 
 	\section{Detección de blancos}
 
-	La detección de objetivos sobre la CAF se realiza comparando la potencia de cada celda con un umbral de decisión. En presencia de ruido, el uso de un umbral fijo resulta poco adecuado, ya que el nivel de interferencia puede variar a lo largo del mapa rango--Doppler. Por este motivo, se emplean detectores CFAR, los cuales ajustan localmente el umbral a partir de una estimación del nivel de fondo, manteniendo aproximadamente constante la probabilidad de falsa alarma.
+	La detección de objetivos sobre la CAF se realiza comparando la potencia de cada celda con un umbral de decisión. En presencia de ruido, el uso de un umbral fijo puede resultar en errores en la detección, ya que el nivel de interferencia puede variar a lo largo del mapa rango--Doppler. Por este motivo, se emplean detectores CFAR, los cuales ajustan localmente el umbral a partir de una estimación del nivel de ruido aledaño a las distintas celdas, manteniendo aproximadamente constante la probabilidad de falsa alarma.
 
 	En este tipo de detectores, para cada celda analizada se define una ventana local compuesta por tres tipos de celdas:
 
@@ -130,7 +130,7 @@
 		\item \textbf{Celdas de referencia (\(N_w\))}: celdas utilizadas para estimar el nivel local de ruido.
 	\end{itemize}
 
-	La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral adaptativo calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
+	La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
 
 	\figura{.9}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
 

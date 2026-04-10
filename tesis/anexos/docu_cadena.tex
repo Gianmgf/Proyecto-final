@@ -1,53 +1,26 @@
 \chapter{Documentación de la cadena de procesamiento}
 \label{ap:documentacion_codigo}
 
-El presente apéndice documenta la implementación de software desarrollada para este trabajo. Su objetivo es complementar la descripción teórica de la cadena propuesta con una visión orientada a desarrolladores, de manera de dejar asentada la organización interna del código, su flujo de ejecución y los principales criterios adoptados para su extensión y reutilización. El contenido de esta sección se basa en la estructura actual del repositorio \texttt{PassiveRadarChain}, en la interfaz pública expuesta por el paquete y en la organización de sus módulos principales \cite{github-repo}.
+En este apéndice se resume la implementación de software desarrollada para este trabajo. Su objetivo es describir la organización general del paquete, el flujo de ejecución de la cadena y las principales estructuras de configuración y estado. La descripción se basa en la versión actual del repositorio \texttt{PassiveRadarChain} \cite{github-repo}.
 
-\section{Objetivo del software}
+\section{Organización general}
 
-La implementación busca materializar en código la cadena de procesamiento presentada en esta tesis. En particular, el repositorio está orientado a:
-
-\begin{itemize}
-    \item generar señales simuladas de referencia y vigilancia;
-    \item cargar señales externas;
-    \item aplicar una etapa opcional de canal y ruido;
-    \item filtrar clutter y componente de señal directa;
-    \item aplicar ventaneo sobre la referencia;
-    \item calcular la función de ambigüedad cruzada;
-    \item ejecutar detección CA-CFAR;
-    \item facilitar ensayos comparativos y \textit{benchmarking} mediante reejecución parcial y acceso eficiente al estado interno.
-\end{itemize}
-
-De esta forma, el software no se limita a una colección de funciones aisladas, sino que provee una cadena integrada y reutilizable para simulación, procesamiento, validación y comparación sistemática de configuraciones.
-
-\section{Organización general del repositorio}
-
-A nivel superior, el repositorio se organiza en directorios destinados a datos, ejemplos, scripts y código fuente, además de los archivos auxiliares de instalación y configuración. El núcleo funcional del proyecto reside en el paquete \texttt{pr\_chain}, donde se concentra la implementación principal de la cadena.
-
-Dentro del paquete, la organización actual se divide en cuatro submódulos principales:
+El núcleo funcional del proyecto reside en el paquete \texttt{pr\_chain}. Su estructura se divide en cuatro submódulos principales:
 
 \begin{itemize}
-    \item \texttt{core}: contiene la clase principal de alto nivel y las dataclasses de configuración y estado;
-    \item \texttt{processing}: agrupa los bloques algorítmicos de procesamiento radar;
-    \item \texttt{generators}: contiene los generadores de eco y clutter para simulación;
-    \item \texttt{utils}: incluye constantes, utilidades matemáticas y funciones de graficado.
+    \item \texttt{core}: contiene la clase principal de la cadena y las dataclasses de configuración y estado;
+    \item \texttt{processing}: agrupa los bloques de procesamiento radar;
+    \item \texttt{generators}: incluye los generadores de eco y clutter para simulación;
+    \item \texttt{utils}: reúne constantes, utilidades matemáticas y funciones de graficado.
 \end{itemize}
 
-Esta separación responde a un criterio funcional: por un lado, desacopla la lógica de orquestación de la cadena respecto de los algoritmos individuales; por otro, distingue con claridad los bloques de simulación, los bloques de procesamiento y las herramientas auxiliares.
+Esta organización separa la lógica de orquestación de la cadena, los algoritmos de procesamiento, la simulación de señales y las herramientas auxiliares.
 
-\section{API pública del paquete}
+\section{Clase principal y flujo de ejecución}
 
-El punto de entrada del paquete expone de manera directa los componentes más importantes para el usuario o desarrollador. En particular, \texttt{pr\_chain} reexporta la clase principal de la cadena, las funciones de procesamiento más relevantes, los generadores de clutter y eco, y los submódulos utilitarios asociados.
+La pieza central del paquete es la clase \texttt{PassiveRadarChain}, ubicada en el submódulo \texttt{core}. Esta clase implementa una cadena de procesamiento con estado, capaz de trabajar tanto con señales simuladas como con señales externas.
 
-Esto permite trabajar tanto a nivel de cadena completa como a nivel de bloques individuales, según convenga al tipo de experimento que se quiera realizar. En otras palabras, el diseño no obliga a utilizar siempre la abstracción de más alto nivel, sino que conserva la posibilidad de reutilizar funciones y clases por separado.
-
-En la versión actual, la interfaz pública de \texttt{PassiveRadarChain} se apoya en tres ideas complementarias. La primera es ofrecer métodos de alto nivel para configurar y ejecutar la cadena completa. La segunda es permitir el acceso a estados intermedios de manera controlada. La tercera es mantener compatibilidad hacia atrás mediante métodos específicos de actualización de configuración, aun cuando internamente exista una interfaz más general para modificar distintas secciones de la configuración.
-
-\section{Arquitectura central: \texttt{PassiveRadarChain}}
-
-La pieza principal del repositorio es la clase \texttt{PassiveRadarChain}, ubicada en el submódulo \texttt{core}. Esta clase implementa una cadena de procesamiento con estado, pensada para operar sobre señales reales o simuladas, almacenar resultados intermedios y permitir la reejecución parcial de etapas sin recalcular innecesariamente toda la secuencia de procesamiento.
-
-La cadena se organiza internamente según el siguiente orden de etapas:
+La secuencia general de etapas es
 
 \begin{equation*}
 \texttt{inputs} \rightarrow
@@ -58,130 +31,49 @@ La cadena se organiza internamente según el siguiente orden de etapas:
 \texttt{detect}.
 \end{equation*}
 
-Cada una de estas etapas puede ejecutarse de forma individual o como parte de una corrida completa. Además, la clase provee métodos de alto nivel para correr la cadena completa, correrla desde una etapa dada, detenerla en una etapa intermedia y decidir si el estado devuelto debe copiarse en profundidad o devolverse como referencia directa al estado interno.
+Cada etapa puede ejecutarse de manera individual o como parte de una corrida completa. La clase también permite relanzar la ejecución desde una etapa determinada, lo que evita recalcular bloques previos cuando no han cambiado.
 
-Este último punto resulta especialmente relevante en escenarios de \textit{benchmarking}. En ejecuciones repetidas, la copia profunda de estructuras grandes ---por ejemplo, matrices CAF o estimaciones bidimensionales del nivel de ruido--- puede introducir un costo extra que no forma parte del procesamiento radar en sí. Por este motivo, la implementación actual permite desactivar esa copia cuando se busca maximizar la eficiencia en estudios comparativos.
+\section{Configuración y estado}
 
-\section{Modelo de configuración}
+La configuración del sistema se implementa mediante una jerarquía de dataclasses agrupadas en una configuración principal. Estas subconfiguraciones cubren, entre otros aspectos, la entrada, la simulación, el canal, el ventaneo, el filtrado, la CAF, el detector CFAR y la persistencia de resultados.
 
-La configuración del sistema se implementa mediante una jerarquía de dataclasses agrupadas en una configuración principal de la cadena. Esta clase principal encapsula subconfiguraciones para entrada, canal, simulación, ventaneo, filtrado, CAF, CFAR, graficado y entrada/salida.
+Además de la configuración, la cadena mantiene un estado explícito de ejecución. Cada etapa produce una estructura de estado propia, mientras que un contenedor global reúne los resultados intermedios y la información de la última ejecución.
 
-En particular, las configuraciones más importantes son:
-
-\begin{itemize}
-    \item configuración de entrada: frecuencia de muestreo, frecuencia portadora, longitud de señal y selección entre entradas reales o simuladas;
-    \item configuración de canal: habilitación de canal, agregado de ruido, potencia de ruido, respuesta de canal y decisión de agregar ruido a uno o ambos canales;
-    \item configuración de simulación: geometría del escenario, presencia de señal directa y subconfiguraciones de clutter y eco;
-    \item configuración de ventana: habilitación del ventaneo y parámetros de la ventana de Kaiser;
-    \item configuración de filtro: habilitación y orden del filtro lattice;
-    \item configuración de CAF: tamaño de bloque del cálculo \textit{batch};
-    \item configuración de CFAR: dimensionalidad del detector, celdas de entrenamiento, celdas de guarda, probabilidad de falsa alarma y tratamiento periódico del eje Doppler;
-    \item configuración de graficado: parámetros de visualización;
-    \item configuración de entrada/salida: rutas y formato de salida.
-\end{itemize}
-
-Un aspecto importante del diseño es que estas dataclasses no cumplen únicamente el rol de contenedores de parámetros. Varias de ellas incorporan validaciones y normalización en sus métodos de inicialización, lo que ayuda a detectar errores de configuración en etapas tempranas y vuelve más robusta la interacción con archivos serializados o con parámetros cargados dinámicamente.
-
-En la versión refactorizada, la actualización de parámetros puede realizarse mediante una interfaz general que identifica la sección de configuración a modificar, mientras que se conservan métodos específicos del tipo \texttt{update\_input\_config()}, \texttt{update\_filter\_config()} o \texttt{update\_cfar\_config()} para preservar compatibilidad y claridad de uso. De esta manera, el código de usuario puede seguir invocando la API previa, pero la lógica interna de actualización e invalidación queda centralizada.
-
-\section{Modelo de estado}
-
-Además de la configuración, la cadena mantiene un estado de ejecución explícito mediante un conjunto de dataclasses de estado. Estas estructuras almacenan el resultado de una etapa particular, mientras que un contenedor de estado global reúne la información total de la cadena, incluyendo resultados intermedios, etapas completadas, \textit{snapshots} de configuración y la última etapa ejecutada.
-
-Este esquema tiene dos ventajas principales. En primer lugar, facilita la inspección del procesamiento en puntos intermedios, lo cual es especialmente útil durante tareas de depuración, comparación y análisis de resultados. En segundo lugar, permite invalidar selectivamente etapas y conservar resultados previos cuando los cambios de configuración no afectan a toda la cadena.
-
-La versión actual distingue además entre dos formas de acceso al estado. La primera devuelve una copia profunda de la estructura solicitada, lo cual resulta más seguro para uso interactivo. La segunda devuelve una referencia directa al estado interno, evitando copias de arreglos grandes y favoreciendo estudios de rendimiento. Esta separación permite mantener una API cómoda para exploración general y, al mismo tiempo, una vía eficiente para experimentos repetitivos.
-
-\section{Estrategia de ejecución e invalidación}
-
-Uno de los aspectos más importantes de la implementación es la presencia de un mecanismo de \textit{cache} e invalidación automática basado en \textit{snapshots} de configuración. La clase construye, para cada etapa, una versión serializable de la configuración relevante y la compara con la utilizada en la última ejecución. Si detecta cambios, invalida esa etapa y las posteriores.
-
-Desde el punto de vista del desarrollo, esto vuelve a la cadena particularmente cómoda para experimentación iterativa. Por ejemplo, si únicamente cambia la configuración del detector CFAR, no es necesario regenerar señales, volver a aplicar canal, recalcular el filtrado ni reconstruir la CAF desde cero. Del mismo modo, si cambia la configuración de simulación, la invalidación se propaga desde la etapa de entrada.
-
-En la versión refactorizada, esta misma lógica también contempla la posibilidad de modificar la señal de referencia que ingresa a la CAF. Si se activa una referencia reconstruida, la invalidación se propaga desde la etapa \texttt{caf}, sin necesidad de recalcular las etapas anteriores. Esto resulta especialmente útil cuando se desea comparar, sobre una misma señal de vigilancia, el desempeño de la referencia original frente a distintas estrategias de reconstrucción.
+Este esquema permite inspeccionar etapas intermedias y reutilizar resultados previos. Para ello, la implementación incorpora un mecanismo de invalidación automática: si cambia la configuración asociada a una etapa, esa etapa y las posteriores se recalculan, mientras que las anteriores se conservan.
 
 \section{Etapas funcionales de la cadena}
 
 \subsection{Entradas y simulación}
 
-La cadena admite dos modos de trabajo. En el primero, el usuario provee directamente las señales de referencia y vigilancia o las carga desde archivo. En el segundo, la propia cadena genera entradas simuladas a partir de la configuración del escenario.
-
-Cuando se trabaja en modo simulado, la referencia se genera como una señal compleja y luego se construyen el clutter y el eco mediante clases específicas. El canal de vigilancia se obtiene combinando clutter, eco y, opcionalmente, la señal directa.
-
-La implementación actual también verifica la consistencia entre las señales de entrada y una eventual referencia reconstruida definida para la CAF. Si la longitud de las señales cambia y el reemplazo deja de ser compatible, dicho reemplazo se invalida automáticamente para evitar inconsistencias internas.
+La cadena puede operar con señales provistas por el usuario o generar señales simuladas a partir de la configuración del escenario. En modo simulado, se construyen la señal de referencia, el clutter, el eco y, de manera opcional, la señal directa.
 
 \subsection{Canal y ruido}
 
-La etapa de canal es opcional y permite aplicar una respuesta de canal común a referencia y vigilancia, así como agregar ruido blanco gaussiano aditivo. Esta separación resulta útil porque desacopla el problema de simulación geométrica del problema de degradación del canal. En otras palabras, la escena radar y las imperfecciones del sistema pueden modelarse de manera independiente.
-
-Además, la configuración permite decidir si el ruido se agrega solamente a vigilancia o a ambos canales, lo cual resulta conveniente cuando se busca aproximar distintos esquemas de recepción o aislar el efecto de determinadas degradaciones.
+La etapa de canal es opcional y permite aplicar una respuesta de canal y agregar ruido blanco gaussiano aditivo. Esta separación facilita modelar por un lado la escena radar y, por otro, las degradaciones del sistema de recepción.
 
 \subsection{Filtrado de clutter}
 
-La etapa de filtrado implementa un filtro lattice por bloques para atenuar clutter y componente de camino directo en la señal de vigilancia. El parámetro principal del bloque es el orden del filtro, entendido como la cantidad de etapas de cancelación aplicadas.
-
-Este diseño condensa en un bloque reutilizable la etapa anti-clutter presentada en el cuerpo principal de la tesis, y permite explorar directamente cómo cambia la salida del sistema al modificar el orden del filtro.
+La etapa de filtrado implementa un filtro lattice por bloques para atenuar clutter y componente de señal directa en la señal de vigilancia. Su parámetro principal es el orden del filtro.
 
 \subsection{Ventaneo}
 
-La etapa de ventaneo aplica una ventana de Kaiser a la señal de referencia. La implementación admite ventaneo en frecuencia, en rango o en ambos dominios, y acepta tanto un único parámetro $\beta$ como una tupla con valores diferenciados para cada operación.
-
-Desde el punto de vista experimental, este diseño resulta valioso porque habilita el estudio del compromiso entre supresión de lóbulos laterales y degradación de resolución sin alterar el resto de la cadena.
+La etapa de ventaneo aplica una ventana de Kaiser sobre la señal de referencia. La implementación admite su uso en frecuencia, en rango o en ambos dominios.
 
 \subsection{CAF}
 
-El cálculo de la CAF se realiza mediante un algoritmo \textit{batch}. La función correspondiente recibe el tamaño de bloque, la frecuencia de muestreo y las señales de referencia y vigilancia, y devuelve la matriz CAF junto con sus ejes de frecuencia Doppler y rango.
+El cálculo de la CAF se realiza mediante un algoritmo \textit{batch}. Esta etapa recibe las señales de referencia y vigilancia, junto con los parámetros de muestreo y tamaño de bloque, y devuelve la matriz CAF con sus ejes asociados.
 
-En la operación habitual, la referencia utilizada en esta etapa es la salida del bloque de ventaneo. Sin embargo, la versión actual de la cadena permite reemplazar esa entrada por una señal de referencia reconstruida definida explícitamente por el usuario. Esta funcionalidad resulta útil, por ejemplo, cuando se desea evaluar el efecto de un reconstructor sobre la supresión del clutter, la compresión en rango o la calidad global del mapa rango--Doppler, manteniendo fijo el resto del procesamiento.
-
-En la implementación actual, la CAF se calcula sobre señales truncadas a un múltiplo exacto del tamaño de bloque, y la etapa encapsulada en la clase también construye los parámetros auxiliares necesarios para visualización y análisis posterior. De este modo, la lógica de cálculo y la preparación de salidas para análisis permanecen integradas en un único bloque de alto nivel.
+La referencia utilizada en esta etapa puede ser la salida habitual de la cadena o una referencia reconstruida definida explícitamente por el usuario. Esto permite comparar distintas estrategias de reconstrucción sin modificar el resto del procesamiento.
 
 \subsection{Detección}
 
-La etapa final implementa un detector CA-CFAR sobre la magnitud de la CAF. La implementación admite tanto detección unidimensional sobre frecuencia como detección bidimensional, y permite definir tamaños de ventana y guarda mediante enteros o tuplas.
+La etapa final implementa un detector CA-CFAR sobre la magnitud de la CAF. La implementación admite tanto detección unidimensional como bidimensional y devuelve las detecciones junto con la estimación local del nivel de ruido y el umbral utilizado.
 
-La salida del detector incluye las detecciones, la estimación local del nivel de ruido o clutter y el factor de escala aplicado para construir el umbral de decisión.
+\section{Persistencia y uso básico}
 
-\section{Módulos de simulación}
+La clase principal permite guardar configuraciones, estados y figuras generadas durante la ejecución. Para ello, utiliza un directorio raíz de salida con subdirectorios separados para cada tipo de resultado.
 
-El paquete contiene generadores específicos para la construcción de escenarios simulados.
-
-Por un lado, el generador de clutter modela múltiples reflectores estacionarios distribuidos en el plano. A partir de la geometría transmisor--clutter--receptor, calcula retardos biestáticos y construye la señal de clutter como suma de copias retardadas y escaladas de la referencia.
-
-Por otro lado, el generador de eco modela un blanco puntual en movimiento. A partir de la geometría transmisor--blanco--receptor y del vector velocidad del objetivo, calcula el retardo biestático y la frecuencia Doppler asociada, y construye la señal de eco como una copia retardada, modulada en fase y escalada de la referencia.
-
-Estas clases resultan particularmente valiosas desde el punto de vista del desarrollo, ya que permiten desacoplar la validación algorítmica de la disponibilidad de señales reales y construir escenarios controlados donde la verdad de terreno es conocida.
-
-\section{Utilidades auxiliares}
-
-El submódulo \texttt{utils} reúne componentes de apoyo que simplifican el uso del paquete. Allí se incluyen constantes físicas, utilidades matemáticas y funciones de graficado.
-
-Estas utilidades no forman parte del núcleo lógico de la cadena, pero cumplen un rol importante en la reproducibilidad y en la interpretación de resultados, ya que estandarizan tanto ciertas operaciones numéricas como la forma de visualización.
-
-En particular, las utilidades de graficado se integran con la clase principal para visualizar la geometría del escenario, la CAF y las detecciones estimadas, así como para guardar figuras dentro del árbol de salida definido por la configuración del proyecto.
-
-\section{Persistencia y salidas}
-
-La clase principal resuelve un directorio raíz de salida y crea, si es necesario, subdirectorios para configuraciones, estados y figuras. Si el usuario no define explícitamente una ruta, la implementación utiliza por defecto un directorio de salida en el nivel superior del proyecto, con subcarpetas separadas para configuraciones, estados y figuras.
-
-Este esquema resulta adecuado para preservar trazabilidad experimental, ya que facilita separar la lógica del código de los artefactos generados durante la ejecución.
-
-La persistencia no se limita a la configuración global. La cadena permite serializar el estado numérico de ejecución, incluyendo señales intermedias, resultados de filtrado, CAF, detecciones y metadatos asociados a las etapas completadas. En la versión actual, esta persistencia también puede conservar información adicional asociada a la referencia reconstruida utilizada como entrada de la CAF, lo cual favorece la repetibilidad de ensayos comparativos.
-
-\section{Flujo típico de uso}
-
-Desde el punto de vista de un desarrollador, un flujo mínimo de trabajo con el paquete puede resumirse en los siguientes pasos:
-
-\begin{enumerate}
-    \item crear o modificar una configuración;
-    \item instanciar la cadena principal;
-    \item definir entradas reales o habilitar simulación;
-    \item ejecutar la cadena completa o hasta una etapa intermedia;
-    \item inspeccionar el estado devuelto o acceder al estado interno sin copias profundas si se busca eficiencia;
-    \item modificar parámetros, cambiar la referencia de la CAF si corresponde y relanzar desde la etapa necesaria.
-\end{enumerate}
-
-Un ejemplo mínimo de uso podría escribirse como:
+Un flujo mínimo de uso consiste en configurar la cadena, definir entradas reales o habilitar simulación, ejecutar las etapas deseadas e inspeccionar los resultados obtenidos. Un ejemplo reducido se muestra a continuación:
 
 \begin{Verbatim}[breaklines=true, breakanywhere=true, fontsize=\small]
 from pr_chain import PassiveRadarChain
@@ -198,32 +90,4 @@ caf_state = chain.peek_state("caf")
 det_state = chain.peek_state("detection")
 \end{Verbatim}
 
-En este ejemplo, la cadena utiliza el modo de simulación por defecto, ejecuta todas las etapas hasta detección y luego permite acceder tanto a la CAF como al estado del detector sin incurrir en copias profundas adicionales. Esta modalidad resulta apropiada en estudios repetitivos o comparaciones de rendimiento.
-
-Si se dispone de una referencia reconstruida, esta puede utilizarse como entrada del bloque CAF mediante una interfaz explícita, por ejemplo:
-
-\begin{Verbatim}[breaklines=true, breakanywhere=true, fontsize=\small]
-chain.set_reconstructed_reference(reference_rec)
-chain.run_from("caf", copy_state=False)
-caf_state = chain.peek_state("caf")
-\end{Verbatim}
-
-En este segundo ejemplo, las etapas previas permanecen inalteradas y únicamente se recalculan la CAF y la detección a partir de la nueva referencia. La API también admite trabajar con entradas externas mediante los métodos de carga o asignación directa.
-
-\section{Criterios de extensibilidad}
-
-La arquitectura actual favorece varias formas de extensión.
-
-La primera consiste en reemplazar o mejorar funciones individuales de procesamiento, por ejemplo incorporando nuevos esquemas de filtrado anti-clutter, otros algoritmos de cálculo de CAF o detectores alternativos a CA-CFAR. Como la clase principal orquesta estas funciones desde etapas bien definidas, las modificaciones pueden acotarse a un bloque sin necesidad de reescribir toda la cadena.
-
-La segunda consiste en ampliar el subsistema de simulación, agregando nuevas fuentes de degradación, múltiples blancos o modelos geométricos más sofisticados. La existencia de clases separadas para eco y clutter facilita este camino.
-
-La tercera consiste en extender la lógica de entrada a la etapa de CAF, incorporando nuevos reconstructores o métodos de síntesis de referencia sin alterar la estructura general de la cadena. La existencia de un punto explícito de reemplazo para esta referencia favorece ese tipo de experimentos.
-
-La cuarta consiste en enriquecer la documentación y los ejemplos de uso. Si bien el repositorio ya incluye una estructura coherente de paquete, un archivo de instalación y documentación básica, una evolución natural del proyecto sería incorporar más ejemplos reproducibles, pruebas automatizadas y documentación generada a partir de docstrings.
-
-\section{Observaciones finales}
-
-Desde la perspectiva de esta tesis, la implementación de \texttt{pr\_chain} constituye más que un soporte instrumental para obtener resultados. En rigor, se trata de uno de los productos centrales del trabajo, ya que cristaliza en software la integración entre simulación, comprensión del problema radar y evaluación del impacto de distintas estrategias de procesamiento.
-
-Por este motivo, entendemos que el valor del desarrollo no reside únicamente en el resultado numérico obtenido en los experimentos, sino también en haber dejado una base modular, legible y reutilizable, orientada a libre uso y suficientemente estructurada como para servir como punto de partida en extensiones futuras \cite{github-repo}.
+En conjunto, esta implementación proporciona una base organizada para reproducir la cadena de procesamiento utilizada en esta tesis y realizar ensayos comparativos sobre sus distintas etapas \cite{github-repo}.
