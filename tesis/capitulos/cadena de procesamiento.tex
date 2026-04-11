@@ -1,6 +1,6 @@
-\chapter{Cadena de procesamiento radar}
+\chapter{Cadena de procesamiento radar desarrollada}
 
-	\section{Filtro de clutter y rayo directo}
+	\section{Filtro de clutter y señal directa}
 
 	La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de DSI y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando estos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto *BT* utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
 
@@ -48,7 +48,7 @@
 	\section{Función de ambigüedad cruzada}
 
 
-	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ec. \ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
+	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ecuación~\ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
 
 
 

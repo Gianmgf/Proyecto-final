@@ -2,7 +2,7 @@
 \label{chap:isdbtb_tx}
 
 
-En Argentina, la transmisión de TDT está regulada por el ENACOM a través de la resolución 7/13. Esta establece el esquema ISDB-Tb definido por la norma ABNT NBR 15601. Además, en el Anexo 1 se establece las especificaciones técnicas, tales como el tratamiento de datos, la modulación y la transmisión.
+En Argentina, la transmisión de TDT está regulada por el ENACOM a través de la Resolución 7/13. Esta establece el esquema ISDB-Tb definido por la norma ABNT NBR 15601. Además, en el Anexo I de dicha resolución se establecen las especificaciones técnicas, tales como el tratamiento de datos, la modulación y la transmisión.
 
 
 \section{Estructura espectral y parámetros de transmisión}
@@ -41,7 +41,7 @@ La frecuencia de muestreo se mantiene constante en los tres modos y vale aproxim
 f_s = \frac{512}{63}\ \mathrm{MHz}\ \approx 8{,}126984\ \mathrm{MHz}.
 \end{equation}
 
-Al mantener $f_s$ constante, el incremento de subportadoras por segmento implica una reducción del espaciamiento entre ellas y un incremento de la duración útil del símbolo OFDM. Generando así un trade off entre la robustez a interferencias debido al multitrayecto y la sensibilidad a corrimientos en frecuencia \cite{uruguay_tx}. Esto conlleva que el espaciamiento entre subportadoras resulte en
+Al mantener $f_s$ constante, el incremento de subportadoras por segmento implica una reducción del espaciamiento entre ellas y un incremento de la duración útil del símbolo OFDM. Esto genera un compromiso entre la robustez frente a interferencias generadas por multitrayectos y la sensibilidad a corrimientos en frecuencia \cite{uruguay_tx}. Esto conlleva que el espaciamiento entre subportadoras resulte en
 
 \begin{equation}
 c_s = \frac{f_s}{N}
@@ -85,7 +85,7 @@ La cadena transmisora del ISDB-Tb parte de uno o más flujos MPEG-2 TS y los tra
 
 \subsection{Codificación externa RS}
 
-La primera etapa de la cadena es la codificación externa Reed--Solomon RS(204,188). Este código toma cada TPS 188 bytes (187 bytes de datos + 1 byte de sincronismo) y agrega 16 bytes de paridad a partir del polinomio generador siguientes polinomios:
+La primera etapa de la cadena es la codificación externa Reed--Solomon RS(204,188). Este código toma cada TSP 188 bytes (187 bytes de datos + 1 byte de sincronismo) y agrega 16 bytes de paridad a partir del siguiente polinomio generador:
 \begin{equation} g(x) = (x + \lambda^0)(x + \lambda^1)(x + \lambda^2) \cdots (x + \lambda^{15})
 \end{equation}
 donde $\lambda$ es el primo 2 del campo finito GF($2^8$) definido por el polinomio primitivo:
@@ -94,13 +94,13 @@ donde $\lambda$ es el primo 2 del campo finito GF($2^8$) definido por el polinom
 \end{equation}
 
 
-En los códigos RS, la cantidad máxima de errores detectables y corregibles está dada por la mitad del número de bytes de paridad. Dado esto, por cada TPS el sistema puede corregir hasta 8 bytes erróneos.
+En los códigos RS, la cantidad máxima de errores detectables y corregibles está dada por la mitad del número de bytes de paridad. Dado esto, por cada TSP el sistema puede corregir hasta 8 bytes erróneos.
 
-\figura{.8}{./isdb/tps.png}{TPS con y sin protección.}{ Adaptado de \cite{abnt}}{\label{fig:paquete_tps}}
+\figura{.8}{./isdb/tsp.png}{TSP con y sin protección.}{ Adaptado de \cite{abnt}}{\label{fig:paquete_TSP}}
 
 \subsection{Dispersión de energía}
 
-Luego de la codificación RS, los datos pasan por el bloque de dispersión de energía. Esta etapa realiza a través de una compuerta XOR en donde los bits se invierten en función de PRBS generada por un LFSR.
+Luego de la codificación RS, los datos pasan por el bloque de dispersión de energía. Esta etapa se realiza a través de una compuerta XOR en donde los bits se invierten en función de una PRBS generada por un LFSR.
 
 La secuencia PRBS empleada está definida por el polinomio
 
@@ -114,7 +114,7 @@ y el generador se reinicia al comienzo de cada cuadro OFDM con el estado inicial
 100101010000000.
 \end{equation}
 
-Sin embargo, el byte de sincronismo del transport stream no se dispersa para asi mantener el mecanismo de sincronización.
+Sin embargo, el byte de sincronismo del transport stream no se dispersa para así mantener el mecanismo de sincronización.
 
 \figura{0.8}{./isdb/prbs.png}
 {Dispersor de energía.}
@@ -123,7 +123,7 @@ Sin embargo, el byte de sincronismo del transport stream no se dispersa para asi
 
 \subsection{Entrelazado de byte}
 
-Luego de que los datos sean protegidos por medio de la codificación RS y por la dispersión de energía, se entrelazan a nivel de byte mediante un entrelzador convolucional. Este consiste en una cascada de colas FIFO con distintos niveles de profundidad, tal como se muestra en la Figura \ref{fig:intrlv_conv}, de manera que las distintas ramas sufran distintos retardos.
+Luego de que los datos sean protegidos por medio de la codificación RS y por la dispersión de energía, se entrelazan a nivel de byte mediante un entrelazador convolucional. Este consiste en una cascada de colas FIFO con distintos niveles de profundidad, tal como se muestra en la Figura \ref{fig:intrlv_conv}, de manera que las distintas ramas sufran distintos retardos.
 
 
 \figura{0.9}{./isdb/intrlv_conv.png}
@@ -146,7 +146,7 @@ A partir de este código base, la norma permite obtener las tasas efectivas
 \begin{equation}
 R \in \left\{\frac12,\frac23,\frac34,\frac56,\frac78\right\}
 \end{equation}
-mediante diferentes patrones de punzado. La tasa seleccionada forma parte de la configuración individual de cada capa jerárquica y pueden ser distinta entre las capas.
+mediante diferentes patrones de punzado. La tasa seleccionada forma parte de la configuración individual de cada capa jerárquica y puede ser distinta entre las capas.
 
 \figura{0.9}{./isdb/conv_code.png}
 {Diagrama del codificador convolucional base.}
@@ -266,7 +266,7 @@ con la constelación de la Figura~\ref{fig:64qam}.
 {\label{fig:64qam}}
 
 \subsubsection{Normalización de constelación}
-Luego del mapeo, los símbolos complejos obtenidos se normalizan mediante el factor correspondiente al esquema de modulación empleado, según se indica en la Tabla~[]. De esta manera, la potencia media del símbolo OFDM resulta unitaria, independientemente de la modulación utilizada.
+Luego del mapeo, los símbolos complejos obtenidos se normalizan mediante el factor correspondiente al esquema de modulación empleado, según se indica en la Tabla~\ref{tab:normalizacion}. De esta manera, la potencia media del símbolo OFDM resulta unitaria, independientemente de la modulación utilizada.
 {
 \renewcommand{\arraystretch}{1.3}
 \begin{table}[H]
@@ -471,7 +471,7 @@ i = I_{\min} + 3(j \bmod 4) + 12p,
 
 donde $j$ es el índice temporal del símbolo OFDM, $p \in \mathbb{N}$ e $i$ debe pertenecer al rango de portadoras válidas del segmento. De esta forma, los pilotos se repiten cada 12 portadoras dentro de un símbolo y su posición se desplaza cíclicamente de un símbolo a otro \cite{portugues}.
 
-Las portadoras SE se modulan mediante BPSK. No obstante, el valor transmitido en cada una de ellas no corresponde a un dato de información, sino al valor de la secuencia pseudoaleatoria $w_i$. Para la subportadora $i$, se utiliza el valor $w_i$ con una modulación BPSK para obtener los símbolos. El mapeo de $w_i$ a símbolos se realiza de la siguiente manera:
+Las portadoras SP se modulan mediante BPSK. No obstante, el valor transmitido en cada una de ellas no corresponde a un dato de información, sino al valor de la secuencia pseudoaleatoria $w_i$. Para la subportadora $i$, se utiliza el valor $w_i$ con una modulación BPSK para obtener los símbolos. El mapeo de $w_i$ a símbolos se realiza de la siguiente manera:
 
 \begin{equation}
 w_i=1 \rightarrow SP\ _i = -\frac43, \qquad
@@ -574,7 +574,7 @@ Los bloques de bits \texttt{info\_actual} e \texttt{info\_proxima} poseen la mis
 
 El cuadro OFDM tiene una duración de 204 símbolos OFDM. Su función es multiplexar, sobre las portadoras de cada segmento, los símbolos de datos, los pilotos, las señales auxiliares AC y la información TMCC. La distribución exacta de estas señales depende del modo de transmisión, del número de segmento y de la categoría de modulación utilizada.
 
-\figura{1}{./isdb/cuadro_seg.png}{Estructura del cuadro OFDM y organización de un segmentos en el modo 1.}{ Adaptado de \cite{abnt}}{\label{fig:cuadro_seg}}
+\figura{1}{./isdb/cuadro_seg.png}{Estructura del cuadro OFDM y organización de un segmento en el modo 1.}{ Adaptado de \cite{abnt}}{\label{fig:cuadro_seg}}
 
 \subsection{IFFT}
 

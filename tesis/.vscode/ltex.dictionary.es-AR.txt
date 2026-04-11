@@ -7,3 +7,4 @@ FIFO
 Entrelazador
 entrelazador
 multitrayecto
+convolucional

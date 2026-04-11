@@ -3,11 +3,11 @@
 \label{chap:isdbtb_rx}
 
 
-La cadena receptora del ISDB-Tb puede interpretarse como la inversión ordenada de los bloques descritos en el Capítulo~\ref{chap:isdbtb_tx}. Su objetivo es recuperar, a partir de la señal OFDM recibida, uno o más flujos MPEG-2 TS correspondientes a las capas jerárquicas activas en la transmisión. Para ello, el receptor debe resolver primero la sincronización temporal y frecuencial del sistema, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, invertir las operaciones de entrelazado, modulación y codificación de canal aplicadas en el transmisor \cite{isdbt,portugues,uruguay_rx}.
+La cadena receptora del ISDB-Tb invierte, en términos generales, las operaciones realizadas en transmisión. Su objetivo es recuperar, a partir de la señal OFDM recibida, los flujos MPEG-2 TS asociados a las capas jerárquicas activas. Para ello, el receptor debe sincronizar temporal y frecuencialmente la señal, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, deshacer las etapas de entrelazado, modulación y codificación de canal.
 
-A diferencia de la descripción del transmisor, la recepción requiere incorporar explícitamente mecanismos de estimación y seguimiento, ya que la señal llega afectada por errores de frecuencia, errores de muestreo, rotaciones de fase y distorsión introducida por el canal. En este sentido, la sincronización y la ecualización constituyen el núcleo del receptor, porque no solo acondicionan la señal para la demodulación, sino que también hacen posible la recuperación robusta de la información TMCC necesaria para configurar el resto de la cadena \cite{uruguay_rx}.
+A diferencia del transmisor, la recepción requiere incorporar mecanismos y bloques adicionales dedicados a la sincronización y preprocesamiento de los datos, ya que la señal llega afectada por errores de frecuencia, errores de muestreo, rotaciones de fase y distorsión introducida por el canal, imposibilitando su correcta demodulación de manera directa.
 
-La cadena receptora del ISDB-Tb invierte, en términos generales, las operaciones realizadas en transmisión. Su objetivo es recuperar, a partir de la señal OFDM recibida, los flujos MPEG-2 TS asociados a las capas jerárquicas activas. Para ello, el receptor debe sincronizar temporal y frecuencialmente la señal, estimar y compensar la respuesta del canal, recuperar la configuración de transmisión mediante el TMCC y, finalmente, deshacer las etapas de entrelazado, modulación y codificación de canal \cite{isdbt,portugues,uruguay_rx}.
+
 
 \section{Sincronización y ecualización}
 \label{sec:isdbtb_sync_eq}
@@ -16,7 +16,7 @@ La sincronización y la ecualización tienen como objetivo ubicar correctamente 
 
 \subsection{Sincronización OFDM}
 
-La adquisición inicial del símbolo OFDM aprovecha la redundancia introducida por el prefijo cíclico. Si $N$ es la longitud útil del símbolo y $L$ la longitud del prefijo cíclico, los últimos $L$ samples del símbolo coinciden con sus primeros $L$ samples. Esta propiedad permite construir una métrica de autocorrelación sobre la señal recibida $r[k]$ y estimar el comienzo del símbolo mediante
+La adquisición inicial del símbolo OFDM aprovecha la redundancia introducida por el prefijo cíclico. Si $N$ es la longitud útil del símbolo y $L$ la longitud del prefijo cíclico, las últimas $L$ muestras del símbolo coinciden con sus primeras $L$ muestras. Esta propiedad permite construir una métrica de autocorrelación sobre la señal recibida $r[k]$ y estimar el comienzo del símbolo mediante
 
 \begin{equation}
 \hat{\theta}_{ML}
@@ -31,7 +31,7 @@ La adquisición inicial del símbolo OFDM aprovecha la redundancia introducida p
 \frac{|r[k]|^2 + |r[k+N]|^2}{2},
 \end{equation}
 
-donde $\rho$ depende de la relación señal a ruido \cite{uruguay_rx}. A partir de esta misma correlación también puede estimarse el desfasaje en frecuencia. Dado que el prefijo cíclico contiene una copia de los últimos samples del símbolo OFDM, las muestras separadas por \(N\) posiciones corresponden, idealmente, a los mismos datos. Por lo tanto, la diferencia de fase entre ambas puede asociarse al desfasaje de frecuencia presente en la señal recibida y utilizarse para obtener una estimación de dicho error \cite{uruguay_rx}.
+donde $\rho$ depende de la relación señal a ruido \cite{uruguay_rx}. A partir de esta misma correlación también puede estimarse el desfasaje en frecuencia. Dado que el prefijo cíclico contiene una copia de las últimas muestras del símbolo OFDM, las muestras separadas por \(N\) posiciones corresponden, idealmente, a los mismos datos. Por lo tanto, la diferencia de fase entre ambas puede asociarse al desfasaje de frecuencia presente en la señal recibida y utilizarse para obtener una estimación de dicho error \cite{uruguay_rx}.
 
 \begin{equation}
 \hat{\varepsilon}_{ML}
@@ -72,7 +72,7 @@ Y[i] = X[i]\,H[i],
 
 donde $H[i]$ representa la ganancia compleja del canal en la subportadora $i$. La ecualización consiste en estimar esta respuesta y compensarla sobre las portadoras activas.
 
-Para ello se utilizan los SP, cuyas posiciones y valores son conocidos. Como su ubicación varía de un símbolo a otro, primero debe identificarse la configuración correspondiente al símbolo actual. Luego, la respuesta del canal se estima sobre esas portadoras piloto y se utiliza alguna interpolación para el resto de las subportadoras activas \cite{uruguay_rx}.
+Para ello se utilizan los SP, cuyas posiciones y valores son conocidos. Como su ubicación varía de un símbolo a otro, primero debe identificarse la configuración correspondiente al símbolo actual. Luego, la respuesta del canal se estima sobre esas portadoras piloto y se utiliza algún esquema de interpolación para el resto de las subportadoras activas \cite{uruguay_rx}.
 \section{Cadena de recepción}
 \subsection{Recuperación de TMCC y AC}
 
@@ -80,14 +80,14 @@ Una vez estabilizadas la sincronización y la ecualización, es posible decodifi
 
 \subsection{Obtención de los segmentos de datos}
 
-Ya una vez decodificada la señal TMCC, el siguiente paso es aislar las subportadoras de datos y volver a construir los segmentos de datos. Para ello simplemente se deben filtrar todas las subportadoras que no correspondan a datos, es decir, aquellas reservadas para pilotos, TMCC y canales auxiliares.
+Una vez decodificada la señal TMCC, el siguiente paso es aislar las subportadoras de datos y volver a construir los segmentos de datos. Para ello simplemente se deben filtrar todas las subportadoras que no correspondan a datos, es decir, aquellas reservadas para pilotos, TMCC y canales auxiliares.
 
 
 \subsection{Desentrelazado en frecuencia}
 
 \subsubsection{Desaleatorización de portadoras dentro del segmento}
 
-En primer lugar, se revierte la aleatorización de portadoras dentro de cada segmento aplicando la permutación inversa de la utilizada en transmisión. Es decir, se deshace el mapeo definido para la aleatorización de portadoras en la Subsección~\ref{subsubsec:aleatorizacion_portadoras}. De esta manera, cada símbolo vuelve a la posición de portadora que ocupaba antes de dicha permutación.
+En primer lugar, se revierte la aleatorización de portadoras dentro de cada segmento aplicando la permutación inversa de la utilizada en transmisión. Es decir, se deshace el mapeo definido para la aleatorización de portadoras en la subsección~\ref{subsubsec:aleatorizacion_portadoras}. De esta manera, cada símbolo vuelve a la posición de portadora que ocupaba antes de dicha permutación.
 
 \subsubsection{Desrotación de portadoras dentro del segmento}
 
@@ -99,7 +99,7 @@ Finalmente, se revierte el entrelazado entre segmentos aplicando el mapeo invers
 
 \subsection{Desentrelazado temporal}
 
-Una vez recuperados los datos en frecuencia, se revierte el entrelazado temporal aplicando el proceso inverso al descrito en la subsección de transmisión. Para ello, se compensan los retardos introducidos por las distintas ramas del entrelazador temporal, de modo que los símbolos que en transmisión atravesaron las ramas de menor retardo pasan ahora por las de mayor retardo, y viceversa. Así, todos los datos vuelven a quedar alineados temporalmente.
+Una vez recuperados los datos en frecuencia, se revierte el entrelazado temporal aplicando el proceso inverso al descrito en la subsección correspondiente del capítulo de transmisión. Para ello, se compensan los retardos introducidos por las distintas ramas del entrelazador temporal, de modo que los símbolos que en transmisión atravesaron las ramas de menor retardo pasan ahora por las de mayor retardo, y viceversa. Así, todos los datos vuelven a quedar alineados temporalmente.
 
 \figura{0.8}{./isdb/time_deintrl_seccion.png}{Desentrelazador temporal.}{Adaptado de \cite{abnt}.}{\label{fig:desentrelazador_t}}
 

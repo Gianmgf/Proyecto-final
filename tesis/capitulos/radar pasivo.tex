@@ -9,7 +9,7 @@
 
 	\section{Geometría y coordenadas biestáticas}
 
-	Consideremos la geometría de un radar pasivo. Un blanco se encuentra en la posición \(\overline{p_t} = (x(t), y(t), z(t))\) con un vector de velocidad \(\overline{v_c} = (v_x(t), v_y(t), v_z(t))\); el transmisor está ubicado en \(\overline{p_{tx}} =(x_{t}, y_{t}, z_{t})\) y el receptor en \(\overline{p_{rx}} =(x_{r}, y_{r}, z_{r})\). Esto no permite definir las siguientes distancias: la distancia transmisor--blanco ($R_1$), el receptor--blanco ($R_2$) y la distancia transmisor--receptor ($R_b$).
+	Consideremos la geometría de un radar pasivo. Un blanco se encuentra en la posición \(\overline{p_t} = (x(t), y(t), z(t))\) con un vector de velocidad \(\overline{v_c} = (v_x(t), v_y(t), v_z(t))\); el transmisor está ubicado en \(\overline{p_{tx}} =(x_{t}, y_{t}, z_{t})\) y el receptor en \(\overline{p_{rx}} =(x_{r}, y_{r}, z_{r})\). Esto permite definir las siguientes distancias: la distancia transmisor--blanco ($R_1$), el receptor--blanco ($R_2$) y la distancia transmisor--receptor ($R_b$).
 
 	\begin{equation}
 		R_1(t) = || \overline{p_{t}} - \overline{p_{tx}} ||
@@ -37,14 +37,14 @@
 		\label{eq:rango_biestatico}
 	\end{equation}
 
-	Los distintos puntos que generan un mismo rango biestáticos forman un elipsoide biestático en el espacio tridimensional.  En donde los focos de este elipsoide se encuentran en las posiciones del transmisor y del receptor.
+	Los distintos puntos que generan un mismo rango biestático forman un elipsoide biestático en el espacio tridimensional.  En donde los focos de este elipsoide se encuentran en las posiciones del transmisor y del receptor.
 	Al fijar la coordenada z de tal manera que en el plano resultante se incluyan al receptor y al transmisor se obtiene una elipse biestática.
 	\figura{.9}{./pr/rango_bi_3d.png}{Elipsoide biestático de iso-rango.}{ Fuente: \cite{malanowski}.}{\label{fig:rango_3d}}
 	\figura{.9}{./pr/rango_bi.png}{Elipses biestáticas.}{ Fuente: \cite{malanowski}.}{\label{fig:rango}}
 
 
 
-	En la Figura~\ref{fig:rango} se muestran elipses biestáticas con distintos rangos asociados, en donde un mayor rango corresponde a una elipses de mayor tamaño.
+	En la Figura~\ref{fig:rango} se muestran elipses biestáticas con distintos rangos asociados, en donde un mayor rango corresponde a una elipse de mayor tamaño.
 
 
 	La velocidad biestática, definida como la derivada temporal del rango biestático, se calcula a partir del desplazamiento Doppler \(f_{d}\) medido entre las señales de referencia y de eco, y de la longitud de onda \(\lambda = \frac{c}{f_{c}}\), donde \(f_{c}\) es la frecuencia portadora:
@@ -54,7 +54,7 @@
 		\label{eq:vel_biestatica}
 	\end{equation}
 
-	Otra forma de expresar la velocidad biestática es a partir de la velocidad cartesiana del blanco. Podemos obtener V sumando las proyecciones del vector de velocidad $\overline{v}_c$ sobre los vectores unitarios de $R_1$ y $R_2$, como se muestra en la Ec.~\ref{eq:vel_biestatica_proy}.
+	Otra forma de expresar la velocidad biestática es a partir de la velocidad cartesiana del blanco. Podemos obtener V sumando las proyecciones del vector de velocidad $\overline{v}_c$ sobre los vectores unitarios de $R_1$ y $R_2$, como se muestra en la Ecuación~\ref{eq:vel_biestatica_proy}.
 
 	\begin{equation}
 		\label{eq:vel_biestatica_proy}
@@ -168,7 +168,7 @@
 
 	En este trabajo se eligió la señal de TDT. Uno de los motivos es que su estructura y procesamiento están estrictamente definidos, lo que permite conocer exactamente cómo la estación transmisora emitió la señal y qué pasos seguir para demodularla y volverla a modular. Sin embargo, un problema intrínseco de esta señal es la aparición de lóbulos laterales determinísticos debido a sus prefijos cíclicos y herramientas de sincronización (véase Capítulo~4).
 
-	Si bien originalmente la señal de TDT cuenta con un ancho de banda de aproximadamente 8 GHz, utilizar el espectro completo complejiza notablemente el modulador y el demodulador, por lo que se optó por emplear el segmento central de transmisión parcial. Este cuenta con un ancho de banda de [completar], el cual es menor pero suficiente para aplicarlo como base de trabajo.
+	Si bien originalmente la señal de TDT cuenta con un ancho de banda de aproximadamente 6 MHz, utilizar el espectro completo complejiza notablemente el modulador y el demodulador, por lo que se optó por emplear el segmento central de transmisión parcial. Este cuenta con un ancho de banda de aproximadamente $428{,}571\,\text{kHz}$, el cual es menor pero suficiente para aplicarlo como base de trabajo.
 
 
 	\section{Canal de referencia y canal de vigilancia}
@@ -185,10 +185,10 @@
 	\figura{.9}{./pr/canales.png}{Correlación entre antenas de vigilancia y referencia.}{ Fuente: \cite{malanowski}.}{\label{fig:canales}}
 	En la Figura~\ref{fig:canales} se observa cómo una componente de la señal eco, $A_{surv}(\phi_{tx})$, es captada por el diagrama de radiación de la antena de vigilancia y, de forma inversa, la señal de referencia, $A_{ref}(\phi_{target})$, es recibida por la antena de vigilancia.
 
-	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, lo mismo no ocurre en sentido inverso, ya que sin un tratamiento previo la señal directa enmascara completamente al objetivo. Este fenómeno se conoce como \textit{interferencia de señal directa} (DSI, por sus siglas en inglés).
+	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, lo mismo no ocurre en sentido inverso, ya que sin un tratamiento previo la señal directa enmascara completamente al objetivo generando DSI.
 
-	Otro fenómeno que también interfiere en la correcta detección de blancos es el \textit{clutter}. En la señal $x_e$ no solo están presentes la componente del eco del blanco y la señal directa, sino también las reflexiones provenientes de objetos inmóviles en el entorno del radar. Estas reflexiones son réplicas de la señal transmitida cuya amplitud y retardo dependen de la RCS del \textit{clutter} y de su posición relativa. Sin embargo, al tratarse de objetos estáticos, no presentan shifteo Doppler. La presencia de estas contribuciones puede generar falsos positivos o enmascarar el blanco de interés por lo que
-	para solucionar esto se aplica un filtro anti-\textit{clutter} encargado de eliminar de la señal eco todos los componentes con $f_{\text{doppler}}$ nula. La selectividad con la que se suprimen estos componentes depende del tipo de filtro y de la cantidad de coeficientes empleados.
+	Otro fenómeno que también interfiere en la correcta detección de blancos es el \textit{clutter}. En la señal $x_e$ no solo están presente la componente correspondiente al eco del blanco y la señal directa, sino también las reflexiones provenientes de objetos inmóviles en el entorno del radar. Estas reflexiones son réplicas de la señal transmitida cuya amplitud y retardo dependen de la RCS del \textit{clutter} y de su posición relativa. Sin embargo, al tratarse de objetos estáticos, no presentan desplazamiento Doppler. La presencia de estas contribuciones puede generar falsos positivos o enmascarar el blanco de interés por lo que
+	para solucionar esto se aplica un filtro anti-\textit{clutter} encargado de eliminar de la señal eco todos los componentes sin desplazamiento Doppler. La selectividad con la que se suprimen estos componentes depende del tipo de filtro y de la cantidad de coeficientes empleados.
 
 
 	\figura{.9}{./pr/filtro.png}{Diagrama de un filtro anti clutter.}{}{\label{fig:filtro_clutter}}

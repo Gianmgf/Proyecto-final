@@ -13,7 +13,7 @@
 
 			\vspace{1.5cm}
 
-			\textbf{\MakeUppercase{Mejora de la detección  en radares biestaticos pasivos basados en la señal de televisión digital ISDB-T a partir de la reconstrucción de la misma }}
+			\textbf{\MakeUppercase{Mejora de la detección  en radares biestáticos pasivos basados en la señal de televisión digital ISDB-Tb a partir de la reconstrucción de la misma }}
 
 			\vspace{1.5cm}
 
@@ -33,7 +33,7 @@
 
 			\vspace{1.5cm}
 			\Large
-			Universidad Nacional De Rio Negro\\
+			Universidad Nacional De Río Negro\\
 			Argentina
 
 		\end{center}
@@ -104,12 +104,11 @@
 		El radar pasivo biestático constituye una alternativa de interés para la detección de
 		objetivos en escenarios donde no resulta viable el uso de transmisores dedicados. En
 		particular, el empleo de iluminadores de oportunidad, como las señales de Televisión
-		Digital Terrestre, introduce una serie de desafíos asociados a la interferencia de señal
-		directa y a las reflexiones estacionarias del entorno, las cuales pueden degradar
+		Digital Terrestre, introduce una serie de desafíos asociados a la interferencia de señal directa y a las reflexiones estacionarias del entorno, las cuales pueden degradar
 		severamente la capacidad de detección.
 
 		En este trabajo se presenta una cadena de procesamiento orientada a sistemas de radar
-		pasivo basados en señales ISDB-T, aprovechando el conocimiento detallado de su
+		pasivo basados en señales ISDB-Tb, aprovechando el conocimiento detallado de su
 		estructura para reconstruir la señal transmitida y utilizarla como referencia coherente.
 		Sobre esta base, se implementan técnicas de cancelación de clutter y de interferencia de
 		trayectoria directa, seguidas por el cálculo de la función de ambigüedad cruzada y un
@@ -117,7 +116,7 @@
 
 		\vspace{0.5cm}
 
-		\textbf{Palabras clave:} radar pasivo, ISDB-T, detección de objetivos, clutter, CFAR.
+		\textbf{Palabras clave:} radar pasivo, ISDB-Tb, detección de objetivos, clutter, CFAR.
 
 	\end{abstract}
 	\cleardoublepage
@@ -132,15 +131,13 @@
 
 	\appendix
 	\cleardoublepage
-	\addcontentsline{toc}{part}{Apéndices}
+	\phantomsection
+	\addtocontents{toc}{\protect\contentsline{part}{Apéndices}{}{}}
 
-	\include{anexos/docu_cadena}
+	\input{anexos/docu_cadena}
 
-		% References
 	\cleardoublepage
-	\addcontentsline{toc}{chapter}{Bibliografía}
-
-	\printbibliography
+	\printbibliography[heading=bibintoc,title={Bibliografía}]
 
 
 	\end{document}
