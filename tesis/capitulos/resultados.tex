@@ -34,7 +34,7 @@ Inicialmente, se toman todos los parámetros cartesianos (posiciones y velocidad
 
 
 
-\figura{.8}{./sim_data/scenario_geometry.png}{Geometría biestática del escenario de simulación.}{}{\label{fig:sim_geometria}}
+
 
 
 
@@ -42,10 +42,22 @@ Una vez generadas las señales, estas pasan por un canal de ruido blanco gaussia
 
 
 
-En ambos casos presentados se analiza la misma cadena de procesamiento sobre el mismo escenario de simulación. La única diferencia es la señal de referencia utilizada: en un caso se usa la señal recibida por el canal de referencia y, en el otro, una versión reconstruida a partir de la estructura de la señal ISDB-Tb. Esto permite evaluar de forma directa el efecto del bloque reconstructor sobre el desempeño del sistema.
+En ambos casos presentados se analiza la misma cadena de procesamiento sobre el mismo escenario de simulación. La única diferencia es la señal de referencia utilizada: en un caso se usa la señal recibida por el canal de referencia y, en el otro, la versión reconstruida. Esto permite evaluar de forma directa el efecto del bloque reconstructor sobre el desempeño del sistema.
 
+\figura{.8}{./sim_data/scenario_geometry.png}{Geometría biestática del escenario de simulación.}{}{\label{fig:sim_geometria}}
 
+\begin{table}[H]
+    \centering
 
+    \caption{Parámetros de simulación.}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \multicolumn{1}{|c|}{Radar} & \multicolumn{1}{c|}{Transmisor} & \multicolumn{3}{c|}{Blanco} \\\hline
+    $\overline{p_{rx}}$ [m] & $\overline{p_{tx}}$ [m]& $\overline{p_t} $ [m] & $\overline{v_c}$ [m/s] & $f_d$ [Hz]\\\hline
+    (50, 500) & (0, 0) & (2500, 120) & (10, 100) & 21.79\\\hline
+    \end{tabular}
+    \label{tab:sim_params}
+\end{table}
 \section{Resultados sin reconstrucción de la señal de referencia}
 
 
@@ -120,11 +132,7 @@ También puede observarse el efecto de las ventanas sobre la resolución del sis
 
 \subsection{Detección mediante CFAR}
 
-
-
-La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrado en la Figura~\ref{fig:cfar_2d}. Para analizar el comportamiento del detector, además de resaltar las celdas identificadas como blanco, se considera un corte en el bin de rango y en el bin Doppler correspondientes al blanco simulado.
-
-
+La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrado en la Figura~\ref{fig:cfar_2d}. Para analizar el comportamiento del detector, además de resaltar las celdas identificadas como blanco, se consideran los cortes correspondientes al blanco detectado en el bin de rango 121 ($4466.60\ \text{m}$) y en el bin Doppler 1003 ($24.38\ \text{Hz}$). Estos valores coinciden, dentro de la precisión del sistema, con los parámetros del blanco definidos en la Tabla~\ref{tab:sim_params}, lo que indica que la detección se realiza correctamente.
 
 \begin{figure}[H]
 
@@ -222,7 +230,7 @@ Al igual que en la cadena sin reconstructor, el uso de ventanas reduce el nivel 
 
 
 
-La detección se realizó nuevamente mediante un CA-CFAR 2D. La Figura~\ref{fig:caf_det_cfar_remod} muestra las detecciones obtenidas sobre la CAF procesada, mientras que la Figura~\ref{fig:cut_no_cf_remod} presenta los cortes en rango y en frecuencia correspondientes a la detección del blanco.
+La detección se realizó nuevamente mediante un CA-CFAR 2D. La Figura~\ref{fig:caf_det_cfar_remod} muestra las detecciones obtenidas sobre la CAF procesada, mientras que la Figura~\ref{fig:cut_no_cf_remod} presenta los cortes en rango y en frecuencia correspondientes a la detección del blanco. Estando nuevamente el lóbulo principal en el bin de rango 121 y el bin Doppler 1003, lo que indica que la detección se realiza correctamente.
 
 
 
@@ -283,4 +291,4 @@ Se puede observar como en la cadena con el reconstrucción hay una reducción de
 
 
 
-Este efecto podría atenuarse ajustando los parámetros de las ventanas aplicadas, haciendo un análisis más avanzado de la configuracion del bloque CA-CFAR  o incorporando una etapa adicional que permita suprimir detecciones espurias asociadas a la estructura de la señal iluminadora.
+Este efecto podría atenuarse ajustando los parámetros de las ventanas aplicadas, haciendo un análisis más avanzado de la configuración del bloque CA-CFAR  o incorporando una etapa de postprocesamiento que permita suprimir detecciones espurias asociadas a la estructura de la señal.
