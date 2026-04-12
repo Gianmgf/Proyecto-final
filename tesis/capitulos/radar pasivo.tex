@@ -1,10 +1,10 @@
 \chapter{Radar Pasivo}
-	La principal diferencia de un sistema de radar pasivo con respecto a uno convencional es que no cuenta con un transmisor propio, sino que utiliza fuentes externas de iluminación. La detección de objetivos se realiza comparando la señal directa del transmisor con la señal reflejada por el blanco.
+	La principal diferencia de un sistema de radar pasivo con respecto a uno convencional es que no cuenta con un transmisor propio, sino que utiliza fuentes externas. La detección de objetivos se basa en comparar una señal directa del transmisor con una reflejada por un posible blanco.
 
-	Para ello, el sistema cuenta al menos con dos canales de recepción: un canal de referencia y un canal de vigilancia. El canal de referencia captura una versión directa de la señal transmitida, ya sea mediante una antena orientada hacia el emisor o a través de la formación digital de un haz en dicha dirección. El canal de vigilancia, en cambio, recibe los ecos reflejados por los objetos ubicados en
-	la zona de interés, además de posibles contribuciones de \textit{clutter} y ruido.
+	Para esto, el sistema usa al menos con dos canales de recepción: un canal de referencia y un canal de vigilancia. El canal de referencia es el que captura una versión directa de la señal transmitida y el canal de vigilancia, en cambio, recibe los ecos reflejados por los objetos ubicados en la zona de interés.
 
-	El procesamiento conjunto de ambas señales permite la detección de blancos y la estimación de sus parámetros. A partir del retardo temporal entre la señal de referencia y el eco recibido es posible estimar el rango biestático del blanco, definido como la diferencia entre la trayectoria transmisor--blanco--receptor y la trayectoria directa transmisor--receptor. De forma análoga, el desplazamiento Doppler observado permite calcular la velocidad biestática, asociada a la variación temporal de dicho rango.
+	El procesamiento de ambas señales permite la detección de blancos y la estimación de sus parámetros. A partir del retardo temporal entre la señal de referencia y el eco recibido es posible estimar el rango biestático del blanco, definido como la diferencia entre la trayectoria transmisor-blanco-receptor y la trayectoria directa transmisor-receptor. De forma análoga, el desplazamiento Doppler observado permite calcular la velocidad biestática, asociada a la variación temporal de dicho rango.
+
 
 
 	\section{Geometría y coordenadas biestáticas}

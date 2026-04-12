@@ -1,21 +1,21 @@
 \chapter{Introducción}
 
-El radar pasivo biestático constituye una alternativa para la detección de objetivos sin necesidad de emplear un transmisor dedicado. En este tipo de sistemas, la información de interés se obtiene a partir de señales emitidas por fuentes externas, denominadas iluminadores de oportunidad, mediante la comparación entre una señal de referencia y una señal de vigilancia que contiene los ecos reflejados por los blancos presentes en la zona de vigilancia.
+El radar pasivo biestático constituye una alternativa para la detección de objetivos sin necesidad de emplear un transmisor dedicado. En estos sistemas, las características del blanco (velocidad y distancia) se obtiene a partir de procesamiento de señales emitidas por fuentes externas  presentes en la zona de vigilancia, denominadas iluminadores de oportunidad. Dentro de los posibles iluminadores, TDT es una opción comúnmente elegida debida su potencia de transmisión y su gran ancho de banda.
 
-Dentro de las posibles fuentes iluminadoras, la televisión digital terrestre resulta de particular interés debido a su amplia disponibilidad, su elevada potencia de transmisión, su estructura bien definida y su gran ancho de banda. En este contexto, el estándar ISDB-Tb, adoptado en Argentina, presenta características que lo convierten en una opción atractiva para su utilización en radar pasivo.
 
-A partir de este escenario, el presente trabajo analiza la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. En particular, se estudia si el conocimiento de la estructura de la señal permite reconstruir una referencia de mejor calidad y, a partir de ello, mejorar la capacidad de detección del sistema.
 
-Para ello, se aborda el estudio del estándar ISDB-Tb desde la perspectiva de su posible aplicación radar y se desarrolla una cadena de procesamiento que incluye supresión de clutter e interferencia de señal directa, cálculo de la función de ambigüedad cruzada y detección de blancos. Finalmente, el desempeño del sistema se evalúa por simulación, comparando los resultados obtenidos con y sin reconstrucción de la señal de referencia.
+A partir de este contexto, este trabajo analiza la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. En particular, se estudia si la reconstrucción de la señal de referencia  mejora la capacidad de detección del sistema.
+
+
+Para ello, se estudiaba el estándar ISDB-Tb  y se desarrollará una cadena de procesamiento radar propia en la que el desempeño se evaluará por simulación, comparando los resultados obtenidos con y sin reconstrucción de la señal de referencia.
 
 \section{Objetivos}
 
-El objetivo general de este trabajo es analizar la factibilidad de utilizar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático, y evaluar el impacto de reconstruir dicha señal sobre la capacidad de detección de blancos.
+El enfoque general de este trabajo es estudiar la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático, desarrollar una cadena de procesamiento radar y evaluar el impacto de reconstruir dicha señal sobre la capacidad de detección de blancos. Con este enfoque se plantearon los siguientes objetivos:
 
-De este objetivo general se desprenden los siguientes objetivos específicos:
 
 \begin{itemize}
-    \item estudiar la estructura y el funcionamiento del estándar ISDB-Tb, con énfasis en aquellos bloques necesarios para comprender la señal transmitida y su procesamiento en recepción;
+    \item estudiar la estructura y el funcionamiento del estándar ISDB-Tb;
     \item desarrollar una cadena propia de procesamiento radar que permita integrar generación de señales, filtrado anti-clutter, cálculo de la función de ambigüedad cruzada y detección;
     \item incorporar dentro de dicha cadena un bloque reconstructor de señal de referencia, basado en el conocimiento de la estructura del estándar;
     \item validar por simulación el efecto de la reconstrucción de la referencia sobre el desempeño global del procesamiento, comparando los resultados obtenidos con y sin dicho bloque.

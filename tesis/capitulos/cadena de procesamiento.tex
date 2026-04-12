@@ -1,180 +1,137 @@
 \chapter{Cadena de procesamiento radar desarrollada}
 
-	\section{Filtro de clutter y señal directa}
+\section{Filtro de clutter y señal directa}
 
-	La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de DSI y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando estos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto *BT* utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
+La detección de objetivos en un radar pasivo se ve limitada, en gran medida, por la presencia de DSI y por las reflexiones de clutter. Ambos componentes suelen dominar la señal recibida y generan lóbulos secundarios en la función de ambigüedad cruzada que pueden ocultar ecos débiles, aun cuando estos se encuentren por encima del nivel de ruido del receptor. Este problema es especialmente crítico si se considera que, para los valores típicos del producto BT utilizados en aplicaciones reales, las fluctuaciones residuales pueden situarse varios decibelios por encima de los ecos de interés.
 
+\subsection{Filtro de lattice en bloque}
 
-		\subsection{Filtro de lattice en bloque}
+El filtro de lattice en bloque se basa en proyecciones ortogonales sucesivas, determinadas por los coeficientes de reflexión $\kappa_i$, entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro.
 
+Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores, permitiendo que las copias retardadas de la señal de referencia presentes en la señal de eco $x_e(n)$ puedan ser tratadas de manera independiente. Para cada etapa, se estima un coeficiente de correlación $h_i$ calculado como la proyección de $x_e(n)$ sobre el error de predicción hacia atrás. Este coeficiente determina cuánta contribución de $b_i(n)$ está presente en el eco.
 
-		El filtro de lattice en bloque se basa en una serie de proyecciones sucesivas determinadas por los coeficientes de reflexión $\kappa_i$. Estos coeficientes pueden interpretarse como proyecciones normalizadas entre el error de predicción hacia adelante y el error de predicción hacia atrás en cada etapa del filtro.
+\figura{.9}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
 
-		Como resultado de estas proyecciones, los errores de predicción hacia atrás $b_i(n)$ se vuelven mutuamente ortogonales. Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores, permitiendo separar componentes correlacionadas sin interferencia entre ellas.
+En donde el algoritmo de procesamiento esté dado por las ecuaciones de la Tabla \ref{table:lattice}.
 
-		La ortogonalidad implica que cada $b_i(n)$ está asociado a un subespacio distinto y no superpuesto. Esto permite que las copias retardadas de la señal de referencia presentes en la señal de eco $x_e(n)$ puedan ser tratadas de manera independiente. Para cada etapa, se estima un coeficiente de correlación $h_i$ calculado como la proyección de $x_e(n)$ sobre el error de predicción hacia atrás. Este coeficiente determina cuánta contribución de $b_i(n)$ está presente en el eco.
+\begin{table}[H]
+    \caption[Algoritmo de filtro lattice en bloque.]{Algoritmo de filtro lattice en bloque. Adaptado de \cite{malanowski}.}
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        &\\
+        &
+        $k_{i+1} = 2 \cdot \dfrac{< b_i(n-1);\ f_i(n)>}{|| b_i(n-1)||^2 + || f_i(n)||^2} $\\
+        Predicción&\\
+        &$b_{i+1}(n) = b_i(n-1) - k_{i+1} \cdot f_i(n)$\\
+        &\\
+        &$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
+         &\\
 
+        Filtrado&$h_i = \dfrac{<e_i(n);\ b_i(n)> }{|| b_i(n)||^2} $\\
+        &\\
+        &$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
+    \end{tabular}
+    \centering
 
-		\figura{.9}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
+    \label{table:lattice}
 
-		En donde el algoritmo de procesamiento este dado por las ecuaciones de la Tabla \ref{table:lattice}.
+\end{table}
 
+\section{Función de ambigüedad cruzada}
 
-		\begin{table}[H]
-			\caption[Algoritmo de filtro lattice en bloque.]{Algoritmo de filtro lattice en bloque. Adaptado de \cite{malanowski}.}
-			\centering
-			\begin{tabular}{|l|c|}
-				\hline
-				&\\
-				&
-				$k_{i+1} = 2 \cdot \dfrac{< b_i(n-1);\ f_i(n)>}{|| b_i(n-1)||^2 + || f_i(n)||^2} $\\
-				Predicción&\\
-				&$b_{i+1}(n) = b_i(n-1) - k_{i+1} \cdot f_i(n)$\\
-				&\\
-				&$f_{i+1}(n) = f_i(n) - k_{i+1}^\ast \cdot  b_i(n-1)$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
-				 &\\
+La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y desplazamientos en frecuencia, como se muestra en la Ecuación~\ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
 
-				Filtrado&$h_i = \dfrac{<e_i(n);\ b_i(n)> }{|| b_i(n)||^2} $\\
-				&\\
-				&$e_{i+1}(n) = e_i(n) - b_i(n) \cdot h_i$\rule[-2.2ex]{0pt}{3.2ex}\\\hline
-			\end{tabular}
-			\centering
+\begin{equation}
+    \label{eq:caf}
+    \psi(R,V) =
+    \mathop{\int}_{-\tfrac{T}{2}}^{\tfrac{T}{2}}
+    x_e(t) \cdot \,
+    x_r^{\ast}\!\left(t - \frac{R}{c}\right) \cdot \,
+    \exp\!\left(-j\,\frac{2\pi}{\lambda} V t\right)
+    \,\mathrm{d}t
+\end{equation}
 
-			\label{table:lattice}
+\begin{equation}
+    \label{eq:caf_dig}
+    \psi(m,k) =
+    \mathop{\sum}_{n = 0}^{T}
+    x_e[n] \cdot \,
+    x_r^{\ast}\!\left[n - m \right] \cdot \,
+    \exp\!\left(-j\,\frac{2\pi}{N} k n\right)
+\end{equation}
 
-		\end{table}
+Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
 
+\subsection{Algoritmo Batch}
 
-	\section{Función de ambigüedad cruzada}
+El algoritmo \textit{batch} se basa en dividir las señales en \(Q\) segmentos de \(P\) muestras, reescribiendo el índice temporal como
 
+\begin{equation}
+n=qP+p,
+\end{equation}
 
-	La función de ambigüedad cruzada es una correlación bidimensional en donde se correlaciona la señal recibida con la señal de referencia con distintos retrasos y shifteos en frecuencia, como se muestra en la Ecuación~\ref{eq:caf}. Al discretizarla, el tiempo y las frecuencias continuas se convierten periodos de muestreo y celdas de frecuencias, respectivamente.
+donde \(q=0,\ldots,Q-1\) identifica el segmento y \(p=0,\ldots,P-1\) la muestra dentro de dicho bloque. A partir de esta partición, la CAF puede expresarse como
 
+\begin{equation}
+\label{eq:caf_exacta}
+\psi(m,k)=\sum_{q=0}^{Q-1}\sum_{p=0}^{P-1}
+x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]\,
+\exp\!\left(-j\frac{2\pi}{N}k(qP+p)\right).
+\end{equation}
 
+El algoritmo se basa en asumir que, dentro de cada segmento, el desplazamiento Doppler puede despreciarse y considerarse constante dentro del bloque. Esto permite simplificar el término exponencial, llevando la Ecuación~\ref{eq:caf_exacta} a
 
-	\begin{equation}
-		\label{eq:caf}
-		\psi(R,V) =
-		\mathop{\int}_{-\tfrac{T}{2}}^{\tfrac{T}{2}}
-		x_e(t) \cdot \,
-		x_r^{\ast}\!\left(t - \frac{R}{c}\right) \cdot \,
-		\exp\!\left(-j\,\frac{2\pi}{\lambda} V t\right)
-		\,\mathrm{d}t
-	\end{equation}
+\begin{equation}
+\psi(m,k)\approx
+\sum_{q=0}^{Q-1}
+\left\{
+\sum_{p=0}^{P-1}
+x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]
+\right\}
+\exp\!\left(-j\frac{2\pi}{N}kq\right).
+\end{equation}
 
-	\begin{equation}
-		\label{eq:caf_dig}
-		\psi(m,k) =
-		\mathop{\sum}_{n = 0}^{T}
-		x_e[n] \cdot \,
-		x_r^{\ast}\!\left[n - m \right] \cdot \,
-		\exp\!\left(-j\,\frac{2\pi}{N} k n\right)
-	\end{equation}
-	Si bien existen varios métodos para calcular $\psi$, para este trabajo se eligió el algoritmo batch.
+De esta manera, el cálculo se separa en dos etapas. En primer lugar, para cada segmento se realiza una correlación de corta duración entre la señal de vigilancia y la señal de referencia, lo que permite obtener la información de retardo. Luego, sobre la secuencia de correlaciones de los distintos segmentos, se aplica una FFT en la dimensión \(q\), obteniendo así la información Doppler. En consecuencia, el mapa rango--Doppler se construye de forma eficiente a partir de correlaciones por bloque seguidas de una transformada de Fourier entre segmentos.
 
-	\subsection{Algoritmo Batch}
+\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
 
+\section{Detección de blancos}
 
+La detección de objetivos sobre la CAF se realiza comparando la potencia de cada celda con un umbral de decisión. En presencia de ruido, el uso de un umbral fijo puede resultar en errores en la detección, ya que el nivel de interferencia puede variar a lo largo del mapa rango--Doppler. Por este motivo, se emplean detectores CFAR, los cuales ajustan localmente el umbral a partir de una estimación del nivel de ruido aledaño a las distintas celdas, manteniendo aproximadamente constante la probabilidad de falsa alarma.
 
+En este tipo de detectores, para cada celda analizada se define una ventana local compuesta por tres tipos de celdas:
 
-	El algoritmo \textit{batch} se basa en dividir las señales en \(Q\) segmentos de
-	\(P\) muestras, reescribiendo el índice temporal como
+\begin{itemize}
+    \item \textbf{Celda bajo prueba (CUT):} celda en la que se evalúa la posible presencia de un blanco.
+    \item \textbf{Celdas de guarda (\(N_g\)):} celdas vecinas a la CUT que se excluyen de la estimación para evitar que la energía de un posible blanco afecte el cálculo del umbral.
+    \item \textbf{Celdas de referencia (\(N_w\)):} celdas utilizadas para estimar el nivel local de ruido.
+\end{itemize}
 
-	\begin{equation}
-	n=qP+p,
-	\end{equation}
-	donde \(q=0,\ldots,Q-1\) identifica el segmento y \(p=0,\ldots,P-1\) la muestra
-	dentro de dicho bloque. A partir de esta partición, la CAF puede expresarse como
-	\begin{equation}
-	\psi(m,k)=\sum_{q=0}^{Q-1}\sum_{p=0}^{P-1}
-	x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]\,
-	\exp\!\left(-j\frac{2\pi}{N}k(qP+p)\right).
-	\end{equation}
+La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
 
-	La simplificación central del método consiste en asumir que, dentro de cada
-	segmento de longitud \(P\), el corrimiento Doppler es suficientemente pequeño
-	como para que la variación de fase del término exponencial sea despreciable.
-	Bajo esta hipótesis, dicho término puede considerarse aproximadamente constante
-	dentro del bloque y extraerse de la suma interna, obteniéndose
-	\begin{equation}
-	\psi(m,k)\approx
-	\sum_{q=0}^{Q-1}
-	\left\{
-	\sum_{p=0}^{P-1}
-	x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]
-	\right\}
-	\exp\!\left(-j\frac{2\pi}{N}kq\right).
-	\end{equation}
+\figura{.9}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
 
-	De esta manera, el cálculo se separa en dos etapas. En primer lugar, para cada
-	segmento se realiza una correlación de corta duración entre la señal de
-	vigilancia y la señal de referencia, lo que permite obtener la información de
-	retardo. Luego, sobre la secuencia de correlaciones de los distintos segmentos,
-	se aplica una FFT en la dimensión \(q\), obteniendo así la información Doppler.
-	En consecuencia, el mapa rango--Doppler se construye de forma eficiente a partir
-	de correlaciones por bloque seguidas de una transformada de Fourier entre
-	segmentos.
+\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR bidimensional. }{}{\label{fig:cfar_2d}}
 
-	\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
+\subsection{Algoritmo CA-CFAR}
 
+El algoritmo CA-CFAR (Cell Averaging CFAR) es una de las variantes más simples de la familia CFAR. En este caso, la estimación del nivel de ruido se obtiene calculando la media de la potencia en las celdas de referencia ubicadas alrededor de la CUT.
 
-	\section{Detección de blancos}
+\begin{equation}
+    \hat{\sigma} = \frac{1}{N}\sum_{i=1}^{N} x_{nw(i)}
+\end{equation}
 
-	La detección de objetivos sobre la CAF se realiza comparando la potencia de cada celda con un umbral de decisión. En presencia de ruido, el uso de un umbral fijo puede resultar en errores en la detección, ya que el nivel de interferencia puede variar a lo largo del mapa rango--Doppler. Por este motivo, se emplean detectores CFAR, los cuales ajustan localmente el umbral a partir de una estimación del nivel de ruido aledaño a las distintas celdas, manteniendo aproximadamente constante la probabilidad de falsa alarma.
-
-	En este tipo de detectores, para cada celda analizada se define una ventana local compuesta por tres tipos de celdas:
-
-	\begin{itemize}
-		\item \textbf{Celda bajo prueba (CUT):} celda en la que se evalúa la posible presencia de un blanco.
-		\item \textbf{Celdas de guarda (\(N_g\))}: celdas vecinas a la CUT que se excluyen de la estimación para evitar que la energía de un posible blanco afecte el cálculo del umbral.
-		\item \textbf{Celdas de referencia (\(N_w\))}: celdas utilizadas para estimar el nivel local de ruido.
-	\end{itemize}
-
-	La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
-
-	\figura{.9}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
-
-	\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR bidimensional. }{}{\label{fig:cfar_2d}}
-
-	\subsection{Algoritmo CA-CFAR}
-
-	El algoritmo CA-CFAR (Cell Averaging CFAR) es una de las variantes más simples de la familia CFAR. En este caso, la estimación del nivel de ruido se obtiene calculando la media de la potencia en las celdas de referencia ubicadas alrededor de la CUT.
-
-	\begin{equation}
-		\hat{\sigma} = \frac{1}{N}\sum_{i=1}^{N} x_{nw(i)}
-	\end{equation}
 donde \(N\) es la cantidad total de celdas de referencia y \(x_{nw(i)}\) representa la potencia medida en la \(i\)-ésima celda de referencia. A partir de esta estimación, el umbral de detección se define como
 
-	\begin{equation}
-		T = \alpha \hat{\sigma}
-	\end{equation}
+\begin{equation}
+    T = \alpha \hat{\sigma}
+\end{equation}
+
 siendo \(\alpha\) un factor de escala que depende de \(N\) y de la probabilidad de falsa alarma deseada \(P_{fa}\). Bajo la hipótesis de ruido con distribución exponencial, este factor puede expresarse como
 
-	\begin{equation}
-		\alpha = N\left(P_{fa}^{-1/N} - 1\right).
-	\end{equation}
+\begin{equation}
+    \alpha = N\left(P_{fa}^{-1/N} - 1\right).
+\end{equation}
 
-	De esta manera, se declara una detección cuando la potencia de la CUT supera el umbral \(T\). Este procedimiento se repite para todas las celdas de la CAF, obteniéndose un mapa de detecciones con umbral adaptado al nivel local de interferencia.
-
-
-
-	% \subsection{Relación entre detección, SNR y probabilidad de falsa alarma}
-
-	% El desempeño de un detector CFAR se caracteriza principalmente mediante dos métricas: la probabilidad de detección $P_d$ y la probabilidad de falsa alarma $P_{fa}$. Ambas se encuentran estrechamente relacionadas con la relación señal a ruido (SNR, \textit{Signal-to-Noise Ratio}).
-
-	% La probabilidad de falsa alarma $P_{fa}$ se define como la probabilidad de declarar la presencia de un blanco cuando en realidad solo está presente el ruido. En los algoritmos CFAR, $P_{fa}$ es un parámetro de diseño fijado a priori y determina directamente el valor del umbral de detección. Un valor reducido de $P_{fa}$ disminuye la cantidad de detecciones espurias, pero incrementa el umbral, dificultando la detección de señales de baja potencia.
-
-	% Por su parte, la probabilidad de detección $P_d$ representa la probabilidad de detectar correctamente un blanco cuando este efectivamente está presente. Esta probabilidad depende de diversos factores, entre los que se destacan:
-
-	% \begin{itemize}
-	% 	\item La relación señal a ruido de la señal bajo prueba.
-	% 	\item El valor de $P_{fa}$ seleccionado.
-	% 	\item El número de celdas de referencia empleadas en la estimación del ruido.
-	% 	\item El modelo estadístico asumido para el ruido y el blanco.
-	% \end{itemize}
-
-	% A medida que la SNR aumenta, la distribución de la potencia de la señal en la CUT se separa progresivamente de la distribución del ruido, incrementando la probabilidad de que dicha potencia supere el umbral de detección. En consecuencia, la probabilidad de detección $P_d$ crece con la SNR. Para una SNR fija, una disminución de $P_{fa}$ implica un aumento del umbral, lo que conlleva una reducción de $P_d$.
-
-	% Este comportamiento refleja el compromiso inherente entre sensibilidad y confiabilidad del detector. Desde un punto de vista estadístico, la relación entre $P_d$, $P_{fa}$ y la SNR suele analizarse mediante curvas ROC (\textit{Receiver Operating Characteristic}), las cuales representan la probabilidad de detección en función de la probabilidad de falsa alarma para distintos valores de SNR. Estas curvas constituyen una herramienta fundamental para comparar el desempeño de distintos algoritmos CFAR y evaluar su comportamiento bajo diversas condiciones de operación.
-
-	% En síntesis, los algoritmos CFAR, y en particular el CA-CFAR, permiten el diseño de detectores adaptativos capaces de mantener constante la tasa de falsas alarmas frente a variaciones del nivel de ruido. No obstante, la probabilidad de detección permanece limitada por la SNR disponible, lo que impone un límite fundamental al desempeño de cualquier sistema de detección.
+De esta manera, se declara una detección cuando la potencia de la CUT supera el umbral \(T\). Este procedimiento se repite para todas las celdas de la CAF, obteniéndose un mapa de detecciones con umbral adaptado al nivel local de interferencia.

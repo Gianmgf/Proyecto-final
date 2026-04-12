@@ -1,14 +1,14 @@
 \chapter{Conclusiones}
 
-En este trabajo se estudió la utilización de la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. Para ello, se analizó la estructura del estándar desde la perspectiva de su aplicación radar y se desarrolló una cadena de procesamiento capaz de integrar reconstrucción de la referencia, supresión de clutter e interferencia de señal directa, cálculo de la función de ambigüedad cruzada y detección.
+En este trabajo se analizó el uso de la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. Con ese objetivo, se estudió la estructura del estándar y, a partir de ello, se desarrolló una cadena de procesamiento.
 
-Los resultados obtenidos por simulación muestran que la reconstrucción de la señal de referencia mejora el desempeño de la cadena propuesta. En particular, se observó una reducción aproximada de 3 dB en el piso de ruido estimado en el bloque de detección al utilizar la referencia reconstruida, lo que se traduce en una mejora de la capacidad de detección y sensibilidad del sistema. Al mismo tiempo, esta reducción también vuelve más visibles ciertas componentes determinísticas dadas por las componentes cíclicas y periódicas de la señal, lo que indica que la mejora de la referencia introduce nuevas exigencias sobre el postprocesamiento y la supresión de detecciones espurias.
+A partir de las simulaciones realizadas, se observó que con la reconstrucción de la referencia se obtiene una mejora en el desempeño de la cadena, ya que se obtuvo una reducción cercana a 3 dB en el piso de ruido estimado en el bloque de detección. Esto se refleja en una mayor sensibilidad y mejores condiciones para la detección de blancos.
 
-En términos generales, el trabajo permitió cumplir los objetivos planteados. Por un lado, se estudió el estándar ISDB-Tb con el nivel de detalle necesario para comprender su potencial como iluminador de oportunidad. Por otro, se desarrolló una cadena de procesamiento radar completa que permitió evaluar, en un entorno controlado, el impacto de reconstruir la señal de referencia.
+Sin embargo, también se notó que con la mejora de ruido también se hicieron más evidentes ciertas componentes determinísticas dadas por el carácter cíclico y periódico de la señal. Esto no necesariamente invalida la utilización de este enfoque, simplemente hace notoria la necesidad de un postprocesamiento para limitar las detecciones espurias.
+
+Con esto, se considera que se cumplieron los objetivos planteados al inicio del trabajo, ya que se logró analizar el estándar ISDB-Tb con el nivel de detalle correcto para el contexto y, por otro, se desarrolló una cadena de procesamiento completa que permitió analizar, en un entorno controlado, el efecto de reconstruir la señal de referencia sobre el desempeño del sistema.
 
 \section{Trabajo futuro}
 
-Una primera línea de continuación consiste en extender la validación a señales reales capturadas del entorno. Si bien el uso de simulaciones permitió analizar la cadena en condiciones controladas, una evaluación experimental permitiría estudiar con mayor realismo los efectos del canal, las imperfecciones de sincronización y otras fuentes de interferencia no modeladas.
-
-También resulta de interés profundizar el tratamiento de las componentes determinísticas remanentes que se vuelven más visibles al utilizar la referencia reconstruida. En este sentido, podrían evaluarse estrategias adicionales de ventaneo, supresión de réplicas y utilización de filtros recíprocos.
+Las posibles mejoras y adiciones para continuar el trabajo presentado es que excedieron el marco del mismo, son la validación de la cadena utilizando señales reales para poder incorporar de manera más realista los efectos del canal, errores de sincronización y otras perturbaciones que no fueron contempladas en el modelo utilizado. También sería conveniente seguir con el análisis de la mitigación de las componentes determinísticas con estrategias como la del filtro recíproco.
 

@@ -100,23 +100,19 @@
 	\addcontentsline{toc}{chapter}{Resumen}
 	\begin{abstract}
 
+	El radar pasivo biestático implica una alternativa para la implementacion de sistemas radar sin la necesidad de emplear un transmisor dedicado. En este tipo de sistemas, el uso de iluminadores de oportunidad ya presentes en el ambiente presenta desafíos importantes, entre ellos la interferencia de señal directa, el clutter y la calidad limitada de la señal de referencia utilizada en el procesamiento.
 
-		El radar pasivo biestático constituye una alternativa de interés para la detección de
-		objetivos en escenarios donde no resulta viable el uso de transmisores dedicados. En
-		particular, el empleo de iluminadores de oportunidad, como las señales de Televisión
-		Digital Terrestre, introduce una serie de desafíos asociados a la interferencia de señal directa y a las reflexiones estacionarias del entorno, las cuales pueden degradar
-		severamente la capacidad de detección.
 
-		En este trabajo se presenta una cadena de procesamiento orientada a sistemas de radar
-		pasivo basados en señales ISDB-Tb, aprovechando el conocimiento detallado de su
-		estructura para reconstruir la señal transmitida y utilizarla como referencia coherente.
-		Sobre esta base, se implementan técnicas de cancelación de clutter y de interferencia de
-		trayectoria directa, seguidas por el cálculo de la función de ambigüedad cruzada y un
-		esquema de detección con tasa de falsas alarmas constante.
 
-		\vspace{0.5cm}
+	En este trabajo se analiza la señal ISDB-Tb como iluminador de oportunidad en un sistema de radar pasivo biestático. Para ello, se estudia la norma que presenta la estructura de esta señal y se desarrolla una cadena de procesamiento que incluye filtrado de clutter y de interferencia de señal directa, cálculo de la función de ambigüedad cruzada y detección mediante CA-CFAR. Sobre esta base, se incorpora además un bloque reconstructor de señal de referencia, orientado a demodular y remodular la señal de referencia para eliminar su componente de ruido.
 
-		\textbf{Palabras clave:} radar pasivo, ISDB-Tb, detección de objetivos, clutter, CFAR.
+
+
+	La validación se realiza por simulación, comparando los resultados obtenidos con y sin reconstrucción de la señal de referencia. Los resultados muestran que la referencia reconstruida permite reducir aproximadamente 3 dB el piso de ruido, lo que mejora la sensibilidad del sistema. Sin embargo, esta mejora hace más visibles las componentes periodicas asociadas a la estructura de la señal, por lo que resulta necesario un tratamiento más cuidadoso de los lóbulos laterales y de las detecciones espurias.
+
+	\vspace{0.5cm}
+
+	\textbf{Palabras clave:} radar pasivo, ISDB-Tb, detección de objetivos, \textit{clutter}, CA-CFAR.
 
 	\end{abstract}
 	\cleardoublepage
