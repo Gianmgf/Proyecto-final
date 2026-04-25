@@ -10,7 +10,7 @@ El filtro de lattice en bloque se basa en proyecciones ortogonales sucesivas, de
 
 Cada nuevo error contiene únicamente la parte de la señal que no pudo predecirse a partir de las etapas anteriores, permitiendo que las copias retardadas de la señal de referencia presentes en la señal de eco $x_e(n)$ puedan ser tratadas de manera independiente. Para cada etapa, se estima un coeficiente de correlación $h_i$ calculado como la proyección de $x_e(n)$ sobre el error de predicción hacia atrás. Este coeficiente determina cuánta contribución de $b_i(n)$ está presente en el eco.
 
-\figura{.9}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
+\figura{\Tfig}{./pr/lattice.png}{Estructura de filtro en bloque de Lattice.}{ Fuente: \cite{malanowski}}{\label{fig:lattice}}
 
 En donde el algoritmo de procesamiento esté dado por las ecuaciones de la Tabla \ref{table:lattice}.
 
@@ -94,7 +94,7 @@ x_e \left[ qP+p \right] \, x_r^{*}\left[qP+p-m\right]
 
 De esta manera, el cálculo se separa en dos etapas. En primer lugar, para cada segmento se realiza una correlación de corta duración entre la señal de vigilancia y la señal de referencia, lo que permite obtener la información de retardo. Luego, sobre la secuencia de correlaciones de los distintos segmentos, se aplica una FFT en la dimensión \(q\), obteniendo así la información Doppler. En consecuencia, el mapa rango--Doppler se construye de forma eficiente a partir de correlaciones por bloque seguidas de una transformada de Fourier entre segmentos.
 
-\figura{.9}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
+\figura{\Tfig}{./pr/caf.png}{Diagrama en bloque para calcular $\psi$ con el método Batch. }{Fuente: \cite{malanowski}}{\label{fig:batch}}
 
 \section{Detección de blancos}
 
@@ -110,9 +110,9 @@ En este tipo de detectores, para cada celda analizada se define una ventana loca
 
 La ventana se desplaza sobre toda la CAF, de modo que cada celda queda asociada a un umbral calculado a partir de su entorno. Las Figuras~\ref{fig:cfar} y~\ref{fig:cfar_2d} muestran ejemplos de ventanas CFAR en una y dos dimensiones, respectivamente.
 
-\figura{.9}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
+\figura{\Tfig}{./pr/cfar.png}{Ventana de CFAR unidimensional. }{}{\label{fig:cfar}}
 
-\figura{.9}{./pr/cfar_2d.png}{Ventana de CFAR bidimensional. }{}{\label{fig:cfar_2d}}
+\figura{\Tfig}{./pr/cfar_2d.png}{Ventana de CFAR bidimensional. }{}{\label{fig:cfar_2d}}
 
 \subsection{Algoritmo CA-CFAR}
 

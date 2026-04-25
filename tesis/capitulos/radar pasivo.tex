@@ -26,7 +26,7 @@
 	En donde el ángulo entre los segmentos transmisor–blanco y receptor–blanco,  \(\beta\), se conoce como ángulo biestático.
 
 
-	\figura{.7}{./pr/geometria.png}{Geometría en un esquema biestático.}{ Fuente: \cite{malanowski}.}{\label{fig:geo}}
+	\figura{\Tfig}{./pr/geometria.png}{Geometría en un esquema biestático.}{ Fuente: \cite{malanowski}.}{\label{fig:geo}}
 
 
 
@@ -166,9 +166,9 @@
 		\label{tab:iluminadores}
 	\end{table}}
 
-	En este trabajo se eligió la señal de TDT. Uno de los motivos es que su estructura y procesamiento están estrictamente definidos, lo que permite conocer exactamente cómo la estación transmisora emitió la señal y qué pasos seguir para demodularla y volverla a modular. Sin embargo, un problema intrínseco de esta señal es la aparición de lóbulos laterales determinísticos debido a sus prefijos cíclicos y herramientas de sincronización (véase Capítulo~4).
+	En este trabajo se eligió la señal de TDT. Uno de los motivos es que su estructura y procesamiento están estrictamente definidos, lo que permite conocer exactamente cómo la estación transmisora emitió la señal y qué pasos seguir para demodularla y volverla a modular. Sin embargo, un problema intrínseco de esta señal es la aparición de lóbulos laterales determinísticos debido a sus prefijos cíclicos y herramientas de sincronización (véase Capítulo~\ref{chap:isdbtb_tx}).
 
-	Si bien originalmente la señal de TDT cuenta con un ancho de banda de aproximadamente 6 MHz, utilizar el espectro completo complejiza notablemente el modulador y el demodulador, por lo que se optó por emplear el segmento central de transmisión parcial. Este cuenta con un ancho de banda de aproximadamente $428{,}571\,\text{kHz}$, el cual es menor pero suficiente para aplicarlo como base de trabajo.
+	% Si bien originalmente la señal de TDT cuenta con un ancho de banda de aproximadamente 6 MHz, utilizar el espectro completo complejiza notablemente el modulador y el demodulador, por lo que se optó por emplear el segmento central de transmisión parcial. Este cuenta con un ancho de banda de aproximadamente $428{,}571\,\text{kHz}$, el cual es menor pero suficiente para aplicarlo como base de trabajo.
 
 
 	\section{Canal de referencia y canal de vigilancia}
@@ -182,7 +182,7 @@
 	En esta expresión, $m$ representa el retardo, expresado en muestras, asociado al eco del blanco; $A$ es la amplitud compleja correspondiente a la RCS del blanco y el paso de la señal por el aire.
 
 	Idealmente, cada canal debería estar aislado del otro y las señales no deberían contener componentes de los canales opuestos. Sin embargo, esto representa un problema ya que, por más directivas que sean las antenas, siempre se filtrará cierta cantidad de potencia.
-	\figura{.9}{./pr/canales.png}{Correlación entre antenas de vigilancia y referencia.}{ Fuente: \cite{malanowski}.}{\label{fig:canales}}
+	\figura{\Tfig}{./pr/canales.png}{Correlación entre antenas de vigilancia y referencia.}{ Fuente: \cite{malanowski}.}{\label{fig:canales}}
 	En la Figura~\ref{fig:canales} se observa cómo una componente de la señal eco, $A_{surv}(\phi_{tx})$, es captada por el diagrama de radiación de la antena de vigilancia y, de forma inversa, la señal de referencia, $A_{ref}(\phi_{target})$, es recibida por la antena de vigilancia.
 
 	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, lo mismo no ocurre en sentido inverso, ya que sin un tratamiento previo la señal directa enmascara completamente al objetivo generando DSI.
@@ -191,4 +191,4 @@
 	para solucionar esto se aplica un filtro anti-\textit{clutter} encargado de eliminar de la señal eco todos los componentes sin desplazamiento Doppler. La selectividad con la que se suprimen estos componentes depende del tipo de filtro y de la cantidad de coeficientes empleados.
 
 
-	\figura{.9}{./pr/filtro.png}{Diagrama de un filtro anti clutter.}{}{\label{fig:filtro_clutter}}
+	\figura{\Tfig}{./pr/filtro.png}{Diagrama de un filtro anti clutter.}{}{\label{fig:filtro_clutter}}

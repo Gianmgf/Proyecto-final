@@ -101,7 +101,7 @@ Finalmente, se revierte el entrelazado entre segmentos aplicando el mapeo invers
 
 Una vez recuperados los datos en frecuencia, se revierte el entrelazado temporal aplicando el proceso inverso al descrito en la subsección correspondiente del capítulo de transmisión. Para ello, se compensan los retardos introducidos por las distintas ramas del entrelazador temporal, de modo que los símbolos que en transmisión atravesaron las ramas de menor retardo pasan ahora por las de mayor retardo, y viceversa. Así, todos los datos vuelven a quedar alineados temporalmente.
 
-\figura{0.8}{./isdb/time_deintrl_seccion.png}{Desentrelazador temporal.}{Adaptado de \cite{abnt}.}{\label{fig:desentrelazador_t}}
+\figura{\Tfig}{./isdb/time_deintrl_seccion.png}{Desentrelazador temporal.}{Adaptado de \cite{abnt}.}{\label{fig:desentrelazador_t}}
 
 \subsection{Separación de capas jerárquicas y demodulación de portadoras}
 
@@ -109,7 +109,7 @@ Ya con los segmentos de datos recuperados, se deben separar los distintos segmen
 
 Una vez demodulados los símbolos, es necesario desentrelazar los bits siguiendo el mismo esquema que el desentrelazador temporal, pero aplicado a nivel de bit y con los retardos correspondientes a la modulación utilizada.
 
-\figura{0.8}{./isdb/bit_deintrl_16.png}{Ejemplo de desentrelazador de bits para 16-QAM.}{}{\label{fig:bit_deintrl}}
+\figura{\Tfig}{./isdb/bit_deintrl_16.png}{Ejemplo de desentrelazador de bits para 16-QAM.}{}{\label{fig:bit_deintrl}}
 
 \subsection{Decodificación interna convolucional}
 

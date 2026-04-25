@@ -83,12 +83,23 @@
 
 
 
-\newcommand \imagen[2]{\centerline{\includegraphics[width=#1\textwidth]{#2}}}
-\newcommand \p[1] {\hspace{1pt}\par\vspace{#1 pt}}
-\newcommand \figura[5]{
-	\begin{figure}[H]
-		\imagen{#1}{#2}\p{5}
-		\caption[#3]{#3 #4}
-		#5
-	\end{figure}
+\newcommand{\imagen}[2]{%
+    \includegraphics[
+        width=#1\textwidth,
+        height=0.82\textheight,
+        keepaspectratio
+    ]{#2}%
+}
+
+\newcommand{\p}[1]{%
+    \par\vspace{#1pt}%
+}
+
+\newcommand{\figura}[5]{%
+    \begin{figure}[H]
+        \centering
+        \imagen{#1}{#2}\p{5}
+        \caption[#3]{#3 #4}
+        #5
+    \end{figure}
 }

@@ -19,13 +19,13 @@ Cada uno de estos segmentos contiene un conjunto de subportadoras OFDM, cuyo nú
 
 La configuración más habitual es la de dos capas. En ella, el segmento central, identificado como segmento 0, se asigna a una capa de transmisión más robusta, destinada a recepción portátil, mientras que los doce segmentos restantes se asignan a una segunda capa de mayor tasa binaria, típicamente orientada a receptores fijos. Esto da lugar a dos formas de recepción: \textit{1-seg}, en la cual el receptor procesa únicamente el segmento central, y \textit{full-seg}, en la cual se demodulan los 13 segmentos. El orden de los segmentos y la posible configuración de dos capas jerárquicas puede verse en la Figura~\ref{fig:segmentos}.
 
-\figura{1.2}{isdb/segmentos.png}{Orden de los segmentos y ejemplo de configuración de capas.}{ Fuente: \cite{uruguay_tx}.}{\label{fig:segmentos}}
+\figura{\Tfig}{isdb/segmentos.png}{Orden de los segmentos y ejemplo de configuración de capas.}{ Fuente: \cite{uruguay_tx}.}{\label{fig:segmentos}}
 
 \subsection{Canalización y frecuencia central}
 
 La canalización del sistema no es simétrica respecto del centro del espectro, ya que existe una banda de guarda de $\frac{5}{14}\ \mathrm{MHz}$ en el extremo inferior del canal y otra de $\frac{1}{14}\ \mathrm{MHz}$ en el extremo superior. En consecuencia, la frecuencia central del conjunto de portadoras se encuentra desplazada $\frac{1}{7}\ \mathrm{MHz} $ respecto del centro del canal.
 
-\figura{0.8}{isdb/canalizacion.png}{Frecuencia central y bandas de guarda.}{ Fuente: \cite{abnt}.}{\label{fig:canalizacion}}
+\figura{\Tfig}{isdb/canalizacion.png}{Frecuencia central y bandas de guarda.}{ Fuente: \cite{abnt}.}{\label{fig:canalizacion}}
 
 \subsection{Modos de transmisión y parámetros OFDM}
 El estándar define tres modos de transmisión, que difieren en el número de subportadoras por segmento y, por lo tanto, en el espaciamiento entre subportadoras y en la duración útil del símbolo OFDM. El parámetro principal que cambia con el modo es el tamaño de la IFFT (N) que se utiliza para llevar las subportadoras al dominio del tiempo,
@@ -78,10 +78,7 @@ La Tabla~\ref{tab:isdbtb_modos} resume los parámetros principales para cada mod
 
 La cadena transmisora del ISDB-Tb parte de uno o más flujos MPEG-2 TS y los transforma progresivamente en una señal OFDM en banda base. La Figura~\ref{fig:bloques_isdb} muestra el diagrama en bloques general del transmisor ISDB-Tb. En ella puede observarse la secuencia de codificación, entrelazado, modulación, conformación del cuadro OFDM y generación temporal de la señal.
 
-\figura{0.8}{./isdb/cod_bloques.png}
-{Diagrama en bloques general del transmisor ISDB-Tb.}
-{Fuente: \cite{abnt}.}
-{\label{fig:bloques_isdb}}
+\figura{\Tfig}{./isdb/cod_bloques.png}{Diagrama en bloques general del transmisor ISDB-Tb.}{Fuente: \cite{abnt}.}{\label{fig:bloques_isdb}}
 
 \subsection{Codificación externa RS}
 
@@ -96,7 +93,7 @@ donde $\lambda$ es el primo 2 del campo finito GF($2^8$) definido por el polinom
 
 En los códigos RS, la cantidad máxima de errores detectables y corregibles está dada por la mitad del número de bytes de paridad. Dado esto, por cada TSP el sistema puede corregir hasta 8 bytes erróneos.
 
-\figura{.8}{./isdb/tsp.png}{TSP con y sin protección.}{ Adaptado de \cite{abnt}}{\label{fig:paquete_TSP}}
+\figura{\Tfig}{./isdb/tsp.png}{TSP con y sin protección.}{ Adaptado de \cite{abnt}}{\label{fig:paquete_TSP}}
 
 \subsection{Dispersión de energía}
 
@@ -116,7 +113,7 @@ y el generador se reinicia al comienzo de cada cuadro OFDM con el estado inicial
 
 Sin embargo, el byte de sincronismo del transport stream no se dispersa para así mantener el mecanismo de sincronización.
 
-\figura{0.8}{./isdb/prbs.png}
+\figura{\Tfig}{./isdb/prbs.png}
 {Dispersor de energía.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:prbs}}
@@ -126,7 +123,7 @@ Sin embargo, el byte de sincronismo del transport stream no se dispersa para as�
 Luego de que los datos sean protegidos por medio de la codificación RS y por la dispersión de energía, se entrelazan a nivel de byte mediante un entrelazador convolucional. Este consiste en una cascada de colas FIFO con distintos niveles de profundidad, tal como se muestra en la Figura \ref{fig:intrlv_conv}, de manera que las distintas ramas sufran distintos retardos.
 
 
-\figura{0.9}{./isdb/intrlv_conv.png}
+\figura{\Tfig}{./isdb/intrlv_conv.png}
 {Esquema del entrelazador de bytes empleado en ISDB-Tb.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:intrlv_conv}}
@@ -148,7 +145,7 @@ R \in \left\{\frac12,\frac23,\frac34,\frac56,\frac78\right\}
 \end{equation}
 mediante diferentes patrones de punzado. La tasa seleccionada forma parte de la configuración individual de cada capa jerárquica y puede ser distinta entre las capas.
 
-\figura{0.9}{./isdb/conv_code.png}
+\figura{\Tfig}{./isdb/conv_code.png}
 {Diagrama del codificador convolucional base.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:conv_code}}
@@ -209,17 +206,17 @@ Los patrones de X e Y para las distintas tasas de codificación se muestran en l
 
 Primeramente, se toma el bit-stream resultante de la codificación convolucional y se lo paraleliza en grupos de $log_2(M)$ bits según la modulación seleccionada siguiendo, siendo M el orden de la constelación. Luego, se aplica un segundo nivel de entrelazado, esta vez a nivel de bit, utilizando un esquema similar al del entrelazador de byte, pero con registros que almacenan un solo bit. La configuración de las longitudes de los buffers en este caso depende del tipo de modulación seleccionada (QPSK, 16-QAM o 64-QAM) y se muestra en las Figuras \ref{fig:bit_intrl_4}, \ref{fig:bit_intrl_16} y \ref{fig:bit_intrl_64}.
 
-\figura{0.9}{./isdb/bit_intrl_4.png}
+\figura{\Tfig}{./isdb/bit_intrl_4.png}
 {Esquema del entrelazador de bits para QPSK.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:bit_intrl_4}}
 
-\figura{0.9}{./isdb/bit_intrl_16.png}
+\figura{\Tfig}{./isdb/bit_intrl_16.png}
 {Esquema del entrelazador de bits para 16QAM.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:bit_intrl_16}}
 
-\figura{0.9}{./isdb/bit_intrl_64.png}
+\figura{\Tfig}{./isdb/bit_intrl_64.png}
 {Esquema del entrelazador de bits para 64QAM.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:bit_intrl_64}}
@@ -234,7 +231,7 @@ La Figura~\ref{fig:qpsk} muestra la constelación QPSK y la palabra binaria asoc
 a_k = (1 - 2b_0) + j(1 - 2b_1).
 \end{equation}
 
-\figura{0.75}{./isdb/qpsk.png}
+\figura{\Tfig}{./isdb/qpsk.png}
 {Mapeo de bits sobre la constelación QPSK.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:qpsk}}
@@ -247,7 +244,7 @@ Para 16QAM, las componentes real e imaginaria vienen dadas por
 \end{align}
 y la asignación de bits resulta en la constelación mostrada en la Figura~\ref{fig:16qam}.
 
-\figura{0.8}{./isdb/16qam.png}
+\figura{\Tfig}{./isdb/16qam.png}
 {Mapeo de bits sobre la constelación 16QAM.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:16qam}}
@@ -260,7 +257,7 @@ Para 64QAM, el mapeo queda
 \end{align}
 con la constelación de la Figura~\ref{fig:64qam}.
 
-\figura{0.8}{./isdb/64qam.png}
+\figura{\Tfig}{./isdb/64qam.png}
 {Mapeo de bits sobre la constelación 64QAM.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:64qam}}
@@ -296,7 +293,7 @@ La Figura~\ref{fig:comb_jerarquica} muestra de manera esquemática este proceso.
 
 Una vez cargados todos los buffers, se obtiene una estructura de datos compuesta por los 13 segmentos completos, lista para las etapas posteriores de procesamiento OFDM.
 
-\figura{0.9}{./isdb/comb_jerarquica.png}
+\figura{\Tfig}{./isdb/comb_jerarquica.png}
 {Esquema conceptual del bloque de combinación de capas jerárquicas.}
 {Adaptado de \cite{abnt}.}
 {\label{fig:comb_jerarquica}}
@@ -306,7 +303,7 @@ Una vez cargados todos los buffers, se obtiene una estructura de datos compuesta
 
 Luego de la combinación de capas jerárquicas, los segmentos de datos de cada capa deben pasar por el bloque entrelazado temporal. Este está compuesto por 13 entrelazadores que mezclan temporalmente los datos de cada segmento, con el objetivo de dispersar la información en el dominio del tiempo.
 
-\figura{0.9}{./isdb/time_intrl.png}
+\figura{\Tfig}{./isdb/time_intrl.png}
 {Diagrama del bloque de entrelazado temporal.}
 {Adaptado de \cite{abnt}.}
 {\label{fig:time_intrl}}
@@ -322,7 +319,7 @@ con
 m_i = i\cdot 5 \bmod 96, \qquad 0\leq i \leq n_c-1.
 \end{equation}
 
-\figura{0.9}{./isdb/time_intrl_seccion.png}
+\figura{\Tfig}{./isdb/time_intrl_seccion.png}
 {Entrelazador de tiempo.}
 {Adaptado de \cite{abnt}.}
 {\label{fig:time_intrl_seccion}}
@@ -407,7 +404,7 @@ g(x)=x^{11}+x^9+1,
 
 La Figura~\ref{fig:w_i} muestra el diagrama en bloques del LFSR utilizado para generar la secuencia pseudoaleatoria $w_i$ asociada a las portadoras piloto.
 
-\figura{0.8}{./isdb/w_i.png}
+\figura{\Tfig}{./isdb/w_i.png}
 {Generador PRBS utilizado para la síntesis de pilotos.}
 {Adaptado de \cite{isdbt}.}
 {\label{fig:w_i}}
@@ -574,7 +571,7 @@ Los bloques de bits \texttt{info\_actual} e \texttt{info\_proxima} poseen la mis
 
 El cuadro OFDM tiene una duración de 204 símbolos OFDM. Su función es multiplexar, sobre las portadoras de cada segmento, los símbolos de datos, los pilotos, las señales auxiliares AC y la información TMCC. La distribución exacta de estas señales depende del modo de transmisión, del número de segmento y de la categoría de modulación utilizada.
 
-\figura{1}{./isdb/cuadro_seg.png}{Estructura del cuadro OFDM y organización de un segmento en el modo 1.}{ Adaptado de \cite{abnt}}{\label{fig:cuadro_seg}}
+\figura{\Tfig}{./isdb/cuadro_seg.png}{Estructura del cuadro OFDM y organización de un segmento en el modo 1.}{ Adaptado de \cite{abnt}}{\label{fig:cuadro_seg}}
 
 \subsection{IFFT}
 
@@ -611,4 +608,4 @@ T_s = T_u + T_g.
 
 
 
-\figura{0.8}{./isdb/ig.png}{Diagrama del intervalo de guarda.}{ Fuente: \cite{abnt}}{\label{fig:ig}}
+\figura{\Tfig}{./isdb/ig.png}{Diagrama del intervalo de guarda.}{ Fuente: \cite{abnt}}{\label{fig:ig}}

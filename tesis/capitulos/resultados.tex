@@ -2,7 +2,7 @@
 
 
 
-En este capítulo se presentan resultados de la simulaciones de la cadena de procesamiento descrita en el capítulo anterior. El objetivo es analizar los resultados de los distintos bloques desarrollados y comparar el desempeño obtenido con y sin reconstrucción de la señal de referencia. El flujo general de simulación y procesamiento se muestra en la Figura~\ref{fig:flow_pipeline_sim}.
+En este capítulo se presentan resultados de la simulaciones de la cadena de procesamiento descrita en el capítulo anterior. El objetivo es analizar los resultados de los distintos bloques desarrollados y comparar el desempeño obtenido con y sin reconstrucción de la señal de referencia. El flujo general de simulación y procesamiento se muestra en la Figura~\ref{fig:flow_pipeline_sim}. Además, para implementar el reconstructor se utilizó como base el software abierto presentado en \cite{uruguay_rx,uruguay_tx}. El software empleado para la implementación del receptor y del transmisor se encuentra disponible de manera abierta en el proyecto \texttt{gr-isdbt} \cite{grisdbt_repo}.
 
 
 
@@ -20,7 +20,7 @@ En este capítulo se presentan resultados de la simulaciones de la cadena de pro
 
 
 
-Para implementar el reconstructor se utilizó como base el software abierto presentado en \cite{uruguay_rx,uruguay_tx}. El software empleado para la implementación del receptor y del transmisor se encuentra disponible de manera abierta en el proyecto \texttt{gr-isdbt} \cite{grisdbt_repo}.
+
 
 
 
@@ -44,20 +44,40 @@ Una vez generadas las señales, estas pasan por un canal de ruido blanco gaussia
 
 En ambos casos presentados se analiza la misma cadena de procesamiento sobre el mismo escenario de simulación. La única diferencia es la señal de referencia utilizada: en un caso se usa la señal recibida por el canal de referencia y, en el otro, la versión reconstruida. Esto permite evaluar de forma directa el efecto del bloque reconstructor sobre el desempeño del sistema.
 
-\figura{.8}{./sim_data/scenario_geometry.png}{Geometría biestática del escenario de simulación.}{}{\label{fig:sim_geometria}}
+\figura{\Tfig}{./sim_data/scenario_geometry.png}{Geometría biestática del escenario de simulación.}{}{\label{fig:sim_geometria}}
 
-\begin{table}[H]
-    \centering
-
-    \caption{Parámetros de simulación.}
-    \begin{tabular}{|c|c|c|c|c|}
+\begin{table}[H] 
+\centering
+\renewcommand{\arraystretch}{1.2}
+\caption{Parámetros de simulación.} 
+\label{tab:sim_params} 
+\begin{tabular}{|c|c|c|c|c|c|c|} 
     \hline
-    \multicolumn{1}{|c|}{Radar} & \multicolumn{1}{c|}{Transmisor} & \multicolumn{3}{c|}{Blanco} \\\hline
-    $\overline{p_{rx}}$ [m] & $\overline{p_{tx}}$ [m]& $\overline{p_t} $ [m] & $\overline{v_c}$ [m/s] & $f_d$ [Hz]\\\hline
-    (50, 500) & (0, 0) & (2500, 120) & (10, 100) & 21.79\\\hline
-    \end{tabular}
-    \label{tab:sim_params}
+    \multicolumn{7}{|c|}{\textbf{Sistema}} \\\hline
+    \multicolumn{3}{|c|}{\rule[-1.2ex]{0pt}{4.2ex}$T$ [muestras]} &
+    \multicolumn{2}{c|}{\rule[-1.2ex]{0pt}{4.2ex}$f_s$} &
+    \multicolumn{2}{c|}{\rule[-1.2ex]{0pt}{4.2ex}$f_c$} \\\hline
+    \multicolumn{3}{|c|}{\rule[-1.6ex]{0pt}{5ex}1000000} &
+    \multicolumn{2}{c|}{\rule[-1.6ex]{0pt}{5ex}$\frac{512}{63}$ MHz} &
+    \multicolumn{2}{c|}{\rule[-1.6ex]{0pt}{5ex}700 MHz} \\\hline
+    \multicolumn{7}{c}{} \\\hline 
+    
+    \multicolumn{7}{|c|}{\textbf{Escenario y geometría}} \\\hline  
+    \multicolumn{2}{|c|}{Radar y transmisor} & \multicolumn{5}{c|}{Blanco} \\\hline 
+    $\overline{p_{rx}}$ [m] & $\overline{p_{tx}}$ [m] & $\overline{p_t}$ [m]& $R$& \multicolumn{2}{c|}{$\overline{v_c}$ [m/s]} & $f_d$ [Hz] \\\hline 
+    (50, 500) & (0, 0) & (2500, 120) &4479.679 & \multicolumn{2}{c|}{(10, 100)} & 21.79 \\\hline
+    \multicolumn{7}{c}{} \\\hline 
+
+    \multicolumn{7}{|c|}{\textbf{Parámetros de potencia y clutter}} \\\hline 
+    \multicolumn{2}{|c|}{SNR ref. [dB]} & \multicolumn{2}{c|}{ref./echo [dB]} & \multicolumn{2}{c|}{ref./clutter [dB]} & $N_c$ \\\hline 
+    \multicolumn{2}{|c|}{15} & \multicolumn{2}{c|}{-18} & \multicolumn{2}{c|}{[-3, -5]} & 10 \\\hline 
+    \multicolumn{7}{c}{} \\\hline 
+    \multicolumn{7}{|c|}{\textbf{Parámetros de procesamiento}} \\\hline \multicolumn{3}{|c|}{CFAR} & \multicolumn{2}{c|}{Ventanas} & \multicolumn{2}{c|}{CAF} \\\hline 
+    $N_g$ & $N_w$ (rango) & $N_w$ (Doppler) & $\beta$ (rango) & $\beta$ (Doppler) & $P$ & $Q$ \\\hline 
+    1 & 128 & 512 & 70 & 170 & 500 & 2000 \\\hline 
+\end{tabular} 
 \end{table}
+\newpage
 \section{Resultados sin reconstrucción de la señal de referencia}
 
 
@@ -69,33 +89,15 @@ En ambos casos presentados se analiza la misma cadena de procesamiento sobre el 
 Una vez filtrada la señal de vigilancia, se calcula la función de ambigüedad cruzada mediante el algoritmo \textit{batch}. Este proceso produce un mapa rango--Doppler en el cual los blancos se reflejan en picos de potencia. La Figura~\ref{fig:caf_no_cf} muestra la CAF obtenida sin aplicar el filtro de \textit{clutter} y la Figura~\ref{fig:caf_cf} muestra la CAF obtenida luego de aplicar el filtro de \textit{clutter}.
 
 
-
-\begin{figure}[H]
-
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/caf_no_remod.png}
-
-    \caption{CAF sin filtrado de \textit{clutter}.}
-
-    \label{fig:caf_no_cf}
-
-\end{figure}
+\figura{\Tfig}{sim_data/caf_no_remod.png}{CAF sin filtrado de \textit{clutter}.}{}{\label{fig:caf_no_cf}}
 
 
 
 
-\begin{figure}[H]
 
-    \centering
+\figura{\Tfig}{sim_data/filtered_caf_no_remod.png}{CAF luego del filtrado de \textit{clutter}.}{}{\label{fig:caf_cf}}
 
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_caf_no_remod.png}
 
-    \caption{CAF luego del filtrado de \textit{clutter}.}
-
-    \label{fig:caf_cf}
-
-\end{figure}
 
 
 
@@ -110,19 +112,8 @@ En la Figura~\ref{fig:caf_no_cf} se observan múltiples picos de potencia alrede
 
 Para disminuir los lóbulos laterales observados en la Figura~\ref{fig:caf_cf}, se utilizaron dos ventanas de Kaiser: una en el dominio temporal, para reducir los lóbulos en frecuencia, y otra en el dominio espectral, para reducir los lóbulos en rango. El resultado puede verse en la Figura~\ref{fig:caf_cf_w}.
 
+\figura{\Tfig}{sim_data/filtered_w_caf_no_remod.png}{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas.}{}{\label{fig:caf_cf_w}}
 
-
-\begin{figure}[H]
-
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_w_caf_no_remod.png}
-
-    \caption{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas.}
-
-    \label{fig:caf_cf_w}
-
-\end{figure}
 
 
 
@@ -132,33 +123,16 @@ También puede observarse el efecto de las ventanas sobre la resolución del sis
 
 \subsection{Detección mediante CFAR}
 
-La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrado en la Figura~\ref{fig:cfar_2d}. Para analizar el comportamiento del detector, además de resaltar las celdas identificadas como blanco, se consideran los cortes correspondientes al blanco detectado en el bin de rango 121 ($4466.60\ \text{m}$) y en el bin Doppler 1003 ($24.38\ \text{Hz}$). Estos valores coinciden, dentro de la precisión del sistema, con los parámetros del blanco definidos en la Tabla~\ref{tab:sim_params}, lo que indica que la detección se realiza correctamente.
+La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrado en la Figura~\ref{fig:cfar_2d}. Para analizar el comportamiento del detector, además de resaltar las celdas identificadas como blanco, se consideran los cortes correspondientes al blanco detectado en el bin de rango 122 ($4503.52\ \text{m}$) y en el bin Doppler 1003 ($24.38\ \text{Hz}$). Estos valores coinciden, dentro de la precisión del sistema, con los parámetros del blanco definidos en la Tabla~\ref{tab:sim_params}, lo que indica que la detección se realiza correctamente.
 
-\begin{figure}[H]
-
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_w_detections_no_remod.png}
-
-    \caption{Detecciones obtenidas sobre la CAF.}
-
-    \label{fig:caf_det_cfar}
-
-\end{figure}
+\figura{\Tfig}{sim_data/filtered_w_detections_no_remod.png}{Detecciones obtenidas sobre la CAF.}{}{\label{fig:caf_det_cfar}}
 
 
 
-\begin{figure}[H]
 
-    \centering
+\figura{\Tfig}{sim_data/cortes_rf_no_remod.png}{Cortes en rango y frecuencia sobre la CAF en la detección del blanco.}{}{\label{fig:cut_no_cf}}
 
-    \includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_no_remod.png}
 
-    \caption{Cortes en rango y frecuencia sobre la CAF en la detección del blanco.}
-
-    \label{fig:cut_no_cf}
-
-\end{figure}
 
 
 
@@ -170,8 +144,8 @@ La detección de blancos se realizó utilizando un CA-CFAR 2D similar al mostrad
 
 
 
-Una vez obtenida la señal de referencia ruidosa, se aplica el bloque reconstructor con el objetivo de obtener una señal lo más similar posible a la transmitida, lo que en principio debería traducirse en una mejora de la relación señal a ruido y en una mayor sensibilidad del sistema frente a ecos débiles.
-
+Una vez obtenida la señal de referencia ruidosa, se aplica el bloque reconstructor con el objetivo de obtener una señal lo más similar posible a la transmitida, lo que en principio debería traducirse en una mejora de la relación señal a ruido y en una mayor sensibilidad del sistema frente a ecos débiles. En la Figuras ~\ref{fig:ref_remod_vs_noremod} se puede ver la diferencia del reconstructor en la señal de referencia.
+\figura{\Tfig}{sim_data/ref_remod_vs_noremod.png}{Señal de referencia con y sin reconstructor.}{}{\label{fig:ref_remod_vs_noremod}}
 
 
 \subsection{Función de ambigüedad cruzada}
@@ -181,18 +155,9 @@ Una vez obtenida la señal de referencia ruidosa, se aplica el bloque reconstruc
 Una vez filtrada la señal de vigilancia, se calcula la función de ambigüedad cruzada mediante el algoritmo \textit{batch}, utilizando ahora la señal de referencia reconstruida. Al igual que en el caso anterior, el resultado es un mapa rango--Doppler que se muestra en la Figura~\ref{fig:caf_cf_remod}.
 
 
+\figura{\Tfig}{sim_data/filtered_caf_remod.png}{CAF luego del filtrado de \textit{clutter}, utilizando la señal de referencia reconstruida.}{}{\label{fig:caf_cf_remod}}
 
-\begin{figure}[H]
 
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_caf_remod.png}
-
-    \caption{CAF luego del filtrado de \textit{clutter}, utilizando la señal de referencia reconstruida.}
-
-    \label{fig:caf_cf_remod}
-
-\end{figure}
 
 
 
@@ -207,18 +172,9 @@ En comparación con la cadena sin reconstructor, puede apreciarse que el blanco 
 Para reducir los lóbulos laterales presentes en la CAF, se aplicaron nuevamente dos ventanas de Kaiser. El resultado se muestra en la Figura~\ref{fig:caf_cf_w_remod}.
 
 
+\figura{\Tfig}{sim_data/filtered_w_caf_remod.png}{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas, utilizando la señal de referencia reconstruida.}{}{\label{fig:caf_cf_w_remod}}
 
-\begin{figure}[H]
 
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_w_caf_remod.png}
-
-    \caption{CAF luego del filtrado de \textit{clutter} y de la aplicación de ventanas, utilizando la señal de referencia reconstruida.}
-
-    \label{fig:caf_cf_w_remod}
-
-\end{figure}
 
 
 
@@ -230,35 +186,16 @@ Al igual que en la cadena sin reconstructor, el uso de ventanas reduce el nivel 
 
 
 
-La detección se realizó nuevamente mediante un CA-CFAR 2D. La Figura~\ref{fig:caf_det_cfar_remod} muestra las detecciones obtenidas sobre la CAF procesada, mientras que la Figura~\ref{fig:cut_no_cf_remod} presenta los cortes en rango y en frecuencia correspondientes a la detección del blanco. Estando nuevamente el lóbulo principal en el bin de rango 121 y el bin Doppler 1003, lo que indica que la detección se realiza correctamente.
+La detección se realizó nuevamente mediante un CA-CFAR 2D. La Figura~\ref{fig:caf_det_cfar_remod} muestra las detecciones obtenidas sobre la CAF procesada, mientras que la Figura~\ref{fig:cut_no_cf_remod} presenta los cortes en rango y en frecuencia correspondientes a la detección del blanco. Estando nuevamente el lóbulo principal en el bin de rango 122 y el bin Doppler 1003, lo que indica que la detección se realiza correctamente.
+
+
+\figura{\Tfig}{sim_data/filtered_w_detections_remod.png}{Detecciones obtenidas sobre la CAF al utilizar la señal de referencia reconstruida.}{}{\label{fig:caf_det_cfar_remod}}
 
 
 
-\begin{figure}[H]
-
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/filtered_w_detections_remod.png}
-
-    \caption{Detecciones obtenidas sobre la CAF al utilizar la señal de referencia reconstruida.}
-
-    \label{fig:caf_det_cfar_remod}
-
-\end{figure}
+\figura{\Tfig}{sim_data/cortes_rf_remod.png}{Cortes en rango y frecuencia sobre la CAF en la detección del blanco, utilizando la señal de referencia reconstruida.}{}{\label{fig:cut_no_cf_remod}}
 
 
-
-\begin{figure}[H]
-
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_remod.png}
-
-    \caption{Cortes en rango y frecuencia sobre la CAF en la detección del blanco, utilizando la señal de referencia reconstruida.}
-
-    \label{fig:cut_no_cf_remod}
-
-\end{figure}
 
 
 
@@ -270,24 +207,15 @@ En estos resultados puede observarse que el blanco sigue siendo detectable, aunq
 
 
 
-Con el fin de comparar ambas configuraciones, la Figura~\ref{fig:cut_remod_vs_noremod} muestra en forma conjunta los cortes obtenidos con y sin reconstrucción de la señal de referencia.
+Con el fin de comparar ambas configuraciones, la Figura~\ref{fig:cut_remod_vs_noremod} muestra los cortes obtenidos con y sin reconstrucción de la señal de referencia.
+
+
+\figura{\Tfig}{sim_data/cortes_rf_remod_vs_noremod.png}{Comparación de los cortes en rango y frecuencia obtenidos con y sin reconstrucción de la señal de referencia.}{}{\label{fig:cut_remod_vs_noremod}}
 
 
 
-\begin{figure}[H]
 
-    \centering
-
-    \includegraphics[width=0.8\textwidth]{sim_data/cortes_rf_remod_vs_noremod.png}
-
-    \caption{Comparación de los cortes en rango y frecuencia obtenidos con y sin reconstrucción de la señal de referencia.}
-
-    \label{fig:cut_remod_vs_noremod}
-
-\end{figure}
-
-
-Se puede observar como en la cadena con el reconstrucción hay una reducción de aproximadamente $3$ dB en el ruido estimado, lo que muestra que la referencia reconstruida permite trabajar con una señal más limpia, aunque también hace más visibles los lóbulos laterales.
+Se puede observar como en la cadena con el reconstructor hay una reducción de aproximadamente entre 3 y 4 dB en el ruido estimado, lo que muestra que la referencia reconstruida permite trabajar con una señal más limpia, aunque también hace más visibles los lóbulos laterales.
 
 
 
