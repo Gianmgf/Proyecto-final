@@ -76,7 +76,7 @@ Para ello se utilizan los SP, cuyas posiciones y valores son conocidos. Como su 
 \section{Cadena de recepción}
 \subsection{Recuperación de TMCC y AC}
 
-Una vez estabilizadas la sincronización y la ecualización, es posible decodificar la señal TMCC para configurar adecuadamente el resto de la cadena. El TMCC contiene todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda. Para demodularla, se debe identificar la secuencia de referencia en el primer símbolo del cuadro y luego ir determinando si en el siguiente símbolo se invirtió o no la secuencia anterior hasta conseguir los 203 bits y luego aplicar la decodificación del código DSC(184,102) para corregir errores y recuperar los bits de información. Cabe aclarar que los datos de las subportadoras AC se demodulan de manera análoga.
+Una vez establecidas la sincronización y la ecualización, es posible decodificar la señal TMCC para configurar adecuadamente el resto de la cadena. El TMCC contiene todos los parámetros relevantes de la transmisión, con excepción del modo y del intervalo de guarda. Para demodularla, se debe identificar la secuencia de referencia en el primer símbolo del cuadro y luego ir determinando si en el siguiente símbolo se invirtió o no la secuencia anterior hasta conseguir los 203 bits y luego aplicar la decodificación del código DSC(184,102) para corregir errores y recuperar los bits de información. Cabe aclarar que los datos de las subportadoras AC se demodulan de manera análoga.
 
 \subsection{Obtención de los segmentos de datos}
 

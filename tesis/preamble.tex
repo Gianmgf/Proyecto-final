@@ -18,6 +18,51 @@
 % --- Code listings ---
 \usepackage{fvextra}
 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinestyle{pythoncompact}{
+    language=Python,
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{blue!70!black}\bfseries,
+    commentstyle=\color{green!40!black},
+    stringstyle=\color{red!60!black},
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{black!30},
+    captionpos=b,
+    numbers=none,
+    xleftmargin=0pt,
+    framexleftmargin=0pt,
+    aboveskip=4pt,
+    belowskip=4pt,
+    lineskip=-1pt,
+    columns=fullflexible,
+    inputencoding=utf8,
+    extendedchars=true,
+    literate=
+        {á}{{\'a}}1
+        {é}{{\'e}}1
+        {í}{{\'i}}1
+        {ó}{{\'o}}1
+        {ú}{{\'u}}1
+        {Á}{{\'A}}1
+        {É}{{\'E}}1
+        {Í}{{\'I}}1
+        {Ó}{{\'O}}1
+        {Ú}{{\'U}}1
+        {ñ}{{\~n}}1
+        {Ñ}{{\~N}}1
+}
+
+\renewcommand{\lstlistingname}{Listado}
+\renewcommand{\lstlistlistingname}{Lista de listados}
+
 % --- Tables ---
 \usepackage{tabularx}
 \newcolumntype{B}{>{\hsize=1.5\hsize}X}
@@ -29,6 +74,8 @@
 % --- Bibliography ---
 \usepackage[backend=biber, style=ieee]{biblatex}
 \addbibresource{Bibliografia.bib}
+\usepackage{xurl}
+\usepackage{hyperref}
 
 % --- Chapter formatting ---
 \usepackage{titlesec}

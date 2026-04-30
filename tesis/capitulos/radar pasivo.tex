@@ -172,23 +172,123 @@
 
 
 	\section{Canal de referencia y canal de vigilancia}
-
+	\subsubsection{Modelado de los canales}
 	Siguiendo el modelo propuesto en \cite{cristallini2023passive}, se modelaron las señales recibidas considerando un único canal de vigilancia con:
 	\begin{equation}
 	\label{eq:x_e}
-	x_e[n] = A \, x_r[n-m] \, e^{j2\pi f_D n T}
+	x_e[n] = A \, x_r[n-m] \, e^{j2\pi f_D n T_s}
 	\end{equation}
 
-	En esta expresión, $m$ representa el retardo, expresado en muestras, asociado al eco del blanco; $A$ es la amplitud compleja correspondiente a la RCS del blanco y el paso de la señal por el aire.
+	En esta expresión,  $A$ es una amplitud compleja asociada a la RCS del blanco y al paso de la señal por el aire, $m_0$ es el retardo del eco expresado en muestras, $f_D$ es la frecuencia Doppler y $T_s$ es el período de muestreo.
+
+	\subsection{Calidad de la señal de referencia}
+	En un sistema de radar pasivo, la señal de referencia no es generada, sino que debe ser captada a partir de una antena. Esto implica que la referencia no es exactamente la señal emitida por el iluminador de oportunidad, sino a una versión afectada por la propagación y el ruido térmico de los dispositivos de recepción. Esto tiene un efecto sobre el procesamiento correlativo utilizado para detectar el eco, ya que una referencia con mayor componente de ruido o con mayor deformación reduce la relación entre el pico de correlación asociado al blanco y el piso de ruido de la estimación.
+
+	Tomando a $x_r[n]$  como la señal de referencia ideal y considerando un único eco de un blanco, la señal de vigilancia puede escribirse como:
+	\begin{equation}
+		\label{eq:surv}
+	x_s[n]
+	=
+	x_{\text{e}}[n] + w_1[n],
+	\end{equation}
+	donde $w_1[n]$ representa el ruido presente en el canal de vigilancia.
+	Tomando la correlación entre los canales, obtenemos 
+
+	
+	\begin{equation}
+		\label{eq:corr}
+	\hat{R}_{s,\ r}[m]
+	=
+	\frac{1}{N}
+	\sum_{n=0}^{N-1}
+	x_s[n]x_r^*[n-m].
+	\end{equation}
+
+	Reemplazando la Ecuación~\ref{eq:surv} en la Ecuación~\ref{eq:corr}, resulta:
+	\begin{equation}
+		\label{eq:cor_ruidosa}
+		\hat{R}_{s,\ r}[m] = \hat{R}_{x_e,\ x_r}[m] + \hat{R}_{x_e,\ w_1}[m]. 
+	\end{equation}
+	
+
+	
+
+	En la Ecuación~\ref{eq:cor_ruidosa} primer término corresponde a la contribución coherente del eco mientras que el segundo término corresponde a la correlación entre el ruido del canal de vigilancia y la referencia:
+	
+
+	Sin embargo, la referencia disponible no es $x_r[n]$. Si se considera únicamente el efecto del ruido en el canal de referencia, esta puede modelarse como:
+	\begin{equation}
+	\tilde{x}_r[n]
+	=
+	x_r[n]+w_2[n],
+	\end{equation}
+	donde $w_2[n]$ representa el ruido introducido en el canal de referencia. La correlación estimada usando la referencia ruidosa queda entonces:
+	\begin{equation}
+	\hat{R}_{s,\ \tilde{r}}[m]
+	=
+	\frac{1}{N}
+	\sum_{n=0}^{N-1}
+	x_s[n]\tilde{x}_r^*[n-m].
+	\end{equation}
+
+	Reemplazando las expresiones de $x_s[n]$ y $\tilde{x}_r[n]$, se obtiene:
+	\begin{equation}
+	\hat{R}_{s,\ \tilde{r}}[m] = \hat{R}_{x_e,\ x_r}[m] + \hat{R}_{x_e,\ w_2}[m] + \hat{R}_{w_1,\ x_r}[m] + \hat{R}_{w_1,\ w_2}[m]
+	\end{equation}
+
+
+	Si se asume que $w_1[n]$ y $w_2[n]$ son procesos aleatorios de media nula, independientes de las señales e independientes entre sí, entonces:
+	\begin{equation}
+		\mathbb{E}\left[
+		x_{\text{e}}[n]w_2^*[n-m]
+		\right]
+		=
+		0,
+	\end{equation}
+	\begin{equation}
+		\mathbb{E}\left[
+		w_1[n]x_r^*[n-m]
+		\right]
+		=
+		0,
+	\end{equation}
+	\begin{equation}
+		\mathbb{E}\left[
+		w_1[n]w_2^*[n-m]
+		\right]
+		=
+		0.
+	\end{equation}
+
+	Por lo tanto, la correlación ideal con referencia ruidosa queda:
+	\begin{equation}
+		R_{s,\ \tilde{r}}[m]
+		=
+		\mathbb{E}\left[
+		x_{\text{e}}[n]x_r^*[n-m]
+		\right].
+	\end{equation}
+	Sin embargo, la correlación se estima usando una cantidad finita de muestras, por lo que los términos relacionados al ruido no se cancelan exactamente. Como se muestra en la Ecuación~\ref{eq:corr}, cuando la referencia es ideal, el piso de ruido depende principalmente del ruido del canal de vigilancia. En cambio, en la Ecuación~\ref{eq:cor_ruidosa}, se observa que cuando la referencia también contiene ruido se agregan productos cruzados entre el eco y el ruido de referencia, y entre los ruidos de ambos canales. Por este motivo, una referencia ruidosa o deformada empeora la estimación final, ya que el pico de correlación asociado al blanco queda menos destacado respecto del piso de ruido. 
+
+
+
+
+
+\subsection{Interferencia del canal de vigilancia por la señal directa}
+
+	
+
 
 	Idealmente, cada canal debería estar aislado del otro y las señales no deberían contener componentes de los canales opuestos. Sin embargo, esto representa un problema ya que, por más directivas que sean las antenas, siempre se filtrará cierta cantidad de potencia.
 	\figura{\Tfig}{./pr/canales.png}{Correlación entre antenas de vigilancia y referencia.}{ Fuente: \cite{malanowski}.}{\label{fig:canales}}
 	En la Figura~\ref{fig:canales} se observa cómo una componente de la señal eco, $A_{surv}(\phi_{tx})$, es captada por el diagrama de radiación de la antena de vigilancia y, de forma inversa, la señal de referencia, $A_{ref}(\phi_{target})$, es recibida por la antena de vigilancia.
 
-	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, lo mismo no ocurre en sentido inverso, ya que sin un tratamiento previo la señal directa enmascara completamente al objetivo generando DSI.
+	En el caso del canal de referencia, esta interferencia no implica una gran diferencia, dado que la potencia del eco es despreciable. Sin embargo, la potencia de la señal de referencia es capaz de enmascarar al eco del blanco, ya que este posee una potencia mucho menor. Esto implica que, sin un tratamiento previo, se puede dificultar la detección del blanco.
+
 
 	Otro fenómeno que también interfiere en la correcta detección de blancos es el \textit{clutter}. En la señal $x_e$ no solo están presente la componente correspondiente al eco del blanco y la señal directa, sino también las reflexiones provenientes de objetos inmóviles en el entorno del radar. Estas reflexiones son réplicas de la señal transmitida cuya amplitud y retardo dependen de la RCS del \textit{clutter} y de su posición relativa. Sin embargo, al tratarse de objetos estáticos, no presentan desplazamiento Doppler. La presencia de estas contribuciones puede generar falsos positivos o enmascarar el blanco de interés por lo que
 	para solucionar esto se aplica un filtro anti-\textit{clutter} encargado de eliminar de la señal eco todos los componentes sin desplazamiento Doppler. La selectividad con la que se suprimen estos componentes depende del tipo de filtro y de la cantidad de coeficientes empleados.
 
 
 	\figura{\Tfig}{./pr/filtro.png}{Diagrama de un filtro anti clutter.}{}{\label{fig:filtro_clutter}}
+

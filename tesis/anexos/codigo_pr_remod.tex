@@ -1,0 +1,179 @@
+\chapter{Generación de señales, reconstrucción y procesamiento}
+\section{GNU Radio}
+Para generar la señal ISDB-Tb se utilizaron los bloques de procesamiento publicados en~\cite{grisdbt_repo}. A partir de estos bloques se construyeron los flujos de transmisión, recepción y remodulación mostrados en las Figuras~\ref{fig:isdbt_iluminador}--\ref{fig:tx_remod}.
+
+\figura{\Tfig}{./gnu_radio/tx.png}{Generación de la señal ISDB-Tb del iluminador de oportunidad.}{}{\label{fig:isdbt_iluminador}}
+
+\figura{\Tfig}{./gnu_radio/rx_A.png}{Recepción y demodulación de la referencia ruidosa (Capa A).}{}{\label{fig:rx_A}}
+\figura{\Tfig}{./gnu_radio/rx_B.png}{Recepción y demodulación de la referencia ruidosa (Capa B).}{}{\label{fig:rx_B}}
+
+\figura{\Tfig}{./gnu_radio/tx_remod.png}{Remodulación para obtener referencia reconstruida.}{}{\label{fig:tx_remod}}
+
+La Figura~\ref{fig:isdbt_iluminador} muestra el flujo utilizado para generar la señal ISDB-Tb asociada al iluminador de oportunidad. Luego, las Figuras~\ref{fig:rx_A} y~\ref{fig:rx_B} presentan los flujos de recepción correspondientes a las capas A y B, respectivamente. Finalmente, la Figura~\ref{fig:tx_remod} muestra el flujo de remodulación empleado para obtener la referencia reconstruida, la cual será comparada con la referencia ruidosa en la cadena de procesamiento.
+
+\newpage
+\section{Implementación de las cadenas de procesamiento}
+\subsection{Generación de canal de vigilancia y referencia}
+El Listado~\ref{lst:gen_signals} presenta la función encargada de generar las señales utilizadas en la simulación. Esta función agrega ruido complejo a la señal ISDB-Tb de referencia y configura una escena de radar pasivo para obtener la referencia ruidosa y el canal de vigilancia que luego se usaran en la cadena de procesamiento.\\\vspace{5pt}
+\begin{lstlisting}[
+    style=pythoncompact,
+    caption={Función para generar las señales de referencia y vigilancia simuladas.},
+    label={lst:gen_signals}
+]
+def gen_signals(snr_db, reference, echo_power_db, samples=N_SAMPLES):
+    N = len(reference)
+    E_ref = np.mean(np.abs(reference) ** 2)
+    noise_power = E_ref / utils.from_db(snr_db)
+    noise = (
+        np.sqrt(noise_power)
+        * (np.random.randn(N) + 1j * np.random.randn(N))
+    ).astype(np.complex64)
+
+    noisy_ref = (reference + noise).astype(np.complex64)
+    noisy_ref.tofile(DATA_DIR / "gr_files" / "isdbt_noisy.cfile")
+
+    pr_config = PassiveRadarChainConfig(
+        input=InputConfig(
+            N=samples, fs=8126984.0, f_c=700e6, use_simulated_data=True
+        ),
+        simulation=SimulationConfig(
+            transmitter_position=[0.0, 0.0],
+            radar_position=[50.0, 500.0],
+            direct_signal=True,
+            clutter=ClutterConfig(
+                N_CLUTT=10,
+                clutter_rcs_min_db=-3.0,
+                clutter_rcs_max_db=-5.0,
+                rand_clutter=True,
+                clutter_limits=[-100, 2000, 5, 150],
+            ),
+            echo=EchoConfig(
+                V_b=[10.0, 100.0],
+                rand_target=False,
+                target_rcs_db=echo_power_db,
+                target_position=[2500.0, 120.0],
+            ),
+        ),
+        channel=ChannelConfig(
+            enable=False,
+        ))
+    
+    noise_surv = (
+        np.sqrt(noise_power)
+        * (np.random.randn(samples) + 1j * np.random.randn(samples))
+    )
+
+    pr_chain = PassiveRadarChain(pr_config)
+    pr_chain.simulate_inputs(reference[:samples])    
+    
+    input_state= pr_chain.get_state(stage= "inputs", copy_state=False)
+    sim_state = pr_chain.get_state(stage="simulation", copy_state=False)
+
+    surv = input_state.surveillance + noise_surv
+    fd, target_p = sim_state.doppler_hz, sim_state.target_position
+
+    return noisy_ref[0:samples], surv, fd, target_p
+\end{lstlisting}
+\newpage
+\subsection{Ejecución de la cadena de procesamiento}
+El Listado~\ref{lst:run_config} muestra la función encargada de ejecutar la cadena de procesamiento. Esta función selecciona la referencia en función de si se utiliza la reconstrucción o no, carga el canal de vigilancia y ejecuta progresivamente las etapas de cálculo de la CAF, filtrado de clutter, aplicación de ventanas y detección CFAR. Además, permite guardar las figuras, la configuración y el estado final de la cadena.\\\vspace{5pt}
+
+\begin{lstlisting}[
+    style=pythoncompact,
+    caption={Funcion encargada de ejecutar la cadena de procesamiento (con y sin reconstrucción).},
+    label={lst:run_config}
+]
+def run_config(remod, pass_parameters, beta, cfar, samples=N_SAMPELS, save=False) -> None:
+    REMOD_TITLE = "_remod" if remod else "_no_remod"
+    RECONSTRUCTOR_TITLE = "con reconstrucción" if remod else "sin reconstrucción"
+    if pass_parameters:
+        chain = PassiveRadarChain(
+            config=build_config(cfar=cfar, beta=beta,samples=samples, save=save), verbose=True
+        )
+    else:
+        chain = PassiveRadarChain(config=build_config(), verbose=True)
+
+    signals = np.load(DATA_DIR / "pr_signals" / "signals.npz")
+    
+    surv = signals['surv']
+    if remod:
+        ref = signals['remod']
+    else:
+        ref = signals['noisy']
+
+    fig1, ax1 = plt.subplots()
+    utils.plot_psd(x= ref, fs= 8126984.0, ax=ax1, n_samples=N_SAMPELS, freq_in_khz=True)
+    ax1.yaxis.set_major_locator(MaxNLocator(nbins=15))
+    ax1.set_title(f"Señal de referencia {RECONSTRUCTOR_TITLE}")
+    if save:
+        fig1.savefig(FIG_DIR / f"ref{REMOD_TITLE}.png", dpi=300, bbox_inches="tight")
+        
+    chain.set_inputs(reference= ref, surveillance= surv)
+    # CAF Sin Filtro CF ni ventanas
+    chain.run_until(stage="caf")
+    chain.plot_caf(
+        filename=f"caf{REMOD_TITLE}.png",
+        title=f"CAF {RECONSTRUCTOR_TITLE}",
+    )
+
+    # CAF con Filtro CF y sin ventanas
+    chain.update_filter_config(enabled=True)
+    chain.run(start_from="filter", stop_at="caf")
+    chain.plot_caf(
+        filename=f"filtered_caf{REMOD_TITLE}.png",
+        title=f"CAF {RECONSTRUCTOR_TITLE} (CF)",
+    )
+
+    # CAF con Filtro CF y ventanas
+    chain.update_window_config(enabled=True)
+    chain.run(start_from="window", stop_at="detect")
+    chain.plot_caf(
+        filename=f"filtered_w_caf{REMOD_TITLE}.png",
+        title=f"CAF {RECONSTRUCTOR_TITLE} (CF + Ventanas)",
+    )
+
+    chain.plot_detections(
+        filename=f"filtered_w_detections{REMOD_TITLE}.png",
+        title=f"Detecciones CAF {RECONSTRUCTOR_TITLE} (CF + Ventanas) ",
+    )
+    chain.save_config(filename=f"config{REMOD_TITLE}")
+    chain.save_state(filename=f"state{REMOD_TITLE}")
+
+\end{lstlisting}
+\newpage
+\subsubsection{Testeo de cadenas}
+El Listado~\ref{lst:test_full_chain} contiene la función principal utilizada para coordinar la prueba completa. Esta función permite ejecutar los archivos \texttt{.py} generados a partir de los flujos de GNU Radio, cargar las señales generadas, construir la referencia ruidosa y almacenar todos los datos necesarios en un archivo \texttt{.npz}. Finalmente, llama a la función de procesamiento para ejecutar ambos casos de análisis: con referencia reconstruida y con referencia ruidosa.\\\vspace{5pt}
+\begin{lstlisting}[
+    style=pythoncompact,
+    caption={Función para generar señales, almacenar datos y ejecutar los casos con y sin reconstrucción.},
+    label={lst:test_full_chain}
+]
+def test_full_chain(gen_isdtb_signals:bool = False):
+    if gen_isdtb_signals:
+        subprocess.run([sys.executable, DATA_DIR/"gr_files"/"tx_tesis.py"])
+    reference = np.fromfile(DATA_DIR / "gr_files" / "isdtb_clean.cfile", dtype=np.complex64)
+
+    snr = 15
+    noisy_ref, surv, fd, target_p = gen_signals(snr_db = snr, reference= reference, echo_power_db= -30.0, samples=N_SAMPLES)
+    
+
+    
+    if gen_isdtb_signals:
+        subprocess.run([sys.executable, DATA_DIR/"gr_files"/"rx_tesis_A.py"])
+        subprocess.run([sys.executable, DATA_DIR/"gr_files"/"rx_tesis_B.py"])
+        subprocess.run([sys.executable, DATA_DIR/"gr_files"/"tx_tesis_remod.py"])
+    
+    reference_remod = np.fromfile(DATA_DIR / "gr_files" / "isdbt_remod.cfile", dtype=np.complex64)
+
+    np.savez(
+    DATA_DIR / "pr_signals"/"signals.npz",
+    remod=reference_remod[:N_SAMPLES],
+    noisy=noisy_ref,
+    surv= surv,
+    target_doppler = fd,
+    target_p = target_p
+    )
+    
+    run_config(remod= True, pass_parameters= True, beta=(40.0, 20.0), cfar=(1, (128, 512)),samples=N_SAMPLES, save= True)
+    run_config(remod= False, pass_parameters= True, beta=(40.0, 20.0), cfar=(1, (128,512)),samples=N_SAMPLES, save= True)
+\end{lstlisting}
